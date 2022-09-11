@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group android:checkableBehavior="single">
+        <item android:id="@+id/nav_shelf"
+              android:icon="@drawable/ic_book_shelf"
+              android:title="@string/menu_shelf"/>
+        <item android:id="@+id/nav_new"
+              android:icon="@drawable/ic_new"
+              app:actionViewClass="android.widget.TextView"
+              android:title="@string/menu_new"/>
+        <item android:id="@+id/nav_catalogs"
+              android:icon="@drawable/ic_earth"
+              android:title="@string/menu_catalogs"/>
+        <item android:id="@+id/nav_statistics"
+              android:icon="@drawable/ic_statistics"
+              android:title="@string/statistics"/>
+    </group>
+    <item android:id="@+id/nav_recommendations"
+          android:icon="@drawable/ic_award"
+          android:title="@string/recommendations"
+    />
+    <group android:id="@id/group" android:checkableBehavior="none">
+        <item android:id="@+id/nav_settings"
+              android:icon="@drawable/ic_settings"
+              android:title="@string/settings"/>
+        <item android:id="@+id/nav_about"
+              android:icon="@drawable/ic_info"
+              android:title="@string/About"/>
+        <item android:id="@+id/nav_version"
+              android:icon="@drawable/ic_launcher_logo"
+              android:checked="true"
+              android:title="@string/version_number"/>
+    </group>
+</menu>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:icon="@drawable/ic_search"
+          android:id="@+id/action_find_manga"
+          android:title="@string/find_manga"
+          app:actionViewClass="androidx.appcompat.widget.SearchView"
+          app:showAsAction="collapseActionView|always" />
+    <item android:icon="@drawable/ic_update"
+          android:id="@+id/check_for_updates"
+          android:visible="false"
+          android:title="@string/check_for_updates"
+          app:showAsAction="collapseActionView|ifRoom" />
+    <item android:id="@+id/action_update_sctips"
+          android:title="@string/update_scripts"
+          android:icon="@drawable/download"
+          android:visible="false"
+    />
+    <item android:id="@+id/action_add_source"
+          android:title="@string/add_source"
+          android:icon="@drawable/ic_add_48"
+          android:visible="false"
+    />
+    <item android:id="@+id/full"
+          android:title="@string/Full"
+          android:checkable="true"
+          android:checked="true"
+          android:visible="false"
+    />
+</menu>

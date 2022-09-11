@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+            android:id="@+id/graphs"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        <com.github.mikephil.charting.charts.HorizontalBarChart
+                android:id="@+id/genres_statistics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="true"
+        />
+        <com.alex.listitemview.ListItemView
+                android:id="@+id/average_read_time"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:liv_displayMode="icon"
+                app:liv_icon="@drawable/ic_fast_clock"
+                app:liv_multiline="false"
+                app:liv_subtitle="@string/calculating"
+                app:liv_title="@string/average_time"
+        />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>
+

@@ -1,0 +1,58 @@
+<resources>
+    <!-- Reply Preference -->
+    <string-array name="themes">
+        <item>Dark Red</item>
+        <item>Dark Yellow</item>
+        <item>Dark Green</item>
+        <item>Light Red</item>
+        <item>Light Yellow</item>
+        <item>Light Green</item>
+    </string-array>
+
+    <integer-array name="themes_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+    </integer-array>
+
+    <string-array name="reader_mode_entries">
+        <item>@string/left_to_right</item>
+        <item>@string/right_to_left</item>
+        <item>@string/top_to_bottom</item>
+    </string-array>
+
+    <integer-array name="reader_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+    </integer-array>
+
+    <string-array name="scale_mode_entries">
+        <item>@string/fit_to_width</item>
+        <item>@string/fit_to_height</item>
+        <item>@string/fit_screen</item>
+        <item>@string/source_size</item>
+    </string-array>
+
+    <integer-array name="scale_mode_values">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+    </integer-array>
+
+    <string-array name="locales">
+        <item>Auto</item>
+        <item>English</item>
+        <item>Русский</item>
+    </string-array>
+
+    <string-array name="locales_values">
+        <item/>
+        <item>en</item>
+        <item>ru</item>
+    </string-array>
+</resources>

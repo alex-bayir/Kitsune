@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            xmlns:tools="http://schemas.android.com/tools"
+            android:id="@+id/mobile_navigation"
+            app:startDestination="@+id/nav_shelf">
+
+    <fragment
+            android:id="@+id/nav_shelf"
+            android:name="org.alex.kitsune.ui.shelf.Shelf"
+            android:label="@string/menu_shelf"
+            tools:layout="@layout/content_shelf">
+        <action android:id="@+id/action_nav_self_discover"
+                app:destination="@id/nav_new"/>
+    </fragment>
+    <fragment
+            android:id="@+id/nav_new"
+            android:name="org.alex.kitsune.ui.shelf.NewFragment"
+            android:label="@string/menu_new">
+        <action android:id="@+id/action_nav_discover_self"
+                app:destination="@id/nav_catalogs"/>
+    </fragment>
+    <fragment
+            android:id="@+id/nav_catalogs"
+            android:name="org.alex.kitsune.ui.shelf.Catalogs"
+            android:label="@string/menu_catalogs">
+        <action android:id="@+id/action_nav_discover_self"
+                app:destination="@id/nav_statistics"/>
+    </fragment>
+    <fragment
+            android:id="@+id/nav_statistics"
+            android:name="org.alex.kitsune.ui.shelf.StatisticsFragment"
+            android:label="@string/menu_catalogs">
+        <action android:id="@+id/action_nav_discover_self"
+                app:destination="@id/nav_shelf"/>
+    </fragment>
+
+</navigation>

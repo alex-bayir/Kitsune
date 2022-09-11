@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="1sp">
+    <RelativeLayout android:layout_width="match_parent" android:layout_height="match_parent">
+        <ImageView android:id="@+id/img"
+                   android:layout_width="wrap_content"
+                   android:layout_height="wrap_content"
+                   android:padding="4dp"
+                   android:scaleType="center"
+                   android:src="@drawable/ic_code_file"
+                   android:layout_alignBottom="@id/date"
+                   android:layout_alignParentTop="true"/>
+        <EditText
+                android:id="@+id/name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:minWidth="120sp"
+                android:layout_toEndOf="@+id/img"
+                android:layout_alignParentTop="true"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:background="@null"
+                android:maxLines="1"
+                android:textAppearance="@style/ScriptsText"
+                android:text="scritp.lua"/>
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:layout_toEndOf="@+id/name"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:gravity="center_vertical"
+                android:text="Status:work"
+                android:layout_alignBottom="@+id/name"
+                android:layout_alignParentTop="true"
+                android:textAppearance="@style/ScriptsText"
+        />
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/version"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/name"
+                android:layout_toEndOf="@+id/img"
+                android:layout_alignEnd="@+id/name"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:maxLines="1"
+                android:textAppearance="@style/ScriptsText"
+                android:text="Version: 1.0"
+        />
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/domen"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/name"
+                android:layout_toEndOf="@id/version"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:maxLines="1"
+                android:textAppearance="@style/ScriptsText"
+                android:layout_alignBottom="@+id/version"
+                android:text="Domain: Desu"
+        />
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/date"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/version"
+                android:layout_toEndOf="@+id/img"
+                android:layout_alignEnd="@+id/name"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:maxLines="1"
+                android:textAppearance="@style/ScriptsText"
+                android:text="09.01.2002"
+        />
+    </RelativeLayout>
+
+
+
+</com.google.android.material.card.MaterialCardView>

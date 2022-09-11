@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_open_api"
+          android:title="@string/open_api"
+          android:icon="@drawable/ic_api"
+          app:showAsAction="always"
+    />
+    <item android:id="@+id/choose_mode"
+        android:title="@string/test_functions">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:id="@+id/base_functions"
+                      android:title="@string/base_functions"/>
+                <item android:id="@+id/advanced_search_functions"
+                      android:title="@string/advanced_search_functions"/>
+            </group>
+        </menu>
+    </item>
+</menu>

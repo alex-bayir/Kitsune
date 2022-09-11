@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/appearance">
+
+        <org.alex.kitsune.commons.ListPreference
+                android:key="THEME"
+                android:title="@string/theme"
+                android:dialogTitle="@string/theme"
+                android:entries="@array/themes"
+                android:entryValues="@array/themes_values"
+                android:defaultValue="0"
+        />
+        <org.alex.kitsune.commons.ListPreference
+                android:key="language"
+                android:title="@string/language"
+                android:dialogTitle="@string/language"
+                android:entries="@array/locales"
+                android:entryValues="@array/locales_values"
+                android:defaultValue=""
+        />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/downloads">
+        <org.alex.kitsune.commons.FilePickerPreference
+                android:title="@string/saving_dir"
+                android:key="savedPath"
+                android:theme="?android:textAppearance"
+        />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="@string/common_parameters">
+        <SwitchPreferenceCompat
+                android:key="update_on_start"
+                android:title="@string/update_on_start"
+                android:defaultValue="true"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

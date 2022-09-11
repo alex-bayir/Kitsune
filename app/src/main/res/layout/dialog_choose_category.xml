@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+    <TextView android:id="@+id/title"
+              android:padding="16dp"
+              android:text="Choose category"
+              style="@style/TextAppearance.AppCompat.Title"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:gravity="center"
+              android:layout_alignParentStart="true"
+              android:layout_alignParentEnd="true"
+              android:layout_alignParentTop="true"
+              android:textSize="20dp"
+    />
+
+    <RadioGroup android:id="@+id/group"
+              android:padding="16dp"
+              style="@style/TextAppearance.AppCompat"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_below="@+id/title"
+              android:layout_alignEnd="@id/title"
+              android:layout_alignStart="@id/title"
+    />
+
+    <Button android:id="@+id/close"
+            android:text="CLOSE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/group"
+            android:layout_alignStart="@id/group"
+    />
+    <Button android:id="@+id/remove"
+            android:text="REMOVE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/group"
+            android:layout_centerHorizontal="true"
+    />
+    <Button android:id="@+id/create"
+            android:text="CREATE"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/group"
+            android:layout_alignEnd="@+id/group"
+    />
+</RelativeLayout>

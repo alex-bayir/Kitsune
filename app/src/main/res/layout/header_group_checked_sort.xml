@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.appcompat.widget.AppCompatCheckedTextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="40sp"
+        android:gravity="center_vertical"
+        android:textStyle="bold"
+        android:textSize="18.0sp"
+        android:paddingStart="8sp"
+        android:paddingEnd="8sp"
+        android:lines="1"
+        android:textColor="?attr/colorPrimary"
+        android:checkMark="@drawable/sort_selector"
+/>

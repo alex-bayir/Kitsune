@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="liv_gray_active_icon">#787878</color>
+    <declare-styleable name="ListItemView"><attr format="reference" name="liv_menu"/><attr format="integer" name="liv_menuItemsRoom"/><attr format="color" name="liv_menuActionColor"/><attr format="color" name="liv_menuOverflowColor"/><attr format="string" name="liv_title"/><attr format="string" name="liv_subtitle"/><attr format="boolean" name="liv_multiline"/><attr format="dimension" name="liv_paddingStart"/><attr format="dimension" name="liv_paddingEnd"/><attr format="dimension" name="liv_keyline"/><attr format="boolean" name="liv_forceKeyline"/><attr format="enum" name="liv_displayMode">
+            <enum name="standard" value="0"/>
+            <enum name="icon" value="1"/>
+            <enum name="circularIcon" value="2"/>
+            <enum name="avatar" value="3"/>
+        </attr><attr format="reference" name="liv_icon"/><attr format="color" name="liv_iconColor"/><attr format="color" name="liv_circularIconColor"/></declare-styleable>
+    <dimen name="liv_keyline">72dp</dimen>
+    <dimen name="liv_padding_end">16dp</dimen>
+    <dimen name="liv_padding_start">16dp</dimen>
+</resources>

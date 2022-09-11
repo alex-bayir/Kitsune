@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/share"
+          android:icon="@drawable/ic_share"
+          android:title="@string/share">
+        <menu>
+            <item android:id="@+id/share_page"
+                  android:icon="@drawable/ic_share"
+                  android:title="@string/share_page"/>
+            <item android:id="@+id/share_screen"
+                  android:icon="@drawable/ic_share"
+                  android:title="@string/share_screen"/>
+        </menu>
+    </item>
+    <item android:id="@+id/create_bookmark"
+          android:icon="@drawable/ic_create_bookmark"
+          android:title="@string/create_bookmark"/>
+    <item android:id="@+id/change_reader_mode"
+          android:icon="@drawable/ic_reader_mode"
+          android:title="@string/reader_mode"/>
+    <item android:id="@+id/change_scale_mode"
+          android:icon="@drawable/ic_aspect_ratio"
+          android:title="@string/scale_mode"/>
+    <item android:id="@+id/settings"
+          android:icon="@drawable/ic_settings"
+          android:title="@string/settings"/>
+</menu>

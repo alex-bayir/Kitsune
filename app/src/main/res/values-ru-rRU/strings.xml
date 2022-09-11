@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="not_implemented_yet">Пока не реализованно</string>
+    <string name="recommendations">Рекомендации</string>
+    <string name="menu_catalogs">Каталоги</string>
+    <string name="settings">Настройки</string>
+    <string name="menu_new">Новое</string>
+    <string name="check_for_updates">Проверка обновлений</string>
+    <string name="sorting">Сортировка</string>
+    <string name="create_shortcut">Создать ярлык</string>
+    <string name="action_open_browser">Открыть в браузере</string>
+    <string name="action_open_in">Открыть в</string>
+    <string name="unable_create_shortcut">Не получилось создать ярлык</string>
+    <string name="genres">Жанры</string>
+    <string name="estimated_time">Расчётное время чтения</string>
+    <string name="average_time">Средее время чтения</string>
+    <string name="description">Описание</string>
+    <string name="error_has_occurred">Произошла ошибка</string>
+    <string name="downloaded">Загружена</string>
+    <string name="Ongoing">Продолжается</string>
+    <string name="Completed">Завершён</string>
+    <string name="remove">Удалить</string>
+    <string name="save_all_chapters">Сохранить все главы</string>
+    <string name="find_chapter">Поиск главы</string>
+    <string name="RC">Удалить эту главу</string>
+    <string name="RL">Удалить эту и все предыдущие</string>
+    <string name="RA">Удалить все главы</string>
+    <string name="clear_all">Очистить все</string>
+    <string name="SC">Скачать эту главу</string>
+    <string name="SL">Скачать эту и предыдущие главы</string>
+    <string name="S5">Скачать эту и следующие 5 главы</string>
+    <string name="S10">Скачать эту и следующие 10 главы</string>
+    <string name="S30">Скачать эту и следующие 30 главы</string>
+    <string name="SN">Скачать эту и все следующие главы</string>
+    <string name="SA">Скачать все главы</string>
+    <string name="page">Страница</string>
+    <string name="loading_pages_list">Загрузка списка страниц…</string>
+    <string name="chapters_list">Список глав</string>
+    <string name="create_bookmark">Создать закладку</string>
+    <string name="share_page">Поделиться страницей</string>
+    <string name="share_screen">Поделиться скрином</string>
+    <string name="loading_page">Загрузка страницы…</string>
+    <string name="action_settings_shelf">Настройка полки</string>
+    <string name="history_rows">Строк истории</string>
+    <string name="favorites_rows">Строк Избранных</string>
+    <string name="saved_rows">Строк Сохранёных</string>
+    <string name="appearance">Внешний вид</string>
+    <string name="theme">Тема</string>
+    <string name="downloads">Храшилище</string>
+    <string name="saving_dir">Директория сохранения</string>
+    <string name="reader_options">Параметры читалки</string>
+    <string name="reader_mode">Режим чтения</string>
+    <string name="scale_mode">Масштабирование</string>
+    <string name="left_to_right">Слева на право</string>
+    <string name="right_to_left">Справа на лево</string>
+    <string name="top_to_bottom">Сверху вниз</string>
+    <string name="default_mode">Режимы читалки</string>
+    <string name="fit_to_width">По ширине</string>
+    <string name="fit_to_height">По высоте</string>
+    <string name="fit_screen">По размеру экрана</string>
+    <string name="source_size">Оригинальный размер</string>
+    <string name="use_volume_keys">Перелистывание с помощью клавиш громкости</string>
+    <string name="keep_screen_on">Держать экран включённым</string>
+    <string name="show_status_bar">Показать панель состояния</string>
+    <string name="custom_background">Цвет фона</string>
+    <string name="common_parameters">Общие параметры</string>
+    <string name="update_on_start">Проверять обновления при запуске</string>
+    <string name="version">Версия: %1$s (%2$d)</string>
+    <string name="disclaimer">Вся манга, персонажи и логотипы принадлежат соответствующим владельцам авторских прав. Разработчик этого приложения не имеет никакого отношения к поставщикам контента.</string>
+    <string name="sort_popular">Попурярное</string>
+    <string name="sort_latest">Новинки</string>
+    <string name="sort_updated">Обновления</string>
+    <string name="menu_shelf">Полка</string>
+    <string name="Chapters">"Главы: "</string>
+    <string name="Author">"Автор: "</string>
+    <string name="Source_">"Домен: "</string>
+    <string name="Status_">"Статус: "</string>
+    <string name="share">Поделиться</string>
+    <string name="categories">Категории</string>
+    <string name="general">Основные</string>
+    <string name="Chapter">Глава</string>
+    <string name="About">О приложении</string>
+    <string name="language">Язык</string>
+    <string name="similar">Похожее</string>
+    <string name="Volume">Том</string>
+    <string name="adjust_brightness">Отрегулировать яркость</string>
+    <string name="adjust_brightness_value">Яркость</string>
+    <string name="build_time">Время сборки: %1$s \nСборка: %2$s</string>
+    <string name="text_copied">Текст скопирован</string>
+    <string name="install_update">Установить обновление</string>
+    <string name="no_updates_found">Обновлений не найдено</string>
+    <string name="new_version_founded">Найдена новая версия</string>
+    <string name="if_shortcut_did_not_created">Если ярлык не создан предоставте разрешения</string>
+    <string name="what_new">Что нового</string>
+    <string name="sourcenotdefined">Источник не определён для ссылки: \"%1$s\"</string>
+    <string name="what_new_innovations">
+        Версия 1.7.1:\n
+        \t-Автообновление скриптов.\n\n
+        Версия 1.7.0:\n
+        \t-Теперь мы на github.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.9:\n
+        \t-Теперь источник Remanga работает корректно.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.8:\n
+        \t-Новые темы.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.4-1.6.7:\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.3:\n
+        \t-Добавлена возможность просмотра манги по автору в некоторых источниках.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.2:\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.1:\n
+        \t-Теперь на жанры можно нажимать.\n
+        \t-Добавлена статистика.\n
+        \t-Исправление ошибок парсинга всех скриптов.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.6.0:\n
+        \t-Исправление ошибок парсинга MangaLib.\n
+        \t-Убираем размытие изображений на HentaiChan.\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.5.9:\n
+        \t-Оптимизация и исправление ошибок.\n\n
+        Версия 1.5.8:\n
+        \t-Добавлен поиск по жанрам в MangaChan.\n
+        \t-Добавлен источник HentaiChan.\n\n
+        Версия 1.5.7:\n
+        \t-Добавлены поиск, загрузка и установка обновлений прямо в приложение.\n\n
+        Версия 1.5.6:\n
+        \t-Добавлена регулировка яркости при чтении.\n
+        \t-Оптимизация и исправление ошибок.\n
+    </string>
+    <string name="no_description">Нет описания</string>
+    <string name="scripts_updates">После обновления приложения скрипты перезаписываются, поэтому если вы вносите изменения, то сохраняйте их себе вне приложения чтобы не потерять.</string>
+    <string name="statistics">Статистика</string>
+    <string name="donate">Пожертвования:\n%1$s\n\n</string>
+    <string name="all_scripts_updated">Все скрипты обновлены</string>
+</resources>

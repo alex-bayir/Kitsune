@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PrefixedEditText">
+        <attr name="prefix" format="string"/>
+    </declare-styleable>
+    <declare-styleable name="ColorPalette">
+        <attr name="Image" format="reference"/>
+    </declare-styleable>
+</resources>

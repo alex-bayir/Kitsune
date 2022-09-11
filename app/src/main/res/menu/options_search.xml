@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:icon="@drawable/ic_search"
+          android:id="@+id/action_find_manga"
+          android:title="@string/find_manga"
+          android:visible="false"
+          app:actionViewClass="androidx.appcompat.widget.SearchView"
+          app:showAsAction="collapseActionView|ifRoom" />
+    <item android:id="@+id/view_mode"
+          android:title="@string/view_mode">
+        <menu>
+            <group android:checkableBehavior="single">
+            <item android:id="@+id/list"
+                  android:title="@string/List"
+                  android:checked="true"/>
+            <item android:id="@+id/smallGrid"
+                  android:title="@string/Small_grid"/>
+            <item android:id="@+id/mediumGrid"
+                  android:title="@string/Medium_grid"/>
+            <item android:id="@+id/largeGrid"
+                  android:title="@string/Large_grid"/>
+            </group>
+        </menu>
+    </item>
+    <item android:id="@+id/show_source_status"
+          android:title="@string/show_source_status">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:id="@+id/status"
+                      android:title="@string/Status"/>
+                <item android:id="@+id/source"
+                      android:title="@string/Source"/>
+            </group>
+        </menu>
+    </item>
+</menu>

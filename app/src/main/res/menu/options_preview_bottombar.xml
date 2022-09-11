@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" 
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:icon="@drawable/ic_trash"
+          android:visible="true"
+          android:title="@string/remove"
+          app:showAsAction="ifRoom">
+        <menu>
+            <item android:id="@+id/action_chapter_remove_all"
+                  android:title="@string/RA"/>
+        </menu>
+    </item>
+    <item android:icon="@drawable/ic_save"
+          android:visible="true"
+          android:title="@string/save_"
+          app:showAsAction="ifRoom">
+        <menu>
+            <item android:id="@+id/action_chapter_save_all"
+                  android:title="@string/save_all_chapters" />
+        </menu>
+    </item>
+    <item android:icon="@drawable/ic_sort_numeric"
+          android:id="@+id/action_reverse"
+          android:visible="true"
+          android:title="@string/reverse_order"
+          android:checkable="true"
+          app:showAsAction="ifRoom" />
+    <item android:icon="@drawable/ic_search"
+          android:id="@+id/action_find_chapter"
+          android:title="@string/find_chapter"
+          app:actionViewClass="androidx.appcompat.widget.SearchView"
+          app:showAsAction="collapseActionView|ifRoom" />
+</menu>

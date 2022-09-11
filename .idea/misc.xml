@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ASMSmaliIdeaPluginConfiguration">
+    <asm skipDebug="true" skipFrames="true" skipCode="false" expandFrames="false" />
+    <groovy codeStyle="LEGACY" />
+  </component>
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Android/SDK/platforms/android-31/data/res/layout/simple_list_item_1.xml" value="0.36820652173913043" />
+        <entry key="..\:/Android/SDK/platforms/android-31/data/res/layout/simple_spinner_dropdown_item.xml" value="0.328804347826087" />
+        <entry key="..\:/Games/Kitsune/ColorWheel/src/main/res/layout/color_palette.xml" value="0.36820652173913043" />
+        <entry key="..\:/Games/Kitsune/ColorWheel/src/main/res/layout/fragment_color_chooser.xml" value="0.36820652173913043" />
+        <entry key="..\:/Games/Kitsune/EditTextCode/src/main/res/layout/suggestion_item.xml" value="0.328804347826087" />
+        <entry key="..\:/Games/Kitsune/ListItemView/src/main/res/drawable/vd_more_vert_black_24dp.xml" value="0.30185185185185187" />
+        <entry key="..\:/Games/Kitsune/ListItemView/src/main/res/layout/liv_action_item_layout.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/ListItemView/src/main/res/layout/liv_action_item_overflow_layout.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/ListItemView/src/main/res/layout/liv_list_item_layout.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/RatingBar/src/main/res/drawable/ic_stars_ltr.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/RatingBar/src/main/res/drawable/ic_stars_rtl.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/ThreeStates/src/main/res/drawable/states.xml" value="0.49537037037037035" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/bg_new.xml" value="0.40370370370370373" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/bg_snackbar.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/bg_suggestions.xml" value="0.40370370370370373" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/download.xml" value="0.247" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_add_48.xml" value="0.40370370370370373" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_aspect_ratio.xml" value="0.3907407407407407" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_award.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_background_color.xml" value="0.3907407407407407" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_brightness.xml" value="0.49537037037037035" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_brightness_color.xml" value="0.49537037037037035" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_caution.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_caution_yellow.xml" value="0.4444444444444444" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_chrome_reader_mode_24dp.xml" value="0.2916666666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_download_arrow.xml" value="0.5305555555555556" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_earth.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_info.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_info_24dp.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo_kitsune_text.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo_sized.xml" value="0.36018518518518516" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_primary.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_rounded.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_logo_components.xml" value="0.5222222222222223" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_mastercard.xml" value="0.5222222222222223" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_mastercard_big.xml" value="0.409375" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_new.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_play_market.xml" value="0.5430769230769231" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_python.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_reader_mode.xml" value="0.2515625" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_search_white.xml" value="0.4444444444444444" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_settings.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_shelf.xml" value="0.2916666666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_sort_numeric_reverse_white.xml" value="0.3453703703703704" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_sort_numeric_white.xml" value="0.3907407407407407" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_statistics.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_update.xml" value="0.5305555555555556" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_vk_logo.xml" value="0.5222222222222223" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/launch_background.xml" value="0.5466666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/manga_info_gradient.xml" value="0.2765625" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/side_nav_bar.xml" value="0.36203703703703705" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/sort_selector.xml" value="0.3907407407407407" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout-land/fragment_preview_page.xml" value="0.38385416666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_about.xml" value="0.34676258992805753" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_advanced_search.xml" value="0.3020833333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_api.xml" value="0.32653985507246375" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_compiler.xml" value="0.3020833333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_logs.xml" value="0.3020833333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_main.xml" value="0.5" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_preview.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_reader.xml" value="0.30480072463768115" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_recomendations.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_saved.xml" value="0.30480072463768115" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_scripts.xml" value="0.2942708333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_search.xml" value="0.30480072463768115" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_settings.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/activity_statistics.xml" value="0.3351449275362319" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/content_log.xml" value="0.3020833333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/content_main.xml" value="0.34148550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/content_shelf.xml" value="0.41530797101449274" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_chapters.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_choose_category.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_file_picker.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_filter.xml" value="0.5" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_input.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_input_url.xml" value="0.2621580547112462" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_reader_error.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_update.xml" value="0.6014828544949027" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_whatnew.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/fragment_page.xml" value="0.41847826086956524" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/fragment_preview_page.xml" value="0.333786231884058" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/fragment_recyclerview_list.xml" value="0.30480072463768115" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/fragment_recyclerview_list_with_progerss.xml" value="0.30480072463768115" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/header_group.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/header_group_checked_sort.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_chapter.xml" value="0.3854166666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_checked_box.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_checked_box_3.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_checked_radio.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_checked_sort.xml" value="0.31023550724637683" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_manga.xml" value="0.75" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/item_script.xml" value="0.67" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/layout_compiler_logcat.xml" value="0.234375" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/nav_header_main.xml" value="0.33967391304347827" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/tmp.xml" value="0.5" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/toast_update.xml" value="0.5" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/view_status.xml" value="0.23541666666666666" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/activity_main_drawer.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_compiler.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_preview_activity.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_scripts.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_show_status_source.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_sorting.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_sorting_source.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_statistics.xml" value="0.5526041666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/menu_webview.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_chapters.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_logs.xml" value="0.5451282051282051" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_main.xml" value="0.3182291666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_preview_bottombar.xml" value="0.3182291666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_reader.xml" value="0.25" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_search.xml" value="0.33229166666666665" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/xml/preferences_general.xml" value="0.1" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/xml/preferences_reader.xml" value="0.25" />
+        <entry key="..\:/Users/А/.gradle/caches/transforms-3/46d15f5c58a469270eeba15db4463d05/transformed/appcompat-1.4.0/res/layout/support_simple_spinner_dropdown_item.xml" value="0.328804347826087" />
+      </map>
+    </option>
+  </component>
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_18_PREVIEW" project-jdk-name="18" project-jdk-type="JavaSDK">
+    <output url="file://$PROJECT_DIR$/build/classes" />
+  </component>
+  <component name="ProjectType">
+    <option name="id" value="Android" />
+  </component>
+</project>

@@ -1,0 +1,68 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="@string/default_mode">
+
+        <org.alex.kitsune.commons.ListPreference
+                android:key="ReaderMode"
+                android:title="@string/reader_mode"
+                android:dialogTitle="@string/reader_mode"
+                android:entries="@array/reader_mode_entries"
+                android:entryValues="@array/reader_mode_values"
+                android:defaultValue="0"
+                android:icon="@drawable/ic_reader_mode"
+        />
+        <org.alex.kitsune.commons.ListPreference
+                android:key="ScaleMode"
+                android:title="@string/scale_mode"
+                android:dialogTitle="@string/scale_mode"
+                android:entries="@array/scale_mode_entries"
+                android:entryValues="@array/scale_mode_values"
+                android:defaultValue="0"
+                android:icon="@drawable/ic_aspect_ratio"
+        />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+            android:title="@string/common_parameters">
+
+        <SwitchPreferenceCompat
+                android:key="use_volume_keys"
+                android:defaultValue="true"
+                android:title="@string/use_volume_keys"/>
+        <SwitchPreferenceCompat
+                android:key="keep_screen_on"
+                android:defaultValue="false"
+                android:title="@string/keep_screen_on"/>
+        <SwitchPreferenceCompat
+                android:key="show_status_bar"
+                android:defaultValue="true"
+                android:title="@string/show_status_bar"/>
+        <SwitchPreferenceCompat
+                android:key="adjust_brightness"
+                android:defaultValue="false"
+                android:title="@string/adjust_brightness"/>
+        <SeekBarPreference
+                android:key="adjust_brightness_value"
+                android:dependency="adjust_brightness"
+                android:max="100"
+                android:title="@string/adjust_brightness_value"
+                android:icon="@drawable/ic_brightness"
+                android:defaultValue="20"
+        />
+
+        <SwitchPreferenceCompat
+                android:key="custom_background"
+                android:defaultValue="false"
+                android:title="@string/custom_background"/>
+
+        <com.alex.colorwheel.ColorChooserPreference
+            android:key="custom_background_color"
+            android:title="@string/custom_background"
+            android:dependency="custom_background"
+            android:icon="@drawable/ic_background_color"
+        />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

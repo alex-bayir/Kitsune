@@ -1,0 +1,81 @@
+<resources>
+    <!-- Base application theme. -->
+    <style name="LaunchTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="android:windowBackground">@drawable/launch_background</item>
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+    <style name="AppTheme" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+    </style>
+
+    <style name="AppTheme.LightRed" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/red</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">?android:colorPrimary</item>
+    </style>
+    <style name="AppTheme.LightYellow" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/yellow</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">?android:colorPrimary</item>
+    </style>
+    <style name="AppTheme.LightGreen" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">?android:colorPrimary</item>
+    </style>
+    <style name="AppTheme.DarkRed" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/red</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">#FF282828</item>
+    </style>
+    <style name="AppTheme.DarkYellow" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/yellow</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">#FF282828</item>
+    </style>
+    <style name="AppTheme.DarkGreen" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorAccent">?android:colorPrimary</item>
+        <item name="colorPrimaryDark">@color/transparent_dark</item>
+        <item name="appBarColor">#FF282828</item>
+    </style>
+
+
+    <style name="AppDialogDark" parent="@style/Theme.Design.BottomSheetDialog">
+        <item name="colorPrimary">@color/red</item>
+        <item name="colorAccent">@color/red</item>
+    </style>
+    <style name="AppDialogLight" parent="@style/Theme.Design.Light.BottomSheetDialog">
+        <item name="colorPrimary">@color/green</item>
+        <item name="colorAccent">@color/green</item>
+    </style>
+    <style name="Theme.Transparent" parent="Theme.AppCompat">
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:backgroundDimEnabled">false</item>
+    </style>
+    <style name="ScriptsText" parent="TextAppearance.AppCompat">
+
+    </style>
+    <style name="ExpandedAppBar" parent="@android:style/TextAppearance.Medium">
+        <item name="android:textSize">28sp</item>
+        <item name="android:fontFamily">@font/f19700</item>
+    </style>
+
+</resources>

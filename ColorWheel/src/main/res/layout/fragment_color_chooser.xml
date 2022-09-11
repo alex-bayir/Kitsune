@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/relativeLayout"
+        android:layout_width="320dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent">
+    <RelativeLayout android:id="@+id/paletteLayout"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+        <include layout="@layout/color_palette"/>
+    </RelativeLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textinputlayout"
+            android:layout_below="@+id/paletteLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+        <com.alex.colorwheel.PrefixedEditText
+                android:id="@+id/editcolorhex"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textSize="28sp"
+                android:hint="&#60;ARGB&#62;"
+                android:padding="16dp"
+                android:maxLength="8"
+                android:textAlignment="viewStart"
+                android:fontFamily="serif-monospace"
+                android:textStyle="bold"
+                android:inputType="text"
+                android:gravity="start"/>
+    </com.google.android.material.textfield.TextInputLayout>
+</RelativeLayout>

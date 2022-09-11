@@ -1,0 +1,246 @@
+<resources>
+    <string name="not_implemented_yet">Not implemented yet</string>
+    <string name="app_name" translatable="false">Kitsune</string>
+    <string name="scroll_aware_behavior" translatable="false">org.alex.kitsune.commons.ScrollAwareFABBehavior</string>
+
+    <string name="navigation_drawer_open" translatable="false">Open navigation drawer</string>
+    <string name="navigation_drawer_close" translatable="false">Close navigation drawer</string>
+    <string name="nav_header_title" translatable="false">Select Image</string>
+
+
+    <string name="logs" translatable="false">Logs</string>
+    <string name="general">General</string>
+    <string name="recommendations">Recommendations</string>
+    <string name="menu_shelf">Shelf</string>
+    <string name="more" translatable="false">More</string>
+    <string name="History" translatable="false">History</string>
+    <string name="Favorites" translatable="false">Favorites</string>
+    <string name="Saved" translatable="false">Saved</string>
+    <string name="Saved_manga" translatable="false">Saved manga</string>
+    <string name="menu_catalogs">Catalogs</string>
+    <string name="settings">Settings</string>
+    <string name="statistics">Statistics</string>
+    <string name="menu_new">New</string>
+    <string name="DESCRIPTION" translatable="false">Description</string>
+    <string name="CHAPTERS" translatable="false">Chapters</string>
+    <string name="BOOKMARKS" translatable="false">Bookmarks</string>
+    <string name="Chapters">Chapters:</string>
+    <string name="Author">Author:</string>
+    <string name="Source_">Source:</string>
+    <string name="Status_">Status:</string>
+
+    <!-- menus -->
+    <string name="check_for_updates">Check for updates</string>
+    <string name="view_mode" translatable="false">View mode</string>
+    <string name="find_manga" translatable="false">Find manga</string>
+    <string name="sorting">Sorting</string>
+    <string name="show_source_status" translatable="false">Show status/source</string>
+    <string name="Latest" translatable="false">Latest</string>
+    <string name="Alphabetical" translatable="false">Alphabetical</string>
+    <string name="size" translatable="false">Size</string>
+    <string name="Source" translatable="false">Source</string>
+    <string name="Status" translatable="false">Status</string>
+    <string name="List" translatable="false">List</string>
+    <string name="Small_grid" translatable="false">Small grid</string>
+    <string name="Medium_grid" translatable="false">Medium grid</string>
+    <string name="Large_grid" translatable="false">Large grid</string>
+    <string name="Full" translatable="false">Full</string>
+
+
+    <!-- Preview -->
+    <string name="show_log" translatable="false">Show log</string>
+    <string name="share">Share</string>
+    <string name="create_shortcut">Create shortcut</string>
+    <string name="action_open_browser">Open browser</string>
+    <string name="action_open_in">Open in</string>
+    <string name="unable_create_shortcut">Unable to create a shortcut</string>
+    <string name="read" translatable="false">Read</string>
+    <string name="CONTINUE" translatable="false">CONTINUE</string>
+    <string name="genres">Genres</string>
+    <string name="estimated_time">Estimated reading time</string>
+    <string name="average_time">Average reading time</string>
+    <string name="calculating" translatable="false">Calculating…</string>
+    <string name="description">Description</string>
+    <string name="loading" translatable="false">Loading…</string>
+    <string name="error_has_occurred">An a error has occurred</string>
+    <string name="no_description">No description</string>
+    <string name="similar">Similar</string>
+    <string name="downloaded">Downloaded</string>
+    <string name="Ongoing">Ongoing</string>
+    <string name="Completed">Completed</string>
+    <string name="None" translatable="false">None</string>
+    <string name="Chapter">Chapter</string>
+    <string name="Volume">Vol</string>
+    <string name="remove">Remove</string>
+    <string name="save_" translatable="false">Save…</string>
+    <string name="save_all_chapters">Save all chapters</string>
+    <string name="reverse_order" translatable="false">Reverse chapters</string>
+    <string name="find_chapter">Find chapter</string>
+    <string name="RC">Remove this chapter</string>
+    <string name="RL">Remove this and all previous chapters</string>
+    <string name="RA">Remove all chapters</string>
+    <string name="SC">Save this chapter</string>
+    <string name="SL">Save this and all previous chapters</string>
+    <string name="S5">Save this and next 5 chapters</string>
+    <string name="S10">Save this and next 10 chapters</string>
+    <string name="S30">Save this and next 30 chapters</string>
+    <string name="SN">Save this and all next chapters</string>
+    <string name="SA">Save all chapters</string>
+    <string name="No_chapters" translatable="false">No chapters</string>
+    <string name="No_bookmarks" translatable="false">No bookmarks</string>
+
+
+    <!-- Reader -->
+    <string name="page">Page</string>
+    <string name="loading_pages_list">Loading pages list…</string>
+    <string name="chapters_list">Chapters list</string>
+    <string name="create_bookmark">Create bookmark</string>
+    <string name="share_page">Share page</string>
+    <string name="share_screen">Share screen</string>
+    <string name="loading_page">Loading page…</string>
+    <string name="next_chapter" translatable="false">Next chapter</string>
+    <string name="CREATE" translatable="false">CREATE</string>
+    <string name="RETRY" translatable="false">RETRY</string>
+    <string name="RESET" translatable="false">RESET</string>
+    <string name="CLOSE" translatable="false">CLOSE</string>
+
+
+    <!-- Preference Titles -->
+    <string name="action_settings_shelf">Settings Shelf</string>
+    <string name="categories">Categories</string>
+    <string name="history_rows">History rows</string>
+    <string name="favorites_rows">Favorites rows</string>
+    <string name="saved_rows">Saved rows</string>
+    <string name="appearance">Appearance</string>
+    <string name="theme">Theme</string>
+    <string name="language">Language</string>
+    <string name="downloads">Downloads</string>
+    <string name="saving_dir">Saving directory</string>
+    <string name="reader_options">Reader options</string>
+    <string name="default_mode">Default mode</string>
+    <string name="reader_mode">Reader mode</string>
+    <string name="left_to_right">Left to Right</string>
+    <string name="right_to_left">Right to Left</string>
+    <string name="top_to_bottom">Top to Bottom</string>
+    <string name="scale_mode">Scale mode</string>
+    <string name="fit_to_width">Fit to width</string>
+    <string name="fit_to_height">Fit to height</string>
+    <string name="fit_screen">Fit screen</string>
+    <string name="source_size">Source size</string>
+    <string name="use_volume_keys">Scroll with volume keys</string>
+    <string name="keep_screen_on">Keep screen on</string>
+    <string name="show_status_bar">Show status bar</string>
+    <string name="custom_background">Custom background</string>
+    <string name="adjust_brightness">Adjust brightness</string>
+    <string name="adjust_brightness_value">Brightness</string>
+    <string name="common_parameters">Common parameters</string>
+    <string name="update_on_start">Update on start app</string>
+
+
+    <!-- Search -->
+    <string name="filter" translatable="false">Filter</string>
+    <string name="reset" translatable="false">Reset</string>
+    <string name="apply" translatable="false">Apply</string>
+    <string name="no_advanced_search_adapter" translatable="false">No advanced search adapter</string>
+    <string name="sort_popular">Popular</string>
+    <string name="sort_latest">Latest</string>
+    <string name="sort_updated">Updated</string>
+
+
+    <!-- Catalogs -->
+    <string name="add_source" translatable="false">Add source</string>
+    <string name="update_scripts" translatable="false">Update scripts</string>
+    <string name="all_scripts_updated">All scripts updated</string>
+    <string name="open_api" translatable="false">Open API</string>
+    <string name="create_script" translatable="false">Create script</string>
+    <string name="base_functions" translatable="false">Base functions</string>
+    <string name="advanced_search_functions" translatable="false">Advanced search functions</string>
+    <string name="test_functions" translatable="false">Test functions</string>
+
+
+    <!-- About -->
+    <string name="About">About</string>
+    <string name="version">Version: %1$s (%2$d)</string>
+    <string name="build_time">Build time: %1$s \nBuild: %2$s</string>
+    <string name="feel_free_to_contact_me" translatable="false">Fell free to contact me</string>
+    <string name="thread_on_4pda" translatable="false">Thread on 4PDA</string>
+    <string name="profile_in_vk" translatable="false">Profile in VK</string>
+    <string name="source_code" translatable="false">Source code</string>
+    <string name="play_market" translatable="false">Play market</string>
+    <string name="disclaimer">All manga, characters and logos belong to their respective copyright owners. This app\'s
+        developers not have any affiliation with the content providers.
+    </string>
+    <string name="built_with_material_components" translatable="false">Built with Material Components.</string>
+
+    <!-- Errors -->
+    <string name="nothing_found" translatable="false">Nothing found</string>
+    <string name="time_out" translatable="false">Time out</string>
+    <string name="time_out_or_nothing_found" translatable="false">Time out or nothing found</string>
+    <string name="no_internet" translatable="false">No Internet</string>
+    <string name="no_scripts" translatable="false">No scripts</string>
+    <string name="internet_is_loss" translatable="false">Internet is loss</string>
+    <string name="no_catalogs_selected" translatable="false">No catalogs selected</string>
+
+
+    <!-- Info -->
+    <string name="scripts_updates">After updating the application, the scripts are overwritten, so if you make changes,
+        then save them to yourself outside the application so as not to lose them.
+    </string>
+    <string name="text_copied">Text copied</string>
+    <string name="install_update">Install update</string>
+    <string name="no_updates_found">No updates found</string>
+    <string name="new_version_founded">New version found</string>
+    <string name="update" translatable="false">update</string>
+    <string name="if_shortcut_did_not_created">If shortcut did not created manage permissions</string>
+    <string name="what_new">What\'s new</string>
+    <string name="donate">Donate:\n%1$s\n\n</string>
+    <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
+    <string name="what_new_innovations">
+        Version 1.7.1:\n
+        \t-Auto-updating scripts.\n\n
+        Version 1.7.0:\n
+        \t-Now we are on github.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.9:\n
+        \t-Now the Remanga source is working correctly.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.8:\n
+        \t-New themes.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.4-1.6.7:\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.3:\n
+        \t-Added the ability to view manga by author in some sources.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.2:\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.1:\n
+        \t-Now you can click on genres.\n
+        \t-Added statistics.\n
+        \t-Fixing parsing errors of all scripts.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.6.0:\n
+        \t-Fixing MangaLib parsing errors.\n
+        \t-Removing blur from HentaiChan images.\n
+        \t-Optimization and error correction.\n\n
+        Version 1.5.9:\n
+        \t-Optimization and error correction.\n\n
+        Version 1.5.8:\n
+        \t-Added genre search in MangaChan.\n
+        \t-Added HentaiChan source.\n\n
+        Version 1.5.7:\n
+        \t-Added search, download and install updates directly into the app.\n\n
+        Version 1.5.6:\n
+        \t-Added brightness adjustment when reading.\n
+        \t-Optimization and error correction.\n
+    </string>
+
+    <!-- Logs -->
+    <string name="clear_all">Clear all</string>
+    <string name="send" translatable="false">Send</string>
+    <string name="cancel" translatable="false">Cancel</string>
+    <string name="no_logs" translatable="false">No logs</string>
+    <string name="close" translatable="false">Close</string>
+    <string name="send_log" translatable="false">Send log</string>
+
+</resources>

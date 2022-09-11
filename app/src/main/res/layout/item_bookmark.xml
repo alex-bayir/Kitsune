@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:background="?android:attr/selectableItemBackground">
+    <org.alex.kitsune.commons.AspectRatioImageView
+            android:id="@+id/imageView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_caution"
+            android:scaleType="center"
+            android:adjustViewBounds="true"/>
+    <LinearLayout android:theme="@style/ThemeOverlay.AppCompat.Dark"
+                  android:gravity="center_vertical"
+                  android:layout_gravity="bottom"
+                  android:background="@color/transparent_dark"
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:paddingStart="16.0dip"
+                  android:paddingEnd="0.0dip">
+        <TextView android:id="@+id/textView"
+                  android:layout_width="0.0dip"
+                  android:layout_height="wrap_content"
+                  android:lines="1"
+                  android:singleLine="true"
+                  android:layout_weight="1.0"
+                  style="?android:textAppearance"
+        />
+        <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/menu"
+                android:layout_width="48.0dip"
+                android:layout_height="48.0dip"
+                android:scaleType="center"
+                android:src="@drawable/ic_menu_white" />
+    </LinearLayout>
+</FrameLayout>

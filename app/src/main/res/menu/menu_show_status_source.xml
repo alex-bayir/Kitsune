@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/show_source_status"
+          android:title="@string/show_source_status">
+        <menu>
+            <group android:checkableBehavior="single">
+                <item android:id="@+id/status"
+                      android:title="@string/Status"
+                      android:checked="true"/>
+                <item android:id="@+id/source"
+                      android:title="@string/Source"/>
+            </group>
+        </menu>
+    </item>
+</menu>
