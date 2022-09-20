@@ -25,8 +25,6 @@ import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
-import org.alex.kitsune.logs.Logs;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;

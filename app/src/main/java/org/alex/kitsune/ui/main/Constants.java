@@ -50,4 +50,6 @@ public class Constants {
 
     public static final String reading_time="reading time";
     public static final String reading_counts="reading_counts";
+
+    public static final String scripts_hashes="scripts_hashes";
 }

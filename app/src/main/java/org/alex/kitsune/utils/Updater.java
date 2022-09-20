@@ -2,9 +2,9 @@ package org.alex.kitsune.utils;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -18,25 +18,17 @@ import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga_Scripted;
-import org.alex.kitsune.manga.Wrapper;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.ui.main.Constants;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Objects;
-import java.util.TimeZone;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alex.kitsune.BuildConfig;
 
@@ -52,19 +44,21 @@ public class Updater {
     private static JSONObject getUpdate(Context context){
         if(NetworkUtils.isNetworkAvailable(context)){
             try{
-                Document doc=NetworkUtils.getDocument("https://github.com/alex-bayir/Kitsune/releases");
-                String url=null,version=null;
-                for(Element e:doc.getElementsByClass( "Box")){
-                    Elements urls=e.getElementsByAttributeValueContaining("href","apk");
-                    if(urls.size()>0){
-                        url=urls.get(0).attr("abs:href");
-                        version=Utils.group(url,"download/v?(.*)/");
-                        if(e.text().contains("Latest")){break;}
+                JSONArray json=new JSONArray(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/releases"));
+                for(int i=0;i<json.length();i++){
+                    JSONObject jo=json.getJSONObject(i);
+                    String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
+                    JSONArray assets=jo.optJSONArray("assets");
+                    for(int a=0;a<(assets!=null?assets.length():0) && (url==null || !url.contains(".apk"));a++){
+                        url=assets.getJSONObject(i).optString("browser_download_url");
                     }
-                }
-                switch (compareVersions(BuildConfig.VERSION_NAME,version)){
-                    case 0: if(!BuildConfig.BUILD_TYPE.equals("debug")){break;}
-                    case 1: return new JSONObject().put("url",url).put("version",version);
+                    if(url!=null && url.contains(".apk")){
+                        switch (compareVersions(BuildConfig.VERSION_NAME,version)){
+                            case 0: if(!BuildConfig.BUILD_TYPE.equals("debug")){break;}
+                            case 1: return new JSONObject().put("url",url).put("version",version);
+                            case -1: break;
+                        }
+                    }
                 }
             }catch (Exception e){
                 Logs.saveLog(e);
@@ -72,55 +66,45 @@ public class Updater {
         }
         return null;
     }
-
-    private static JSONArray getScriptsUpdate(Context context){
-        JSONArray json=new JSONArray();
-        if(NetworkUtils.isNetworkAvailable(context)){
-            try{
-                for(Element e:NetworkUtils.getDocument("https://github.com/alex-bayir/Kitsune/tree/master/app/src/main/assets/scripts").getElementsByClass("Box-row")){
-                    String url=e.getElementsByClass("Link--primary").attr("abs:href").replace("github.com","raw.githubusercontent.com").replace("blob/","");
-                    long time=parseDate(e.select("time-ago[datetime]").attr("datetime").replaceAll("[TZ]"," "),"yyyy-MM-dd HH:mm:ss");
-                    String source=Utils.group(url,".*/(.*).lua");
-                    if(url.length()>0 && Manga_Scripted.scriptModifierTime(source)<time){
-                        json.put(url);
-                    }
-                }
-                return json;
-            }catch (Exception e){
-                Logs.saveLog(e);
-            }
-        }
-        return null;
-    }
-
-    public static long parseDate(String date,String format){
-        try{
-            return java.util.Objects.requireNonNull(new SimpleDateFormat(format,java.util.Locale.US).parse(date)).getTime();
-        }catch (Exception e){
-            return 0;
-        }
-    }
-    private static boolean updateScripts(Context context,JSONArray json){
-        boolean update=false;
+    private static boolean updateScripts(Context context){
+        AtomicBoolean update=new AtomicBoolean(false);
         if(NetworkUtils.isNetworkAvailable(context)){
             String dir=context.getExternalFilesDir(Constants.manga_scripts).getAbsolutePath();
-            for(int i=0;i<(json!=null?json.length():0);i++) {
-                try{
-                    String url=json.getString(i);
-                    String text_script=NetworkUtils.getString(url);
-                    Script script=Manga_Scripted.getScript(Utils.group(url,".*/(.*).lua"));
-                    if(text_script!=null){
-                        Utils.File.writeFile(new File(script!=null?script.getPath():dir+Utils.group(url,".*/(.*)")),text_script,false);
-                        update=true;
-                    }
-                }catch (IOException e){
-                    Logs.saveLog(e);
-                } catch (JSONException e) {
-                    throw new RuntimeException(e);
+            LinkedHashSet<String> set=new LinkedHashSet<>();
+            SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
+            Set<String> hashes=prefs.getStringSet(Constants.scripts_hashes,new HashSet<>());
+            try{
+                JSONArray json=new JSONArray(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/contents/app/src/main/assets/scripts"));
+                for(int i=0;i<json.length();i++) {
+                    int index=i;
+                    Thread thread=new Thread(() -> {
+                        try{
+                            JSONObject jo=json.getJSONObject(index);
+                            if(!hashes.contains(jo.getString("sha"))){
+                                String url=jo.getString("download_url");
+                                String text_script=NetworkUtils.getString(url);
+                                Script script=Manga_Scripted.getScript(Utils.group(url,".*/(.*).lua"));
+                                if(text_script!=null){
+                                    Utils.File.writeFile(new File(script!=null?script.getPath():dir+Utils.group(url,".*/(.*)")),text_script,false);
+                                    update.set(true);
+                                }
+                            }
+                            set.add(jo.getString("sha"));
+                        }catch (IOException | JSONException e){
+                            Logs.saveLog(e);
+                        }
+                    });
+                    thread.start();
+                    try{thread.join();}catch(InterruptedException ignored){}
                 }
+                if(set.size()>0){
+                    prefs.edit().putStringSet(Constants.scripts_hashes,set).apply();
+                }
+            }catch (IOException | JSONException e){
+                Logs.saveLog(e);
             }
         }
-        return update;
+        return update.get();
     }
 
     public static void checkAndUpdateScripts(Activity activity,Callback<Boolean> callback){
@@ -129,7 +113,7 @@ public class Updater {
             new LoadTask<Activity,Void,Boolean>(){
                 @Override
                 protected Boolean doInBackground(Activity activity) {
-                    return updateScripts(activity,getScriptsUpdate(activity));
+                    return updateScripts(activity);
                 }
                 @Override
                 protected void onFinished(Boolean update) {
