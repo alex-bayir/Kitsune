@@ -71,7 +71,7 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
                 for i=1,(d~=nil and #d or 0),1 do
                     url=url..(b and "+-" or "")..d[i]; b=true
                 end
-                url=url.."&sort=manga"..(page>0 and ("&offset="..((page+1)*10)) or "").."&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
+                url=url.."&sort=manga".."&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()..(page>0 and ("?offset="..((page+1)*10)) or "")
             end
         end
     elseif(params~=nil and #params>0)then
