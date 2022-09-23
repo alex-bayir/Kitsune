@@ -38,6 +38,7 @@
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_info_24dp.xml" value="0.5466666666666666" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher.xml" value="0.5552083333333333" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo.xml" value="0.5552083333333333" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo_cut.xml" value="0.294" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo_kitsune_text.xml" value="0.5466666666666666" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_logo_sized.xml" value="0.36018518518518516" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_launcher_primary.xml" value="0.5552083333333333" />
@@ -55,6 +56,7 @@
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_sort_numeric_reverse_white.xml" value="0.3453703703703704" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_sort_numeric_white.xml" value="0.3907407407407407" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_statistics.xml" value="0.5456410256410257" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_stencil.xml" value="0.317" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_update.xml" value="0.5305555555555556" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_vk_logo.xml" value="0.5222222222222223" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/launch_background.xml" value="0.5466666666666666" />
@@ -121,7 +123,7 @@
         <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_preview_bottombar.xml" value="0.3182291666666667" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_reader.xml" value="0.25" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/menu/options_search.xml" value="0.33229166666666665" />
-        <entry key="..\:/Games/Kitsune/app/src/main/res/xml/preferences_general.xml" value="0.1" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/xml/preferences_general.xml" value="0.67" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/xml/preferences_reader.xml" value="0.25" />
         <entry key="..\:/Users/А/.gradle/caches/transforms-3/46d15f5c58a469270eeba15db4463d05/transformed/appcompat-1.4.0/res/layout/support_simple_spinner_dropdown_item.xml" value="0.328804347826087" />
       </map>

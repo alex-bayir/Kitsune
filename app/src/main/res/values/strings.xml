@@ -134,7 +134,9 @@
     <string name="adjust_brightness">Adjust brightness</string>
     <string name="adjust_brightness_value">Brightness</string>
     <string name="common_parameters">Common parameters</string>
-    <string name="update_on_start">Update on start app</string>
+    <string name="update_on_start">Check new chapters on start app</string>
+    <string name="update_scripts_automatically">Update scripts automatically</string>
+    <string name="scripts_sources">Scripts/Sources</string>
 
 
     <!-- Search -->

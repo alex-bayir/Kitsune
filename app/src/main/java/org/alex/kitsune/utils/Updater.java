@@ -108,26 +108,28 @@ public class Updater {
     }
 
     public static void checkAndUpdateScripts(Activity activity,Callback<Boolean> callback){
-        if(NetworkUtils.isNetworkAvailable(activity)){
-            if(callback!=null){callback.call(true);}
-            new LoadTask<Activity,Void,Boolean>(){
-                @Override
-                protected Boolean doInBackground(Activity activity) {
-                    return updateScripts(activity);
-                }
-                @Override
-                protected void onFinished(Boolean update) {
-                    if(update){Utils.Activity.restartActivity(activity);}
-                    Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();
-                    if(callback!=null){callback.call(false);}
-                }
-                @Override
-                protected void onBraked(Throwable throwable) {
-                    if(callback!=null){callback.call(false);}
-                }
-            }.start(activity);
-        }else{
-            Toast.makeText(activity,R.string.no_internet,Toast.LENGTH_SHORT).show();
+        if(PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("update_scripts_automatically",true)){
+            if(NetworkUtils.isNetworkAvailable(activity)){
+                if(callback!=null){callback.call(true);}
+                new LoadTask<Activity,Void,Boolean>(){
+                    @Override
+                    protected Boolean doInBackground(Activity activity) {
+                        return updateScripts(activity);
+                    }
+                    @Override
+                    protected void onFinished(Boolean update) {
+                        if(update){Utils.Activity.restartActivity(activity);}
+                        Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();
+                        if(callback!=null){callback.call(false);}
+                    }
+                    @Override
+                    protected void onBraked(Throwable throwable) {
+                        if(callback!=null){callback.call(false);}
+                    }
+                }.start(activity);
+            }else{
+                Toast.makeText(activity,R.string.no_internet,Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

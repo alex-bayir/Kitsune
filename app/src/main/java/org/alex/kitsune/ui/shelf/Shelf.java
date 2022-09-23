@@ -1,6 +1,5 @@
 package org.alex.kitsune.ui.shelf;
 
-import android.app.Activity;
 import android.content.*;
 import android.os.Bundle;
 import android.view.*;
@@ -52,7 +51,7 @@ public class Shelf extends Fragment implements MenuProvider {
         requireActivity().addMenuProvider(this);
         if(root==null){root=inflater.inflate(R.layout.content_shelf,container,false); mainActivity=(MainActivity)getActivity();}else{return root;}
         progress=mainActivity.findViewById(R.id.progress);
-        progress.setIndeterminateDrawable(new SmoothProgressDrawable.Builder(getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).interpolator(new AccelerateDecelerateInterpolator()).callbacks(new SmoothProgressDrawable.Callbacks() {
+        progress.setIndeterminateDrawable(new SmoothProgressDrawable.Builder(progress.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).interpolator(new AccelerateDecelerateInterpolator()).callbacks(new SmoothProgressDrawable.Callbacks() {
             @Override public void onStop(){progress.setVisibility(View.GONE);}
             @Override public void onStart(){progress.setVisibility(View.VISIBLE);}
         }).build());
@@ -71,7 +70,7 @@ public class Shelf extends Fragment implements MenuProvider {
                         String tmp=intent.getStringExtra(Constants.option);
                         switch(tmp!=null ? tmp : ""){
                             case Constants.history:
-                                if(!checkViewInChildren(l,views.get(adapterH)) && adapterH.getMaxCount()>0){l.addView(views.get(adapterH),0);}
+                                addViewIfAdapter(l,views,adapterH,0);
                                 adapterH.add(0,manga);
                                 adapterS.update(manga);
                                 for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
@@ -80,7 +79,7 @@ public class Shelf extends Fragment implements MenuProvider {
                                 break;
                             case Constants.load:
                                 adapterH.update(manga);
-                                if(!checkViewInChildren(l,views.get(adapterS)) && adapterS.getMaxCount()>0){l.addView(views.get(adapterS));}
+                                addViewIfAdapter(l,views,adapterS,-1);
                                 adapterS.add(0,manga);
                                 for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
                                     entry.getValue().update(manga);
@@ -91,15 +90,11 @@ public class Shelf extends Fragment implements MenuProvider {
                                 adapterS.update(manga);
                                 for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
                                     if(entry.getKey().equals(manga.getCategoryFavorite())){
-                                        if(!checkViewInChildren(l,views.get(entry.getValue()))){
-                                            l.addView(views.get(entry.getValue()),checkViewInChildren(l,views.get(adapterH)) ? 1 : 0);
-                                        }
+                                        addViewIfAdapter(l,views,entry.getValue(),checkViewInChildren(l,views.get(adapterH)) ? 1 : 0);
                                         entry.getValue().add(0,manga);
                                     }else{
                                         entry.getValue().remove(manga);
-                                        if(entry.getValue().getItemCount()==0){
-                                            l.removeView(views.get(entry.getValue()));
-                                        }
+                                        removeViewIfAdapter(l,views,entry.getValue());
                                     }
                                 }
                                 if(manga.getCategoryFavorite()!=null && !adaptersF.containsKey(manga.getCategoryFavorite())){
@@ -112,17 +107,13 @@ public class Shelf extends Fragment implements MenuProvider {
                                     adapterH.update(manga);
                                 }else{
                                     adapterH.remove(manga);
-                                    if(adapterH.getItemCount()==0){
-                                        l.removeView(views.get(adapterH));
-                                    }
+                                    removeViewIfAdapter(l,views,adapterH);
                                 }
                                 if(manga.countSaved()>0){
                                     adapterS.update(manga);
                                 }else{
                                     adapterS.remove(manga);
-                                    if(adapterS.getItemCount()==0){
-                                        l.removeView(views.get(adapterS));
-                                    }
+                                    removeViewIfAdapter(l,views,adapterS);
                                 }
                                 for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
                                     entry.getValue().update(manga);
@@ -145,26 +136,20 @@ public class Shelf extends Fragment implements MenuProvider {
         l.removeAllViews();
         views=new Hashtable<>();
         createAdapter(MangaService.Type.History,null);
-        View tmp=createView(adapterH,MangaAdapter.create(getContext(), 4, position->position==0 ? 4:1),getString(R.string.History), v -> startActivity(new Intent(getContext(), HistoryActivity.class)),inflater, l);
-        if(adapterH.getItemCount()>0){
-            l.addView(tmp);
-        }
+        createView(adapterH,MangaAdapter.create(getContext(), 4, position->position==0 ? 4:1),getString(R.string.History), v -> startActivity(new Intent(getContext(), HistoryActivity.class)),inflater, l);
+        addViewIfAdapter(l,views,adapterH,0);
 
         adaptersF=new Hashtable<>();
-        if(prefs.getInt(Constants.favoritesRows,4)*3>0){
+        if(prefs.getInt(Constants.favoritesRows,4)>0){
             for(String key:categoriesShowing=getShowingFavoriteCategories(prefs)){
-                tmp=createView(createAdapter(MangaService.Type.Favorites,key),MangaAdapter.create(getContext(),3),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),LayoutInflater.from(getContext()),l);
-                if(adaptersF.get(key).getItemCount()>0){
-                    l.addView(tmp);
-                }
+                createView(createAdapter(MangaService.Type.Favorites,key),MangaAdapter.create(getContext(),3),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),LayoutInflater.from(getContext()),l);
+                addViewIfAdapter(l,views,adaptersF.get(key),-1);
             }
         }
 
         createAdapter(MangaService.Type.Saved,null);
-        tmp=createView(adapterS,MangaAdapter.create(getContext(),4),getString(R.string.Saved), v -> startActivity(new Intent(getContext(), SavedActivity.class)),inflater, l);
-        if(adapterS.getItemCount()>0){
-            l.addView(tmp);
-        }
+        createView(adapterS,MangaAdapter.create(getContext(),4),getString(R.string.Saved), v -> startActivity(new Intent(getContext(), SavedActivity.class)),inflater, l);
+        addViewIfAdapter(l,views,adapterS,-1);
     }
 
     @Override
@@ -225,10 +210,9 @@ public class Shelf extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         while(tasks.size()>0){
-            tasks.getFirst().run();
-            tasks.removeFirst();
+            tasks.removeFirst().run();
         }
-        if(prefs.getBoolean(Constants.update_on_start,true) && MangaService.getMap(MangaService.Type.All).size()>0 && !MangaService.isAllUpdated()){
+        if(prefs.getBoolean(Constants.update_on_start,true) && !MangaService.isAllUpdated()){
             check_for_updates();
         }
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
@@ -266,10 +250,19 @@ public class Shelf extends Fragment implements MenuProvider {
         views.put(adapter,root);
     return root;}
 
-    public boolean checkViewInChildren(ViewGroup viewGroup, View view){
+    public static boolean checkViewInChildren(ViewGroup viewGroup, View view){
         for(int i=0;i<viewGroup.getChildCount();i++){
             if(view==viewGroup.getChildAt(i)){return true;}
         }
         return false;
+    }
+    public void addViewIfAdapter(ViewGroup l,View view,LimitedMangaAdapter adapter, int index){
+        if(adapter.getMaxCount()>0 && !checkViewInChildren(l,view)){l.addView(view,index);}
+    }
+    public void addViewIfAdapter(ViewGroup l,Hashtable<MangaAdapter, View> views,LimitedMangaAdapter adapter, int index){
+        addViewIfAdapter(l,views.get(adapter),adapter,index);
+    }
+    public void removeViewIfAdapter(ViewGroup l,Hashtable<MangaAdapter, View> views,LimitedMangaAdapter adapter){
+        if(adapter.getItemCount()==0){l.removeView(views.get(adapter));}
     }
 }

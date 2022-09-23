@@ -30,8 +30,14 @@
     <PreferenceCategory android:title="@string/common_parameters">
         <SwitchPreferenceCompat
                 android:key="update_on_start"
-                android:title="@string/update_on_start"
+                android:summary="@string/update_on_start"
                 android:defaultValue="true"
-            />
+        />
+        <SwitchPreferenceCompat
+                android:key="update_scripts_automatically"
+                android:title="@string/scripts_sources"
+                android:summary="@string/update_scripts_automatically"
+                android:defaultValue="true"
+        />
     </PreferenceCategory>
 </PreferenceScreen>

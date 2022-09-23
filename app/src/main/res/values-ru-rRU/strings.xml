@@ -59,12 +59,14 @@
     <string name="fit_to_height">По высоте</string>
     <string name="fit_screen">По размеру экрана</string>
     <string name="source_size">Оригинальный размер</string>
-    <string name="use_volume_keys">Перелистывание с помощью клавиш громкости</string>
+    <string name="use_volume_keys">Листать клавишами громкости</string>
     <string name="keep_screen_on">Держать экран включённым</string>
     <string name="show_status_bar">Показать панель состояния</string>
     <string name="custom_background">Цвет фона</string>
     <string name="common_parameters">Общие параметры</string>
-    <string name="update_on_start">Проверять обновления при запуске</string>
+    <string name="update_on_start">Проверять новые главы при запуске приложения</string>
+    <string name="update_scripts_automatically">Обновлять скрипты автоматически</string>
+    <string name="scripts_sources">Скрипты/Источники</string>
     <string name="version">Версия: %1$s (%2$d)</string>
     <string name="disclaimer">Вся манга, персонажи и логотипы принадлежат соответствующим владельцам авторских прав. Разработчик этого приложения не имеет никакого отношения к поставщикам контента.</string>
     <string name="sort_popular">Попурярное</string>
