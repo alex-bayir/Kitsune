@@ -56,24 +56,27 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url;
     if(name~=nil and name:len()>0) then
         url=UrlBuilder.new(host.."/"):addParam("do","search"):addParam("subaction","search"):addParam("story",name):addParam("offset",page>0 and (page+1)*10 or nil):getUrl();
-    elseif(params~=nil and #params>0 and type(params[1])=="userdata" and Options:equals(params[1]:getClass()))then
-        if(params~=nil and #params>0) then
-            url=host.."/manga/new&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
-            s=params[2]~=nil and params[2]:getSelected() or nil
-            d=params[2]~=nil and params[2]:getDeselected() or nil
-            if((s~=nil and #s>0) or (d~=nil and #d>0)) then
-                url=host.."/tags/"; local b=false
-                for i=1,(s~=nil and #s or 0),1 do
-                    url=url..(b and "+" or "")..s[i]; b=true
+    else
+        if(params~=nil and #params>0 and type(params[1])=="userdata" and Options:equals(params[1]:getClass()))then
+            if(params~=nil and #params>0) then
+                url=host.."/manga/new&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
+                s=params[2]~=nil and params[2]:getSelected() or nil
+                d=params[2]~=nil and params[2]:getDeselected() or nil
+                if((s~=nil and #s>0) or (d~=nil and #d>0)) then
+                    url=host.."/tags/"; local b=false
+                    for i=1,(s~=nil and #s or 0),1 do
+                        url=url..(b and "+" or "")..s[i]; b=true
+                    end
+                    for i=1,(d~=nil and #d or 0),1 do
+                        url=url..(b and "+-" or "")..d[i]; b=true
+                    end
+                    url=url.."&sort=manga".."&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
                 end
-                for i=1,(d~=nil and #d or 0),1 do
-                    url=url..(b and "+-" or "")..d[i]; b=true
-                end
-                url=url.."&sort=manga".."&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()..(page>0 and ("?offset="..((page+1)*10)) or "")
             end
+        elseif(params~=nil and #params>0)then
+            url=sorts[params[1]]~=nil and host.."/manga/new&n="..sorts[params[1]] or host.."/manga/random"
         end
-    elseif(params~=nil and #params>0)then
-        url=sorts[params[1]]~=nil and host.."/manga/new&n="..sorts[params[1]] or host.."/manga/random"
+        url=url~=nil and url..(page>0 and ("?offset="..((page+1)*10)) or "")
     end
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
     print(url)
