@@ -19,11 +19,13 @@ import android.widget.Toast;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -44,14 +46,14 @@ public class Utils {
     }
     public static class Translator{
         public static boolean callTranslator(Context context, java.io.File file){
-            return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(file));
+            return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file));
         }
         public static boolean callTranslator(Context context, java.io.File file, Map<String,ResolveInfo> translators){
-            return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(file),translators);
+            return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file),translators);
         }
 
         public static void callTranslator(Context context, java.io.File file, ActivityInfo activityInfo){
-            context.startActivity(getIntent(Utils.File.toUri(file),activityInfo));
+            context.startActivity(getIntent(Utils.File.toUri(context,file),activityInfo));
         }
 
         public static boolean callTranslator(Context context,Uri uri,String packageName,boolean callPlayMarket){
@@ -243,16 +245,8 @@ public class Utils {
             }
             return result;
         }
-        public static Uri toUri(String path){return toUri(new java.io.File(path));}
-        public static Uri toUri(java.io.File file){
-            if (Build.VERSION.SDK_INT >= 24) {
-                try {
-                    StrictMode.class.getMethod("disableDeathOnFileUriExposure").invoke(null);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            return file!=null ? Uri.fromFile(file) : null;
+        public static Uri toUri(Context context,java.io.File file){
+            return FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".provider", file);
         }
         public static boolean move(java.io.File from, java.io.File to){
             String tmp=from.getAbsolutePath();
@@ -402,7 +396,7 @@ public class Utils {
 
         public static boolean shareBitmap(Context context,String title,android.graphics.Bitmap bitmap){
             if(bitmap!=null){
-                context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_TITLE,title).putExtra(Intent.EXTRA_STREAM, Utils.File.toUri(saveBitmap(bitmap, android.graphics.Bitmap.CompressFormat.JPEG,new java.io.File(context.getExternalCacheDir()+java.io.File.separator+"tmp.jpg")))),null));
+                context.startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_TITLE,title).putExtra(Intent.EXTRA_STREAM, Utils.File.toUri(context,saveBitmap(bitmap, android.graphics.Bitmap.CompressFormat.JPEG,new java.io.File(context.getExternalCacheDir()+java.io.File.separator+"tmp.jpg")))),null));
             }
             return bitmap!=null;
         }

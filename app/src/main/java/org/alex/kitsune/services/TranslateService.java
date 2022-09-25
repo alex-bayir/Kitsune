@@ -104,7 +104,7 @@ public class TranslateService extends Service implements ImageReader.OnImageAvai
     }
 
     public Notification sendNotification(File file){
-        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,Translator.getTranslatorsIntent(Utils.File.toUri(file)),PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pendingIntent=PendingIntent.getActivity(this,0,Translator.getTranslatorsIntent(Utils.File.toUri(this,file)),PendingIntent.FLAG_UPDATE_CURRENT);
         Notification notification=new NotificationCompat.Builder(this,channelID)
                 .setSmallIcon(R.drawable.ic_launcher_logo)
                 .setContentTitle("Open translator")

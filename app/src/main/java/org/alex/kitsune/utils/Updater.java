@@ -160,7 +160,7 @@ public class Updater {
         }
     }
     public static void installUpdate(Context context){
-        context.startActivity(new Intent(Intent.ACTION_VIEW).setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP).setDataAndType(Utils.File.toUri(f),"application/vnd.android.package-archive"));
+        context.startActivity(new Intent(Intent.ACTION_VIEW).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_GRANT_READ_URI_PERMISSION).setDataAndType(Utils.File.toUri(context,f),"application/vnd.android.package-archive"));
     }
     public static int getStatusIcon(){
         return f.exists() ? R.drawable.ic_update : (getUrl()!=null ? R.drawable.ic_download_arrow : R.drawable.ic_search);

@@ -14,6 +14,10 @@
         <intent>
             <action android:name="android.intent.action.VIEW" />
         </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND" />
+            <data android:mimeType="image/*" />
+        </intent>
     </queries>
 
     <supports-screens
@@ -79,8 +83,8 @@
                 android:name=".ui.preview.PreviewActivity"
                 android:exported="true"/>
         <activity
-                android:theme="@style/LaunchTheme"
                 android:name=".ui.main.MainActivity"
+                android:theme="@style/LaunchTheme"
                 android:screenOrientation="portrait"
                 android:launchMode="singleTask"
                 android:exported="true">
@@ -98,5 +102,14 @@
             </intent-filter>
         </activity>
         <activity android:name="com.soundcloud.android.crop.CropImageActivity"/>
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.provider"
+                android:exported="false"
+                android:grantUriPermissions="true">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/provider_paths" />
+        </provider>
     </application>
 </manifest>
