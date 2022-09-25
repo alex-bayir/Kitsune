@@ -182,12 +182,12 @@
     <string name="no_scripts" translatable="false">No scripts</string>
     <string name="internet_is_loss" translatable="false">Internet is loss</string>
     <string name="no_catalogs_selected" translatable="false">No catalogs selected</string>
+    <string name="access_denial">Access denial</string>
+    <string name="disable_change_dir_save">For android 11 and above, access to files is limited, so full access to data can only be in this directory.</string>
 
 
     <!-- Info -->
-    <string name="scripts_updates">After updating the application, the scripts are overwritten, so if you make changes,
-        then save them to yourself outside the application so as not to lose them.
-    </string>
+    <string name="scripts_updates">After updating the application, the scripts are overwritten, so if you make changes, then save them to yourself outside the application so as not to lose them.</string>
     <string name="text_copied">Text copied</string>
     <string name="install_update">Install update</string>
     <string name="no_updates_found">No updates found</string>

@@ -26,7 +26,6 @@ import org.alex.kitsune.logs.LogsActivity;
 import org.alex.kitsune.commons.MultiSelectListPreference;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import java.io.File;
 import java.util.ArrayList;
 
 public class SettingsActivity extends AppCompatActivity {

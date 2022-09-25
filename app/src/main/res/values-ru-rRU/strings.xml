@@ -139,4 +139,6 @@
     <string name="statistics">Статистика</string>
     <string name="donate">Пожертвования:\n%1$s\n\n</string>
     <string name="all_scripts_updated">Все скрипты обновлены</string>
+    <string name="disable_change_dir_save">Для андроид 11 и выше доступ файлам ограничен, поэтому полноценный доступ к данным может быть только в этой директории.</string>
+    <string name="access_denial">Отказ доступа</string>
 </resources>

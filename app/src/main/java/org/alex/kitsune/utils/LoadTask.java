@@ -14,10 +14,7 @@ import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.services.LoadService;
 
 import javax.net.ssl.SSLException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -78,7 +75,7 @@ public abstract class LoadTask<Params, Progress, Result>{
 
     public static boolean loadInBackground(String url, String domain, File file, LoadService.Task task, Handler notify, boolean withSkip){
         InputStream in=null;
-        FileOutputStream out=null;
+        OutputStream out=null;
         try{
             okhttp3.Response response=NetworkUtils.sHttpClient
                     .newCall(new okhttp3.Request.Builder()

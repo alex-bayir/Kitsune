@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,7 +16,6 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.Preference;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
 import org.jetbrains.annotations.NotNull;
@@ -52,24 +52,24 @@ public class FilePickerPreference extends Preference implements Preference.Summa
     @Override
     protected void onClick() {
         if(getContext() instanceof Activity){
-            Activity activity=(Activity)getContext();
-            View v=activity.getLayoutInflater().inflate(R.layout.dialog_file_picker,null);
-            adapter=new Adapter(new File(getValue()),v.findViewById(R.id.title));
-            RecyclerView rv=v.findViewById(R.id.rv_list);
-            rv.setLayoutManager(new LinearLayoutManager(getContext()));
-            rv.setAdapter(adapter);
-            if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){
-                new AlertDialog.Builder(getContext())
-                        .setTitle(getTitle()).setView(v)
-                        .setPositiveButton(android.R.string.ok, (dialog, which) -> {
-                            getSharedPreferences().edit().putString(getKey(),adapter.getDir().getAbsolutePath()).apply();
-                            notifyChanged();
-                            callChangeListener(getValue());
-                        })
-                        .setNegativeButton(android.R.string.cancel,null)
-                        .create().show();
+            if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.R){
+                new AlertDialog.Builder(getContext()).setIcon(R.drawable.ic_caution_yellow).setTitle(R.string.access_denial).setMessage(R.string.disable_change_dir_save).create().show();
             }else{
-                ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2478276);
+                if(ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){
+                    AlertDialog d=new AlertDialog.Builder(getContext())
+                            .setTitle(getTitle()).setView(R.layout.dialog_file_picker)
+                            .setPositiveButton(android.R.string.ok, (dialog, which) -> {
+                                getSharedPreferences().edit().putString(getKey(),adapter.getDir().getAbsolutePath()).apply();
+                                notifyChanged();
+                                callChangeListener(getValue());
+                            })
+                            .setNegativeButton(android.R.string.cancel,null)
+                            .create();
+                    d.show();
+                    ((RecyclerView)d.findViewById(R.id.rv_list)).setAdapter(adapter=new Adapter(new File(getValue()),d.findViewById(R.id.title)));
+                }else{
+                    ActivityCompat.requestPermissions((Activity)getContext(),new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE}, 2478276);
+                }
             }
         }
     }

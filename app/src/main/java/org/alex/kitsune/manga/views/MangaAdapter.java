@@ -121,11 +121,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
             notifyItemInserted(pos);
         }else{
             if(!moveIfExist){pos=old;}
-            if(old!=pos){
-                notifyItemMoved(old,pos);
-            }else{
-                notifyItemChanged(pos);
-            }
+            if(old!=pos){notifyItemMoved(old,pos);}
+            notifyItemChanged(pos);
         }
         return old!=pos && moveIfExist;
     }
