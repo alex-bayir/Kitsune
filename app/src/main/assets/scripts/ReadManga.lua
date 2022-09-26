@@ -14,7 +14,7 @@ ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
 version="1.2"
-provider="readmanga.io"
+provider="readmanga.live"
 providerName="ReadManga"
 sourceDescription="Один из самых популярных источников манги в СНГ."
 host="https://"..provider
