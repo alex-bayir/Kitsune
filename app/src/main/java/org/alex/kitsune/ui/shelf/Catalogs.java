@@ -33,6 +33,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Catalogs extends Fragment implements MenuProvider {
     RecyclerView rv;
@@ -96,18 +97,18 @@ public class Catalogs extends Fragment implements MenuProvider {
     public static ArrayList<Container> getCatalogs(SharedPreferences prefs){
         LinkedHashMap<String,Container> map=new LinkedHashMap<>();
         Hashtable<String,Script> scripts=Manga_Scripted.getScripts();
-        if(prefs.contains(Constants.source_order)){
+        boolean exist=prefs.contains(Constants.source_order);
+        if(exist){
             for(Container container:Container.fromJSON(prefs.getString(Constants.source_order, ""))){
                 if(container!=null && container.source!=null){map.put(container.source, container);}
             }
         }
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
-            if(!map.containsKey(entry.getKey())){
-                map.put(entry.getKey(), new Container(entry.getValue(),true));
-            }
+            map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),true));
         }
-        return new ArrayList<>(map.values());
+        return new ArrayList<>(exist?map.values():map.values().stream().sorted().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
+    public static List<String> default_order=Arrays.asList("Desu","MangaLib","Remanga","ReadManga","MintManga","SelfManga","MangaChan","HentaiChan");
     public static ArrayList<Script> getScripts(File dir, boolean recur){
         File[] files=dir.listFiles();
         if(files==null){return new ArrayList<>();}
