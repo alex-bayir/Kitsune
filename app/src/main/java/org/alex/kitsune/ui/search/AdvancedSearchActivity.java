@@ -41,7 +41,6 @@ import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
-import java.util.Objects;
 
 
 public class AdvancedSearchActivity extends AppCompatActivity implements Callback<Object> {
@@ -260,7 +259,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         @NotNull
         @Override
         public Dialog onCreateDialog(Bundle bundle) {
-            return new BottomSheetDialog(Objects.requireNonNull(getContext()), Utils.Theme.isThemeDark(getContext()) ? R.style.AppDialogDark : R.style.AppDialogLight);
+            return new BottomSheetDialog(requireContext(), Utils.Theme.isThemeDark(getContext()) ? R.style.AppDialogDark : R.style.AppDialogLight);
         }
 
         @Override

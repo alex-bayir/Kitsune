@@ -4,8 +4,6 @@ import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.json.JSONException;
-
-import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -17,10 +15,6 @@ public class Manga_Scripted extends Manga{
     public static Script getScript(String source, Script def){return source!=null ? scripts.getOrDefault(source, def) : def;}
     public static Script getScript(String source, String path) throws Throwable {
         return getScript(source, Script.getInstance(path));
-    }
-    public static long scriptModifierTime(String source){
-        Script script=Manga_Scripted.getScript(source);
-        return script!=null ? new File(script.getPath()).lastModified():0;
     }
 
     public String provider;

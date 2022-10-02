@@ -12,9 +12,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.ui.main.Constants;
@@ -35,7 +35,6 @@ public class SettingsActivity extends AppCompatActivity {
     public static final String TYPE_READER="READER";
     public static final String TYPE_GENERAL="GENERAL";
     Toolbar toolbar;
-    RecyclerView rv;
     SettingsFragment.Type type;
     private static boolean shouldUpdate=false;
 
@@ -45,13 +44,6 @@ public class SettingsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
-        switch(getIntent().getStringExtra(KEY)!=null ? getIntent().getStringExtra(KEY) : ""){
-            default:
-            case TYPE_LIST: type=SettingsFragment.Type.List; break;
-            case TYPE_GENERAL: type=SettingsFragment.Type.General; break;
-            case TYPE_READER: type=SettingsFragment.Type.Reader; break;
-            case TYPE_SHELF: type=SettingsFragment.Type.Shelf; break;
-        }
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
@@ -61,18 +53,24 @@ public class SettingsActivity extends AppCompatActivity {
             actionBar.setDisplayShowTitleEnabled(false);
         }
         toolbar.setTitle(R.string.settings);
+
+        switch(getIntent().getStringExtra(KEY)!=null ? getIntent().getStringExtra(KEY) : ""){
+            default:
+            case TYPE_LIST: type=SettingsFragment.Type.List; break;
+            case TYPE_GENERAL: type=SettingsFragment.Type.General; break;
+            case TYPE_READER: type=SettingsFragment.Type.Reader; break;
+            case TYPE_SHELF: type=SettingsFragment.Type.Shelf; break;
+        }
         if(type==SettingsFragment.Type.List){
-            rv=findViewById(R.id.rv_list);
-            rv.setLayoutManager(new LinearLayoutManager(this));
-            rv.setAdapter(new ListAdapter(rv.getContext()));
+            ((RecyclerView)findViewById(R.id.rv_list)).setAdapter(new ListAdapter(this));
         }else{
-            replace(type);
+            replace(new SettingsFragment(type));
         }
     }
-    public void replace(SettingsFragment.Type type){
+    public void replace(Fragment fragment){
         getSupportFragmentManager()
                 .beginTransaction()
-                .replace(R.id.settings, new SettingsFragment(type))
+                .replace(R.id.settings, fragment)
                 .commit();
     }
 

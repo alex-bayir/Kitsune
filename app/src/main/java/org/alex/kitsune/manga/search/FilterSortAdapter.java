@@ -22,7 +22,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public final class FilterSortAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdapter.CheckedHolder> {
 
     private final Script script;
     private final Options[] options;
@@ -67,7 +67,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<RecyclerView.V
     @NonNull
     @NotNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+    public FilterSortAdapter.CheckedHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater from=LayoutInflater.from(parent.getContext());
         switch (viewType){
             case -1: return new CheckedHolder(from.inflate(R.layout.header_group,parent,false),null);
@@ -92,17 +92,19 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<RecyclerView.V
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
-        StringPair to=pairs.get(position);
-        ((CheckedHolder)holder).setCheckedText(to.getName(),to.getValue());
+    public void onBindViewHolder(@NonNull @NotNull FilterSortAdapter.CheckedHolder holder, int position) {
+        holder.setCheckedText(pairs.get(position));
     }
 
     @Override
     public int getItemCount(){return pairs.size();}
 
-    static final class CheckedHolder extends RecyclerView.ViewHolder{
+    public static final class CheckedHolder extends RecyclerView.ViewHolder{
         public CheckedHolder(@NonNull @NotNull View itemView,final HolderClickListener listener) {
             super(itemView); if(listener!=null){itemView.setOnClickListener(v->listener.onItemClick(v,getAbsoluteAdapterPosition()));}
+        }
+        public void setCheckedText(StringPair pair){
+            setCheckedText(pair.getName(),pair.getValue());
         }
         public void setCheckedText(String text,int state){
             ((TextView)itemView).setText(text);
