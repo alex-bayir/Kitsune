@@ -11,8 +11,11 @@ import android.graphics.drawable.Drawable;
 import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.StrictMode;
+import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.view.*;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -27,6 +30,11 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
+import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.logs.Logs;
+import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.services.MangaService;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -331,6 +339,30 @@ public class Utils {
                 }
             }
             return f.format(tmp)+c;
+        }
+
+        public static void callPermissionManageStorage(android.app.Activity activity){
+            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 1);
+            if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
+                activity.startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).setData(Uri.fromParts("package", activity.getPackageName(), null)));
+            }
+        }
+
+        public static boolean renameFilesToNewFormat(Callback<String> callback){
+            boolean all=true; int m=0,mc=MangaService.getAll().size();
+            for(Manga manga:MangaService.getAll().values()){
+                java.io.File dir=new java.io.File(manga.getPagesPath());
+                java.io.File[] list=dir.listFiles(java.io.File::isFile);
+                for(int i=0;i<(list!=null?list.length:0);i++){
+                    String name=list[i].getName().replace(" ","--").replaceAll("(vol:|ch:|page:|vol_|ch_|page_)","");
+                    if(!name.equals(list[i].getName())){
+                        all&=list[i].renameTo(new java.io.File(dir,name));
+                    }
+                    callback.call(i+"/"+list.length+" - "+m+"/"+mc);
+                }
+                m++;
+            }
+            return all;
         }
     }
     public static class Menu{

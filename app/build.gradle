@@ -6,8 +6,8 @@ android {
         applicationId "org.alex.kitsune"
         minSdkVersion 24
         targetSdkVersion 32
-        versionCode 12
-        versionName "1.7.2"
+        versionCode 13
+        versionName "1.7.3"
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""

@@ -239,6 +239,7 @@
         \t-Added brightness adjustment when reading.\n
         \t-Optimization and error correction.\n
     </string>
+    <string name="change_files_names">In connection with the forced change of the names of the image files, in order to avoid data loss, the already saved files are renamed. It will take some time. Please wait.</string>
 
     <!-- Logs -->
     <string name="clear_all">Clear all</string>

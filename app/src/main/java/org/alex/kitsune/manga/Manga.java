@@ -183,7 +183,7 @@ public abstract class Manga {
     @Override public final int hashCode(){return url.hashCode();}
     @Override public final boolean equals(@Nullable Object obj){return obj instanceof Manga && hashCode()==obj.hashCode();}
 
-    public final String setDir(String dir){return this.dir=dir+(dir.endsWith("/") ? "" :"/")+ hashCode();}
+    public final String setDir(String dir){return this.dir=dir+(dir.endsWith("/") ? "" :"/")+hashCode();}
     public final String getDir(){return dir;}
     public final String getCoverPath(){return getDir()+"/card";}
     public final String getInfoPath(){return getDir()+"/summary";}
@@ -192,7 +192,7 @@ public abstract class Manga {
         return chapter!=null ? getPagePath(chapter,chapter.getPage(page)) : null;
     }
     public final String getPagePath(Chapter chapter,Page page){
-        return (chapter!=null && page!=null) ? getPagesPath()+"/vol:"+chapter.getVol()+" ch:"+chapter.getNum()+" page:"+page.getNum() : null;
+        return (chapter!=null && page!=null) ? getPagesPath()+"/"+chapter.getVol()+"--"+chapter.getNum()+"--"+page.getNum() : null;
     }
     public final File getPage(Chapter chapter,Page page){
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
