@@ -123,7 +123,7 @@ public class LoadService extends Service {
                     intent.setAction(LoadService.actionCancel);
                     intent.putExtra(id,b.getInt(id));
                     intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                    PendingIntent pendingIntent=PendingIntent.getService(context,0,intent,PendingIntent.FLAG_UPDATE_CURRENT);
+                    PendingIntent pendingIntent=PendingIntent.getService(context,0,intent,PendingIntent.FLAG_UPDATE_CURRENT|PendingIntent.FLAG_MUTABLE);
                     Notification notification=new NotificationCompat.Builder(context,b.getString(name))
                             .setSmallIcon(android.R.drawable.stat_sys_download)
                             .setLargeIcon(BitmapFactory.decodeFile(b.getString(cover)))
