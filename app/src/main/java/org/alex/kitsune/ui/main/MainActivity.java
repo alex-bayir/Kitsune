@@ -200,7 +200,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
         removeMenuProvider(this);
         addMenuProvider(this);
-        Updater.namesChanges(this);
     }
 
     @Override
@@ -258,7 +257,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_recommendations: startActivity(new Intent(this, RecommendationsActivity.class)); return true;
             case R.id.nav_settings: startActivity(new Intent(this,SettingsActivity.class)); return true;
             case R.id.nav_about: startActivity(new Intent(this,ActivityAbout.class)); return true;
-            case R.id.nav_version: Utils.File.callPermissionManageStorage(this); return true;
+            case R.id.nav_version: Updater.showWhatisNew(this,false); return true;
         }
         item.setChecked(true);
         toolbar.setTitle(item.getTitle());

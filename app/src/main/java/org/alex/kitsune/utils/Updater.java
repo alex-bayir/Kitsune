@@ -40,33 +40,6 @@ public class Updater {
             showWhatisNew(context,true);
         }
     }
-
-    public static void namesChanges(Context context){
-        if(Updater.compareVersions(BuildConfig.VERSION_NAME,"1.7.3")==0 && !PreferenceManager.getDefaultSharedPreferences(context).getBoolean("files_changed",false)){
-            androidx.appcompat.app.AlertDialog d=new androidx.appcompat.app.AlertDialog.Builder(context).setTitle("Forced changes").setMessage(R.string.change_files_names).setCancelable(false).create();
-            d.show();
-            new LoadTask<Void,String,Boolean>(){
-                final String message=context.getString(R.string.change_files_names);
-                @Override
-                protected Boolean doInBackground(Void unused) {
-                    return Utils.File.renameFilesToNewFormat(this::publicProgress);
-                }
-
-                @Override
-                protected void onProgressUpdate(String unused) {
-                    d.setMessage(message+"\n"+unused);
-                }
-
-                @Override
-                protected void onFinished(Boolean all) {
-                    PreferenceManager.getDefaultSharedPreferences(d.getContext()).edit().putBoolean("files_changed",all).apply();
-                    d.setMessage(all?"All files have been renamed successfully.":"All or some individual files could not be renamed. Try giving more permissions to the app and repeat.");
-                    d.setCancelable(true);
-                    if(!all){Utils.File.callPermissionManageStorage((Activity)d.getContext());}
-                }
-            }.start(null);
-        }
-    }
     private static JSONObject getUpdate(Context context){
         if(NetworkUtils.isNetworkAvailable(context)){
             try{

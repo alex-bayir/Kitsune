@@ -201,7 +201,7 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
-        Version 1.7.1-1.7.2:\n
+        Version 1.7.1-1.7.4:\n
         \t-Auto-updating scripts.\n\n
         Version 1.7.0:\n
         \t-Now we are on github.\n
@@ -239,7 +239,6 @@
         \t-Added brightness adjustment when reading.\n
         \t-Optimization and error correction.\n
     </string>
-    <string name="change_files_names">In connection with the forced change of the names of the image files, in order to avoid data loss, the already saved files are renamed. It will take some time. Please wait.</string>
 
     <!-- Logs -->
     <string name="clear_all">Clear all</string>

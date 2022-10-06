@@ -347,23 +347,6 @@ public class Utils {
                 activity.startActivity(new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).setData(Uri.fromParts("package", activity.getPackageName(), null)));
             }
         }
-
-        public static boolean renameFilesToNewFormat(Callback<String> callback){
-            boolean all=true; int m=0,mc=MangaService.getAll().size();
-            for(Manga manga:MangaService.getAll().values()){
-                java.io.File dir=new java.io.File(manga.getPagesPath());
-                java.io.File[] list=dir.listFiles(java.io.File::isFile);
-                for(int i=0;i<(list!=null?list.length:0);i++){
-                    String name=list[i].getName().replace(" ","--").replaceAll("(vol:|ch:|page:|vol_|ch_|page_)","");
-                    if(!name.equals(list[i].getName())){
-                        all&=list[i].renameTo(new java.io.File(dir,name));
-                    }
-                    callback.call(i+"/"+list.length+" - "+m+"/"+mc);
-                }
-                m++;
-            }
-            return all;
-        }
     }
     public static class Menu{
         public static void buildIntentSubmenu(Context context, Intent intent, SubMenu subMenu) {
