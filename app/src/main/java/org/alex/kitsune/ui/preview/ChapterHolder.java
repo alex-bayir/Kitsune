@@ -19,8 +19,8 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
 
     public ChapterHolder(ViewGroup parent, int layout,HolderListener listener, Manga manga, HolderMenuItemClickListener menuListener){
         super(LayoutInflater.from(parent.getContext()).inflate(layout,parent,false));
-        if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getAdapterPosition()));}
-        if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getAdapterPosition()));}
+        if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getBindingAdapterPosition()));}
+        if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getBindingAdapterPosition()));}
         title=itemView.findViewById(R.id.chapter_title);
         subtitle=itemView.findViewById(R.id.chapter_subtitle);
         date=itemView.findViewById(R.id.chapter_date);

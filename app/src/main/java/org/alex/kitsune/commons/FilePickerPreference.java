@@ -144,7 +144,7 @@ public class FilePickerPreference extends Preference implements Preference.Summa
                 super(itemView);
                 image=itemView.findViewById(R.id.image);
                 text=itemView.findViewById(R.id.text);
-                itemView.setOnClickListener(v -> listener.onItemClick(getAdapterPosition()));
+                itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));
             }
             public void bind(String str){
                 text.setText(str);

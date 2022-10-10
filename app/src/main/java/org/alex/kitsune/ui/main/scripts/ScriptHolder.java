@@ -36,12 +36,12 @@ public class ScriptHolder extends RecyclerView.ViewHolder{
 
         popupMenu=new PopupMenu(menu.getContext(), menu,Gravity.START,R.style.Widget_AppCompat_PopupMenu, R.style.Widget_AppCompat_PopupMenu);
         popupMenu.getMenu().add(0,REMOVE, Menu.NONE,R.string.remove).setIcon(R.drawable.ic_bookmark_remove_black).getIcon().setTint(0xffffffff);
-        popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getAdapterPosition(),item));
+        popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getBindingAdapterPosition(),item));
         popupMenu.setForceShowIcon(true);
 
         //popupMenu.setGravity(Gravity.END);
-        itemView.setOnClickListener(v -> holderListener.onItemClick(v,getAdapterPosition()));
-        itemView.setOnLongClickListener(v-> {if(v==menu){popupMenu.show();} return holderListener.onItemLongClick(v,getAdapterPosition());});
+        itemView.setOnClickListener(v -> holderListener.onItemClick(v,getBindingAdapterPosition()));
+        itemView.setOnLongClickListener(v-> {if(v==menu){popupMenu.show();} return holderListener.onItemLongClick(v,getBindingAdapterPosition());});
         name.setOnEditorActionListener((v, actionId, event) -> {
             if(actionId==EditorInfo.IME_ACTION_DONE){v.clearFocus();}
             return true;

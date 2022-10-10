@@ -25,15 +25,15 @@ public class BookMarkHolder extends RecyclerView.ViewHolder{
 
     public BookMarkHolder(ViewGroup parent, int layout,HolderListener listener, Manga manga, HolderMenuItemClickListener menuListener){
         super(LayoutInflater.from(parent.getContext()).inflate(layout,parent,false));
-        if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getAdapterPosition()));}
-        if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getAdapterPosition()));}
+        if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getBindingAdapterPosition()));}
+        if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getBindingAdapterPosition()));}
         image=itemView.findViewById(R.id.imageView);
         date=itemView.findViewById(R.id.textView);
         menu=itemView.findViewById(R.id.menu);
         caution=image.getDrawable();
         popupMenu=new PopupMenu(menu.getContext(), menu,Gravity.END,R.style.Widget_AppCompat_PopupMenu, R.style.Widget_AppCompat_PopupMenu);
         popupMenu.getMenu().add(0,REMOVE, Menu.NONE,R.string.remove).setIcon(R.drawable.ic_bookmark_remove_black).getIcon().setTint(0xffffffff);
-        popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getAdapterPosition(),item));
+        popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getBindingAdapterPosition(),item));
         popupMenu.setForceShowIcon(true);
         menu.setOnClickListener(v -> {if(v==menu){popupMenu.show();}});
         this.manga=manga;

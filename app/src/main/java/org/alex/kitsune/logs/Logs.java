@@ -227,10 +227,10 @@ public class Logs {
             clear=card.findViewById(R.id.clear);
             date_text=card.findViewById(R.id.time);
             if(listener!=null){
-                card.setOnClickListener(v -> listener.onItemClick(v,getAdapterPosition()));
+                card.setOnClickListener(v -> listener.onItemClick(v,getBindingAdapterPosition()));
             }
             if(listener_button!=null){
-                clear.setOnClickListener(v -> listener_button.onItemClick(v,getAdapterPosition()));
+                clear.setOnClickListener(v -> listener_button.onItemClick(v,getBindingAdapterPosition()));
             }
         }
         public void bind(Log log){

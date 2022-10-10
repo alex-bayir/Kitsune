@@ -53,10 +53,10 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         line.setImageDrawable(progress_drawable);
         markNew=root.findViewById(R.id.mark_new);
         if(onItem!=null){
-            root.setOnClickListener(v->onItem.onItemClick(v,getAdapterPosition()));
+            root.setOnClickListener(v->onItem.onItemClick(v,getBindingAdapterPosition()));
         }
         if(onItemButton!=null){
-            button.setOnClickListener(v->onItemButton.onItemClick(v,getAdapterPosition()));
+            button.setOnClickListener(v->onItemButton.onItemClick(v,getBindingAdapterPosition()));
         }else{
             button.setClickable(false);
             button.setFocusable(false);

@@ -222,7 +222,7 @@ public class Catalogs extends Fragment implements MenuProvider {
 
             public CatalogHolder(ViewGroup parent, HolderClickListener listener) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_catalog,parent,false));
-                itemView.setOnClickListener(view->listener.onItemClick(view,getAdapterPosition()));
+                itemView.setOnClickListener(view->listener.onItemClick(view,getBindingAdapterPosition()));
                 checkBox=itemView.findViewById(R.id.checkbox);
                 checkBox.setOnCheckedChangeListener((buttonView, isChecked)->{if(container!=null){container.enable=isChecked;}});
                 name=itemView.findViewById(R.id.source);
@@ -264,8 +264,8 @@ public class Catalogs extends Fragment implements MenuProvider {
 
         @Override
         public boolean onMove(@NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder, @NonNull @NotNull RecyclerView.ViewHolder target) {
-            int pos1 = viewHolder.getAdapterPosition();
-            int pos2 = target.getAdapterPosition();
+            int pos1 = viewHolder.getBindingAdapterPosition();
+            int pos2 = target.getBindingAdapterPosition();
             if(recyclerView.getAdapter() instanceof CatalogsAdapter){
                 ((CatalogsAdapter)recyclerView.getAdapter()).moved(pos1,pos2);
             }

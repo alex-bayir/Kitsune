@@ -48,12 +48,12 @@ public final class SwipeRemoveHelper extends ItemTouchHelper.Callback {
 
     @Override
     public void onSwiped(@NonNull @NotNull RecyclerView.ViewHolder viewHolder, int direction) {
-        if(listener!=null){listener.onItemRemoved(viewHolder.getAdapterPosition());}
+        if(listener!=null){listener.onItemRemoved(viewHolder.getBindingAdapterPosition());}
     }
 
     @Override
     public void onChildDraw(@NonNull @NotNull Canvas c, @NonNull @NotNull RecyclerView recyclerView, @NonNull @NotNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
-        if(viewHolder.getAdapterPosition()!=-1){
+        if(viewHolder.getBindingAdapterPosition()!=-1){
             View v=viewHolder.itemView;
             if(dX!=0){
                 background.setBounds(v.getLeft(),v.getTop(),v.getRight(),v.getBottom());

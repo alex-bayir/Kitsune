@@ -32,6 +32,7 @@
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_caution.xml" value="0.5552083333333333" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_caution_yellow.xml" value="0.4444444444444444" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_chrome_reader_mode_24dp.xml" value="0.2916666666666667" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_code_24dp.xml" value="0.299" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_download_arrow.xml" value="0.5305555555555556" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_earth.xml" value="0.5552083333333333" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/drawable/ic_export_import.xml" value="0.3315" />
@@ -85,6 +86,7 @@
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/content_shelf.xml" value="0.41530797101449274" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_chapters.xml" value="0.3129528985507246" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_choose_category.xml" value="0.3129528985507246" />
+        <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_edit_chapter_data.xml" value="0.48188405797101447" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_file_picker.xml" value="0.3129528985507246" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_filter.xml" value="0.5" />
         <entry key="..\:/Games/Kitsune/app/src/main/res/layout/dialog_input.xml" value="0.3129528985507246" />
