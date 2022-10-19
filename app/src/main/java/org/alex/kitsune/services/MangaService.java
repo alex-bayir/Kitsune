@@ -33,6 +33,7 @@ public class MangaService {
     public static String init(Context context){
         cacheDir=context.getExternalCacheDir().getAbsolutePath();
         dir=PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
+        clearUnused(new File(dir));
         copyScriptsFromAssets(context);
         Manga_Scripted.setScripts(Catalogs.getMangaScripts(context.getExternalFilesDir(Constants.manga_scripts)));
         update();
@@ -201,4 +202,17 @@ public class MangaService {
         return destination;
     }
 
+    public static void clearUnused(File dir){
+        if(dir.isDirectory()){
+            File[] list=dir.listFiles(File::isDirectory);
+            if(list!=null){
+                for(File d:list){
+                    File[] l=d.listFiles();
+                    if(l!=null && (l.length==0 || (l.length==1 && "card".equals(l[0].getName())))){
+                        Utils.File.delete(d);
+                    }
+                }
+            }
+        }
+    }
 }

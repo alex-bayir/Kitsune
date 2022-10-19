@@ -9,6 +9,7 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -47,6 +48,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
 
     PhotoView imageView;
+    WebView web;
     Manga manga;
     Chapter chapter;
     Page page;
@@ -69,6 +71,13 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     ReaderPageHolder(ViewGroup parent, boolean vertical, Manga manga, View.OnClickListener centerClick,View.OnClickListener leftClick,View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
         imageView=itemView.findViewById(R.id.image);
+        web=itemView.findViewById(R.id.image_web);
+        web.getSettings().setBuiltInZoomControls(true);
+        web.getSettings().setDisplayZoomControls(false);
+        web.getSettings().setAllowFileAccess(true);
+        web.getSettings().setLoadWithOverviewMode(true);
+        web.getSettings().setUseWideViewPort(true);
+        web.setBackgroundColor(0);
         imageView.setMaximumScale(10);
         imageView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             proportion=(bottom-top)/(float)(right-left);
@@ -181,11 +190,19 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         Bitmap bitmap=ReaderActivity.imageCache.getFromMemory(manga.getPagePath(chapter,page));
         if(bitmap==null && !locks.contains(file)){
             bitmap=loadBitmap(file);
-            if(!ReaderActivity.imageCache.addToMemory(manga.getPagePath(chapter,page),bitmap)){
+            if(!ReaderActivity.imageCache.addToMemory(manga.getPagePath(chapter,page),bitmap) && !file.exists()){
                 load(url);
             }
         }
         imageView.setImageBitmap(bitmap);
+        if(bitmap==null && file.exists()){
+            web.loadUrl(file.getAbsolutePath());
+            web.setVisibility(View.VISIBLE);
+            imageView.setVisibility(View.GONE);
+        }else{
+            web.setVisibility(View.GONE);
+            imageView.setVisibility(View.VISIBLE);
+        }
     }
 
     public void setScaleType(ScaleType scaleType,boolean vertical){
@@ -206,10 +223,10 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
 
     private Bitmap loadBitmap(File file){
         Bitmap bitmap=file.exists() ? BitmapFactory.decodeFile(file.getAbsolutePath()) : null;
-        if(bitmap!=null && bitmap.getByteCount()>100*1024*1024){
+        if(bitmap==null || bitmap.getByteCount()>100*1024*1024){
             BitmapFactory.Options options=new BitmapFactory.Options();
-            options.inSampleSize=((int)Math.sqrt(bitmap.getByteCount()/((double)(100*1024*1024))))+1;
-            bitmap=BitmapFactory.decodeFile(file.getAbsolutePath(),options);
+            options.inSampleSize=bitmap!=null? ((int)Math.sqrt(bitmap.getByteCount()/((double)(100*1024*1024))))+1 : 2;
+            bitmap=file.exists() ? BitmapFactory.decodeFile(file.getAbsolutePath(),options) : null;
         }
     return bitmap;}
 

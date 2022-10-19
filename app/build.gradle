@@ -1,11 +1,11 @@
 apply plugin: 'com.android.application'
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
     buildToolsVersion "32.0.0"
     defaultConfig {
         applicationId "org.alex.kitsune"
         minSdkVersion 24
-        targetSdkVersion 32
+        targetSdkVersion 33
         versionCode 13
         versionName "1.7.4"
         vectorDrawables.useSupportLibrary = true

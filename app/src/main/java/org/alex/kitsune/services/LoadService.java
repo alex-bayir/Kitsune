@@ -133,6 +133,7 @@ public class LoadService extends Service {
                             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
                             .setChannelId(channelID)
+                            .setSilent(true)
                             .setOngoing(true)
                             .setContentIntent(pendingIntent)
                             .addAction(android.R.drawable.ic_menu_close_clear_cancel,"Cancel",pendingIntent)
