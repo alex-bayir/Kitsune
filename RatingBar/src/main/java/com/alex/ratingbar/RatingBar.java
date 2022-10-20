@@ -8,9 +8,9 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import androidx.annotation.Nullable;
+import android.widget.ImageView;
 
-public class RatingBar extends androidx.appcompat.widget.AppCompatImageView {
+public class RatingBar extends ImageView {
     public interface OnRatingBarChangeListener{
         void onRatingChanged(RatingBar ratingBar, double rating);
     }
@@ -21,8 +21,8 @@ public class RatingBar extends androidx.appcompat.widget.AppCompatImageView {
     private OnRatingBarChangeListener ratingChangeListener;
 
     public RatingBar(Context context){this(context,null);}
-    public RatingBar(Context context, @Nullable AttributeSet attrs){this(context, attrs,0);}
-    public RatingBar(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
+    public RatingBar(Context context, AttributeSet attrs){this(context, attrs,0);}
+    public RatingBar(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         v.addUpdateListener(animation->getDrawable().setLevel((int)animation.getAnimatedValue()));
         v.setDuration(500).setInterpolator(new AccelerateDecelerateInterpolator());

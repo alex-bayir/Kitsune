@@ -22,8 +22,8 @@ public class ThreeStatesTextView extends MaterialTextView {
         init(context);
     }
     public void init(Context context){
-        StateListDrawable stateList=(StateListDrawable)context.getResources().getDrawable(R.drawable.states,context.getTheme());
-        Drawable dr=stateList.getStateDrawable(0);
+        StateListDrawable stateList=(StateListDrawable)context.getDrawable(R.drawable.states);
+        Drawable dr=android.os.Build.VERSION.SDK_INT>=29 ? stateList.getStateDrawable(0) : context.getDrawable(R.drawable.ic_checkbox_def);
         stateList.setBounds(0,0,dr.getIntrinsicWidth(),dr.getIntrinsicHeight());
         setCompoundDrawables(null,null,stateList,null);
         setState(state);

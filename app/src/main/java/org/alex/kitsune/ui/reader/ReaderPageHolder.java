@@ -9,7 +9,6 @@ import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -48,12 +47,11 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
 
     PhotoView imageView;
-    WebView web;
     Manga manga;
     Chapter chapter;
     Page page;
     File file;
-    TextView progress,text_faces;
+    TextView progress,text_faces, text_info;
     BaseCurveProgressView progressBar;
     Button retry, change_url;
     View load_info,retry_layout;
@@ -71,13 +69,6 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     ReaderPageHolder(ViewGroup parent, boolean vertical, Manga manga, View.OnClickListener centerClick,View.OnClickListener leftClick,View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
         imageView=itemView.findViewById(R.id.image);
-        web=itemView.findViewById(R.id.image_web);
-        web.getSettings().setBuiltInZoomControls(true);
-        web.getSettings().setDisplayZoomControls(false);
-        web.getSettings().setAllowFileAccess(true);
-        web.getSettings().setLoadWithOverviewMode(true);
-        web.getSettings().setUseWideViewPort(true);
-        web.setBackgroundColor(0);
         imageView.setMaximumScale(10);
         imageView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             proportion=(bottom-top)/(float)(right-left);
@@ -107,6 +98,8 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         load_info=itemView.findViewById(R.id.load_info);
         text_faces=itemView.findViewById(R.id.text_faces);
         text_faces.setText(faces[Math.abs(random.nextInt(faces.length))]);
+        text_info=itemView.findViewById(R.id.text_info);
+        text_info.setVisibility(View.GONE);
         retry=itemView.findViewById(R.id.retry);
         retry.setOnClickListener(v -> retry(true));
         change_url=itemView.findViewById(R.id.change_url);
@@ -190,29 +183,27 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         Bitmap bitmap=ReaderActivity.imageCache.getFromMemory(manga.getPagePath(chapter,page));
         if(bitmap==null && !locks.contains(file)){
             bitmap=loadBitmap(file);
-            if(!ReaderActivity.imageCache.addToMemory(manga.getPagePath(chapter,page),bitmap) && !file.exists()){
+            if(!ReaderActivity.imageCache.addToMemory(manga.getPagePath(chapter,page),bitmap)){
                 load(url);
             }
         }
         imageView.setImageBitmap(bitmap);
+        text_info.setVisibility(bitmap==null && file.exists() ? View.VISIBLE : View.GONE);
         if(bitmap==null && file.exists()){
-            web.loadUrl(file.getAbsolutePath());
-            web.setVisibility(View.VISIBLE);
-            imageView.setVisibility(View.GONE);
-        }else{
-            web.setVisibility(View.GONE);
-            imageView.setVisibility(View.VISIBLE);
+            String log=imageView.getContext().getString(R.string.impossible_decode_image);
+            log+="\nFile size: "+file.length()+" bytes\nurl: "+page.getUrl();
+            text_info.setText(log);
         }
     }
 
     public void setScaleType(ScaleType scaleType,boolean vertical){
         Drawable drawable=imageView.getDrawable();
         if(drawable!=null){
-            switch (scaleType!=null ? scaleType : ScaleType.FIT_X){
-                case CENTER: setScaleType(false,ImageView.ScaleType.CENTER); break;
-                case FIT_XY: setScaleType(vertical,ImageView.ScaleType.CENTER_CROP); break;
-                case FIT_X:  setScaleType(vertical,drawable.getMinimumHeight()/(float)drawable.getMinimumWidth()>proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER); break;
-                case FIT_Y:  setScaleType(vertical,drawable.getMinimumHeight()/(float)drawable.getMinimumWidth()<proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER); break;
+            switch (scaleType!=null ? scaleType : ScaleType.FIT_X) {
+                case CENTER -> setScaleType(false, ImageView.ScaleType.CENTER);
+                case FIT_XY -> setScaleType(vertical, ImageView.ScaleType.CENTER_CROP);
+                case FIT_X -> setScaleType(vertical, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() > proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
+                case FIT_Y -> setScaleType(vertical, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
             }
         }
     }

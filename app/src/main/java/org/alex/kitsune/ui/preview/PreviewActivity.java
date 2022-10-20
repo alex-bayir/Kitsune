@@ -152,7 +152,7 @@ public class PreviewActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home: finish(); break;
-            case R.id.action_chapter_remove_all: adapter.getChaptersPage().action(ChaptersPage.RA); break;
+            case R.id.action_chapter_remove_all: new Thread(()->adapter.getChaptersPage().action(ChaptersPage.RA)).start(); break;
             case R.id.action_chapter_save_all: adapter.getChaptersPage().action(ChaptersPage.SA); return true;
             case R.id.action_reverse:
                 boolean z=adapter.getChaptersPage().setReversed(!item.isChecked());

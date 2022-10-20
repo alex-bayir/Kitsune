@@ -1,12 +1,8 @@
 package com.alex.threestates;
 
 import android.content.Context;
-import android.content.res.TypedArray;
-import android.graphics.Canvas;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.AttributeSet;
-import android.view.View;
 import androidx.annotation.Nullable;
 import org.alex.threestates.R;
 import com.google.android.material.checkbox.MaterialCheckBox;

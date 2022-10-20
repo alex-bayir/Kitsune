@@ -4,6 +4,8 @@ package org.alex.kitsune.ui.preview;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -107,9 +109,9 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     public static void action(Context context, Manga manga, int action, CustomAdapter adapter,int index){
         boolean deleted=false;
         switch (action){
-            case RC: manga.clearChapters(index,index+1); adapter.notifyDataSetChanged(); manga.save(); deleted=true; break;
-            case RL: manga.clearChapters(0,index+1); adapter.notifyDataSetChanged(); manga.save(); deleted=true; break;
-            case RA: manga.deleteAllPages(); adapter.notifyDataSetChanged(); manga.save(); deleted=true; break;
+            case RC: manga.clearChapters(index,index+1); new Handler(Looper.getMainLooper()).post(adapter::notifyDataSetChanged); manga.save(); deleted=true; break;
+            case RL: manga.clearChapters(0,index+1); new Handler(Looper.getMainLooper()).post(adapter::notifyDataSetChanged); manga.save(); deleted=true; break;
+            case RA: manga.deleteAllPages(); new Handler(Looper.getMainLooper()).post(adapter::notifyDataSetChanged); manga.save(); deleted=true; break;
             case SC: manga.loadChapters(context,new LoadService.Task(manga,index,index+1)); break;
             case SL: manga.loadChapters(context,new LoadService.Task(manga,0,index+1)); break;
             case S5: manga.loadChapters(context,new LoadService.Task(manga,index,index+6)); break;
