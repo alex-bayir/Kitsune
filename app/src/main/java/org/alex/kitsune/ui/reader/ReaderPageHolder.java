@@ -54,7 +54,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     TextView progress,text_faces, text_info;
     BaseCurveProgressView progressBar;
     Button retry, change_url;
-    View load_info,retry_layout;
+    View load_info,retry_layout, error_layout;
     private float proportion=2;
     public static String[] faces=new String[]{"(￣ヘ￣)", "ヾ(`ヘ´)ﾉﾞ", "Σ(ಠ_ಠ)", "ಥ_ಥ", "(˘･_･˘)", "(；￣Д￣)", "(･Д･。)", "o(╥﹏╥)", "(◞ ‸ ◟ㆀ)", "(ᗒᗣᗕ)՞", "(-ω-、)", "(⋟﹏⋞)", "(ノ﹏ヽ)", "(T⌓T)", "(◕︿◕✿)", "⊙︿⊙", "(ノ_<。)ヾ(´ ▽ ` )", "ヽ(￣ω￣(。。 )ゝ","(ﾉ_；)ヾ(´ ∀ ` )","\t(っ´ω`)ﾉ(╥ω╥)","ρ(- ω -、)ヾ(￣ω￣; )","ヽ(~_~(・_・ )ゝ","(ｏ・_・)ノ”(ノ_<、)", "(＃`Д´)","(`皿´＃)","( ` ω ´ )","ヽ( `д´*)ノ","٩(╬ʘ益ʘ╬)۶","\t(╬ Ò﹏Ó)","(ﾉಥ益ಥ)ﾉ","(凸ಠ益ಠ)凸","▓▒░(°◡°)░▒▓", "(ᓀ ᓀ)","(⊙_⊙)","(づ ◕‿◕ )づ","(*￣ii￣)","\t|ʘ‿ʘ)╯","(^=◕ᴥ◕=^)","ヾ(=`ω´=)ノ”","ʕಠᴥಠʔ","(∩ᄑ_ᄑ)⊃━☆ﾟ*･｡*･:≡( ε:)","(⌐■_■)","(◕‿◕✿)"};
     private static final Random random=new Random();
@@ -99,14 +99,15 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         text_faces=itemView.findViewById(R.id.text_faces);
         text_faces.setText(faces[Math.abs(random.nextInt(faces.length))]);
         text_info=itemView.findViewById(R.id.text_info);
-        text_info.setVisibility(View.GONE);
         retry=itemView.findViewById(R.id.retry);
         retry.setOnClickListener(v -> retry(true));
         change_url=itemView.findViewById(R.id.change_url);
         change_url.setOnClickListener(v->dialog.show());
         retry_layout=itemView.findViewById(R.id.retry_layout);
+        error_layout=itemView.findViewById(R.id.error_layout);
         load_info.setVisibility(View.GONE);
         retry_layout.setVisibility(View.GONE);
+        error_layout.setVisibility(View.GONE);
         this.manga=manga;
         this.vertical=vertical;
         itemView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -188,7 +189,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             }
         }
         imageView.setImageBitmap(bitmap);
-        text_info.setVisibility(bitmap==null && file.exists() ? View.VISIBLE : View.GONE);
+        error_layout.setVisibility(bitmap==null && file.exists() ? View.VISIBLE : View.GONE);
         if(bitmap==null && file.exists()){
             String log=imageView.getContext().getString(R.string.impossible_decode_image);
             log+="\nFile size: "+file.length()+" bytes\nurl: "+page.getUrl();
