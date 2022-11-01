@@ -105,7 +105,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
             map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),true));
         }
-        return new ArrayList<>(exist?map.values():map.values().stream().sorted().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
+        return new ArrayList<>(exist?map.values():map.values().stream().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
     public static List<String> default_order=Arrays.asList("Desu","MangaLib","Remanga","ReadManga","MintManga","SelfManga","MangaChan","HentaiChan");
     public static ArrayList<Script> getScripts(File dir, boolean recur){
