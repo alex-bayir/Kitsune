@@ -74,18 +74,11 @@
     <string name="remove">Remove</string>
     <string name="save_" translatable="false">Save…</string>
     <string name="save_all_chapters">Save all chapters</string>
+    <string name="save_selected_chapters">Save selected chapters</string>
+    <string name="remove_all_chapters">Remove all chapters</string>
+    <string name="remove_selected_chapters">Remove selected chapters</string>
     <string name="reverse_order" translatable="false">Reverse chapters</string>
     <string name="find_chapter">Find chapter</string>
-    <string name="RC">Remove this chapter</string>
-    <string name="RL">Remove this and all previous chapters</string>
-    <string name="RA">Remove all chapters</string>
-    <string name="SC">Save this chapter</string>
-    <string name="SL">Save this and all previous chapters</string>
-    <string name="S5">Save this and next 5 chapters</string>
-    <string name="S10">Save this and next 10 chapters</string>
-    <string name="S30">Save this and next 30 chapters</string>
-    <string name="SN">Save this and all next chapters</string>
-    <string name="SA">Save all chapters</string>
     <string name="No_chapters" translatable="false">No chapters</string>
     <string name="No_bookmarks" translatable="false">No bookmarks</string>
 

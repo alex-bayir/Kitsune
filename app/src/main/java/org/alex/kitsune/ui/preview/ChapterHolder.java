@@ -29,13 +29,14 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         markNew=itemView.findViewById(R.id.mark_new);
         this.manga=manga;
     }
-    public void bind(Chapter chapter){
+    public void bind(Chapter chapter, boolean selected){
         title.setText(chapter.text(title.getContext()));
         subtitle.setText(chapter.getInfo());
         date.setText(getDate(chapter.getDate()));
         download.setVisibility(manga.checkChapter(chapter) ? View.VISIBLE : View.GONE);
         play.setVisibility((manga.getHistory()!=null && chapter.equals(manga.getHistory().getChapter())) ? View.VISIBLE : View.INVISIBLE);
         markNew.setVisibility(manga.isNew(chapter)? View.VISIBLE : View.INVISIBLE);
+        itemView.setActivated(selected);
     }
     public static java.text.SimpleDateFormat format=new java.text.SimpleDateFormat("dd.MM.yyyy");
     public static String getDate(long date){return date>0 ? format.format(new java.util.Date(date)) : null;}

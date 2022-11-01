@@ -391,12 +391,10 @@ public abstract class Manga {
         }
     }
 
-    public final void clearChapters(int start,int end){
-        for(int i=start;i<end;i++){
-            Chapter chapter=chapters.get(i);
-            if(chapter!=null && chapter.getPages()!=null){
-                for(Page page: chapter.getPages()){getPage(chapter,page).delete();}
-            }
+    public final void clearChapter(int index){
+        Chapter chapter=chapters.get(index);
+        if(chapter!=null && chapter.getPages()!=null){
+            for(Page page: chapter.getPages()){getPage(chapter,page).delete();}
         }
     }
 

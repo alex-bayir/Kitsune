@@ -9,12 +9,15 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
+import androidx.recyclerview.selection.Selection;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.manga.Page;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.utils.LoadTask;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class LoadService extends Service {
     public static final String actionCancel=LoadService.class.getName()+".action_cancel";
@@ -61,7 +64,7 @@ public class LoadService extends Service {
                         currentTask=tasks.remove(0);
                         Task task=currentTask;
                         int tmp=download;
-                        for(int i=task.start;i<task.end;i++){
+                        for(int i:task.indexes){
                             Chapter chapter=task.manga.getChapters().get(i);
                             Bundle bundle=createBundle(task);
                             bundle.putString(text,"getting urls...");
@@ -99,7 +102,7 @@ public class LoadService extends Service {
                             download++;
                         }
                         if(task.manga!=null){
-                            style.addLine(task.manga.getName()+": "+Math.max(Math.min(download-tmp,task.end-task.start),0)+" saved");
+                            style.addLine(task.manga.getName()+": "+Math.max(Math.min(download-tmp,task.indexes.size()),0)+" saved");
                             Bundle bundle=createBundle(task);
                             bundle.putBoolean(close,true);
                             publicProgress(bundle);
@@ -191,12 +194,20 @@ public class LoadService extends Service {
     }
     public static class Task{
         final Manga manga;
-        final int start,end;
+        ArrayList<Integer> indexes;
         private boolean canceled=false;
         public Task(Manga manga,int start,int end){
             this.manga=manga;
-            this.start=start;
-            this.end=end;
+            indexes=IntStream.rangeClosed(start, end).boxed().collect(Collectors.toCollection(ArrayList::new));
+        }
+        public Task(Manga manga, Selection<Long> selection){
+            this.manga=manga;
+            this.indexes=new ArrayList<>(selection.size());
+            selection.forEach(l -> indexes.add(l.intValue()));
+        }
+        public Task(Manga manga, ArrayList<Integer> indexes){
+            this.manga=manga;
+            this.indexes=indexes;
         }
 
         public void clearCancel(){canceled=false;}
@@ -204,11 +215,11 @@ public class LoadService extends Service {
         public boolean isCanceled(){return canceled;}
 
         public Intent toIntent(Intent intent){
-            return intent!=null ? intent.putExtra(Constants.hash,manga.hashCode()).putExtra("start",start).putExtra("end",end) : null;
+            return intent!=null ? intent.putExtra(Constants.hash,manga.hashCode()).putIntegerArrayListExtra("indexes",indexes) : null;
         }
 
         public static Task fromIntent(Intent intent){
-            return new Task(MangaService.get(intent.getIntExtra(Constants.hash,-1)),intent.getIntExtra("start",-1),intent.getIntExtra("end",-1));
+            return new Task(MangaService.get(intent.getIntExtra(Constants.hash,-1)),intent.getIntegerArrayListExtra("indexes"));
         }
     }
 }

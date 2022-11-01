@@ -197,7 +197,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         view.findViewById(R.id.error).setOnClickListener(v-> Logs.createDialog(v.getContext(),lastThrowable).show());
 
         FailedLoadPagesInfo=new AlertDialog.Builder(this).setView(view).create();
-        FailedLoadPagesInfo.setOnShowListener(dialogInterface -> FailedLoadPagesInfo.requireViewById(R.id.error).setVisibility(lastThrowable!=null ? View.VISIBLE : View.INVISIBLE));
+        FailedLoadPagesInfo.setOnShowListener(dialogInterface -> FailedLoadPagesInfo.findViewById(R.id.error).setVisibility(lastThrowable!=null ? View.VISIBLE : View.INVISIBLE));
         FailedLoadPagesInfo.setCancelable(false);
         view=getLayoutInflater().inflate(R.layout.dialog_chapters,null);
         rv=view.findViewById(R.id.rv_list);
@@ -210,8 +210,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                 Chapters.cancel();
             }
             @Override public boolean onItemLongClick(View v, int index){return false;}
-        },null);
-        rv.setAdapter(chaptersAdapter);
+        },null,rv,null);
         view.findViewById(R.id.close).setOnClickListener(v1 -> Chapters.cancel());
         btn_next=view.findViewById(R.id.next);
         btn_next.setOnClickListener(v2 -> {

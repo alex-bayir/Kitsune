@@ -24,13 +24,12 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
     public BookMarksPage(ViewGroup parent,Manga manga){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
         this.manga=manga;
-        adapter=new CustomAdapter<>(itemView.getContext(),manga,manga.getBookMarks(),R.layout.item_bookmark,this,this::onMenuItemClick);
+        noItems=itemView.findViewById(R.id.text);
         rv=itemView.findViewById(R.id.rv_list);
+        adapter=new CustomAdapter<>(itemView.getContext(),manga,manga.getBookMarks(),R.layout.item_bookmark,this,this::onMenuItemClick,rv,null);
         //rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
         rv.setLayoutManager(new GridLayoutManager(itemView.getContext(),2));
-        noItems=itemView.findViewById(R.id.text);
         noItems.setText(R.string.No_bookmarks);
-        rv.setAdapter(adapter);
         Utils.registerOnEmptyAdapterRunnable(adapter,()->noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
     }
 

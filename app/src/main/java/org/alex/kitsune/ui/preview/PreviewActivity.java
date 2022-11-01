@@ -152,8 +152,10 @@ public class PreviewActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()){
             case android.R.id.home: finish(); break;
-            case R.id.action_chapter_remove_all: new Thread(()->adapter.getChaptersPage().action(ChaptersPage.RA)).start(); break;
+            case R.id.action_chapter_remove_all: adapter.getChaptersPage().action(ChaptersPage.RA); return true;
             case R.id.action_chapter_save_all: adapter.getChaptersPage().action(ChaptersPage.SA); return true;
+            case R.id.action_chapter_remove_selected: adapter.getChaptersPage().action(ChaptersPage.RS); return true;
+            case R.id.action_chapter_save_selected: adapter.getChaptersPage().action(ChaptersPage.SS); return true;
             case R.id.action_reverse:
                 boolean z=adapter.getChaptersPage().setReversed(!item.isChecked());
                 item.setChecked(z).setIcon(z ? R.drawable.ic_sort_numeric_reverse : R.drawable.ic_sort_numeric);
@@ -179,6 +181,13 @@ public class PreviewActivity extends AppCompatActivity{
                 return false;
             }
         });
+    }
+    public void setSelectMode(boolean select_mode){
+        Menu menu=bottomBar.getMenu();
+        menu.findItem(R.id.action_chapter_remove_all).setVisible(!select_mode);
+        menu.findItem(R.id.action_chapter_remove_selected).setVisible(select_mode);
+        menu.findItem(R.id.action_chapter_save_all).setVisible(!select_mode);
+        menu.findItem(R.id.action_chapter_save_selected).setVisible(select_mode);
     }
     public boolean createShortCutManga(Manga manga){
         return Utils.createShortCutPreview(this,manga.hashCode(),manga.getAnyName(),manga.getCoverPath(),new Intent(Intent.ACTION_VIEW,null,this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.manga,manga.toString()));

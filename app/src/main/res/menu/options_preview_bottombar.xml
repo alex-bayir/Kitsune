@@ -7,7 +7,11 @@
           app:showAsAction="ifRoom">
         <menu>
             <item android:id="@+id/action_chapter_remove_all"
-                  android:title="@string/RA"/>
+                  android:visible="true"
+                  android:title="@string/remove_all_chapters"/>
+            <item android:id="@+id/action_chapter_remove_selected"
+                  android:visible="false"
+                  android:title="@string/remove_selected_chapters"/>
         </menu>
     </item>
     <item android:icon="@drawable/ic_save"
@@ -16,7 +20,11 @@
           app:showAsAction="ifRoom">
         <menu>
             <item android:id="@+id/action_chapter_save_all"
+                  android:visible="true"
                   android:title="@string/save_all_chapters" />
+            <item android:id="@+id/action_chapter_save_selected"
+                  android:visible="false"
+                  android:title="@string/save_selected_chapters" />
         </menu>
     </item>
     <item android:icon="@drawable/ic_sort_numeric"
