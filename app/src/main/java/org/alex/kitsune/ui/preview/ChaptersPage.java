@@ -100,8 +100,8 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
                     manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged,100);
                     manga.save(); deleted=true; adapter.getTracker().clearSelection(); break;
                 case RS:
-                    for(Long i:adapter.getTracker().getSelection()){
-                        manga.clearChapter(i.intValue()); handler.post(()->adapter.notifyItemChanged(i.intValue()));
+                    for(int i:Utils.convert(adapter.getTracker().getSelection())){
+                        manga.clearChapter(i); handler.post(()->adapter.notifyItemChanged(i));
                     }
                     if(adapter.getTracker().getSelection().size()==manga.getChapters().size()){
                         manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged,100);

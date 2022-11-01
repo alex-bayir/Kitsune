@@ -25,6 +25,7 @@ import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
@@ -491,5 +492,13 @@ public class Utils {
             ActivityCompat.requestPermissions(activity,permissions,requestCode);
         }
         return granted;
+    }
+
+    public static ArrayList<Integer> convert(Selection<Long> selection){return convert(selection,true);}
+    public static ArrayList<Integer> convert(Selection<Long> selection, boolean sort){
+        ArrayList<Integer> list=new ArrayList<>(selection.size());
+        selection.forEach(l->list.add(l.intValue()));
+        if(sort){list.sort(Integer::compareTo);}
+        return list;
     }
 }

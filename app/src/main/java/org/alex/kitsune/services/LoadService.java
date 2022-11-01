@@ -15,6 +15,8 @@ import org.alex.kitsune.manga.Page;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.utils.LoadTask;
+import org.alex.kitsune.utils.Utils;
+
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -201,9 +203,7 @@ public class LoadService extends Service {
             indexes=IntStream.rangeClosed(start, end).boxed().collect(Collectors.toCollection(ArrayList::new));
         }
         public Task(Manga manga, Selection<Long> selection){
-            this.manga=manga;
-            this.indexes=new ArrayList<>(selection.size());
-            selection.forEach(l -> indexes.add(l.intValue()));
+            this(manga,Utils.convert(selection));
         }
         public Task(Manga manga, ArrayList<Integer> indexes){
             this.manga=manga;
