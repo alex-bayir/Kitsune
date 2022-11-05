@@ -193,6 +193,8 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
+        Version 1.7.5:\n
+        \t-Add authentication.\n\n
         Version 1.7.1-1.7.4:\n
         \t-Auto-updating scripts.\n\n
         Version 1.7.0:\n

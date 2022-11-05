@@ -220,11 +220,13 @@ public class MangaService {
     }
 
     public static String getCookieByUrl(String url,String def){
-        for(Catalogs.Container c:Catalogs.getCatalogs(prefs)){
-            String domain=c.source.toLowerCase();
-            try{domain=Manga_Scripted.getScript(c.source).getString("provider",c.source.toLowerCase());}catch (Throwable e){Logs.saveLog(e);}
-            if(url.contains(domain)){
-                return c.cookies;
+        if(url!=null){
+            for(Catalogs.Container c:Catalogs.getCatalogs(prefs)){
+                String domain=c.source.toLowerCase();
+                try{domain=Manga_Scripted.getScript(c.source).getString("provider",c.source.toLowerCase());}catch (Throwable e){Logs.saveLog(e);}
+                if(url.contains(domain)){
+                    return c.cookies;
+                }
             }
         }
         return def;

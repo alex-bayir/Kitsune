@@ -54,9 +54,14 @@ public class NetworkUtils {
     }).readTimeout(60,TimeUnit.SECONDS).build();
     private static void printCookies(List<Cookie> cookies){if(cookies!=null)for(Cookie cookie:cookies){android.util.Log.e("Cookie",cookie.toString());}}
 
-    public static Headers getHeadersDefault(){return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).build();}
+    public static Headers getHeadersDefault(){return getHeadersDefault(null);}
     public static Headers getHeadersDefault(String url){
-        return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add("Cookie", MangaService.getCookieByUrl(url,"")).build();
+        String cookie=MangaService.getCookieByUrl(url,null);
+        if(cookie!=null){
+            return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add("Cookie", cookie).build();
+        }else{
+            return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).build();
+        }
     }
 
     public static String getString(String url) throws IOException {
