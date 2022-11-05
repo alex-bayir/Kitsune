@@ -19,7 +19,7 @@
                         android:layout_height="wrap_content"/>
             </com.google.android.material.appbar.MaterialToolbar>
         </com.google.android.material.appbar.AppBarLayout>
-        <com.alex.nestetscrollwebview.NestedScrollWebView
+        <com.alex.nestedscrollwebview.NestedScrollWebView
                  android:id="@+id/web_view"
                  android:layout_width="match_parent"
                  android:layout_height="match_parent"

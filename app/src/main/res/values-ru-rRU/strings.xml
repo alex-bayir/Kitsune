@@ -133,4 +133,6 @@
     <string name="donate">Пожертвования:\n%1$s\n\n</string>
     <string name="all_scripts_updated">Все скрипты обновлены</string>
     <string name="access_denial">Отказ доступа</string>
+    <string name="login">Авторизация</string>
+    <string name="auth_help_info">Для авторизации необходимо войти в аккаунт и перезагрузить страницу.</string>
 </resources>

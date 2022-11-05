@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import androidx.preference.PreferenceManager;
 import org.alex.kitsune.BuildConfig;
+import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.ui.main.Constants;
@@ -29,10 +30,12 @@ public class MangaService {
     public static String defFavoriteCategory="Favorite";
     public static boolean isUpdating=false;
     private static String cacheDir;
+    private static SharedPreferences prefs;
 
     public static String init(Context context){
         cacheDir=context.getExternalCacheDir().getAbsolutePath();
-        dir=PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
+        prefs=PreferenceManager.getDefaultSharedPreferences(context);
+        dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
         clearUnused(new File(dir));
         copyScriptsFromAssets(context);
         Manga_Scripted.setScripts(Catalogs.getMangaScripts(context.getExternalFilesDir(Constants.manga_scripts)));
@@ -214,5 +217,16 @@ public class MangaService {
                 }
             }
         }
+    }
+
+    public static String getCookieByUrl(String url,String def){
+        for(Catalogs.Container c:Catalogs.getCatalogs(prefs)){
+            String domain=c.source.toLowerCase();
+            try{domain=Manga_Scripted.getScript(c.source).getString("provider",c.source.toLowerCase());}catch (Throwable e){Logs.saveLog(e);}
+            if(url.contains(domain)){
+                return c.cookies;
+            }
+        }
+        return def;
     }
 }

@@ -34,6 +34,7 @@
     <string name="view_mode" translatable="false">View mode</string>
     <string name="find_manga" translatable="false">Find manga</string>
     <string name="sorting">Sorting</string>
+    <string name="show_web" translatable="false">Show Web</string>
     <string name="show_source_status" translatable="false">Show status/source</string>
     <string name="Latest" translatable="false">Latest</string>
     <string name="Alphabetical" translatable="false">Alphabetical</string>
@@ -181,6 +182,7 @@
 
     <!-- Info -->
     <string name="scripts_updates">After updating the application, the scripts are overwritten, so if you make changes, then save them to yourself outside the application so as not to lose them.</string>
+    <string name="auth_help_info">To log in, you need to log in to your account and reload the page.</string>
     <string name="text_copied">Text copied</string>
     <string name="install_update">Install update</string>
     <string name="no_updates_found">No updates found</string>

@@ -1,4 +1,4 @@
-package com.alex.nestetscrollwebview;
+package com.alex.nestedscrollwebview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;

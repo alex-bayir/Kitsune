@@ -30,8 +30,7 @@
                 android:layout_height="64dp"
                 android:background="@android:color/transparent"
                 android:src="@drawable/ic_filter"
-                android:tint="?attr/colorPrimary"
-        />
+                app:tint="?attr/colorPrimary"/>
         <fr.castorflex.android.circularprogressbar.CircularProgressBar
                 android:id="@+id/progress"
                 android:layout_width="wrap_content"

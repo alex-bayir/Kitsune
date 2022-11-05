@@ -8,6 +8,7 @@ import android.util.Log;
 import info.guardianproject.netcipher.NetCipher;
 import okhttp3.*;
 import org.alex.kitsune.commons.SSLSocketFactoryExtended;
+import org.alex.kitsune.services.MangaService;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -54,14 +55,17 @@ public class NetworkUtils {
     private static void printCookies(List<Cookie> cookies){if(cookies!=null)for(Cookie cookie:cookies){android.util.Log.e("Cookie",cookie.toString());}}
 
     public static Headers getHeadersDefault(){return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).build();}
+    public static Headers getHeadersDefault(String url){
+        return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add("Cookie", MangaService.getCookieByUrl(url,"")).build();
+    }
 
     public static String getString(String url) throws IOException {
-        return getString(url, HEADERS_DEFAULT);
+        return getString(url, null);
     }
 
     public static String getString(String url, okhttp3.Headers headers) throws IOException {
         String answer;
-        Response response=sHttpClient.newCall(new Request.Builder().url(url).headers(headers!=null ? headers : getHeadersDefault()).cacheControl(CACHE_CONTROL_DEFAULT).get().build()).execute();
+        Response response=sHttpClient.newCall(new Request.Builder().url(url).headers(headers!=null ? headers : getHeadersDefault(url)).cacheControl(CACHE_CONTROL_DEFAULT).get().build()).execute();
         try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
         response.close();
     return answer;}

@@ -7,7 +7,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 33
         versionCode 13
-        versionName "1.7.4"
+        versionName "1.7.5"
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""
@@ -56,6 +56,7 @@ dependencies {
     implementation project(path: ':Shimmer')
     implementation project(path: ':EditTextCode')
     implementation project(path: ':ListItemView')
+    implementation project(path: ':NestedScrollWebView')
     implementation 'org.luaj:luaj-jse:3.0.1'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     // Required -- JUnit 4 framework

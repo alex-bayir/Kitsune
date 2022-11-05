@@ -3,6 +3,7 @@ package org.alex.kitsune.ui.shelf;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -25,6 +26,7 @@ import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
+import org.alex.kitsune.ui.settings.AuthorizationActivity;
 import org.alex.kitsune.utils.Updater;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -66,7 +68,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-        if(adapter!=null){adapter.notifyDataSetChanged();}
+        if(adapter!=null){adapter.update(getCatalogs(prefs));}
     }
 
 
@@ -103,7 +105,7 @@ public class Catalogs extends Fragment implements MenuProvider {
             }
         }
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
-            map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),true));
+            map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),true,null));
         }
         return new ArrayList<>(exist?map.values():map.values().stream().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
@@ -140,17 +142,19 @@ public class Catalogs extends Fragment implements MenuProvider {
         public String source;
         public Boolean enable;
         public Script script;
-        public Container(Script script,Boolean enable){
+        public String cookies;
+        public Container(Script script,Boolean enable,String cookies){
             this.script=script;
             this.source=script.get(Constants.providerName,String.class);
             this.enable=enable;
+            this.cookies=cookies;
         }
         public JSONObject toJSON(){
-            try{return script==null ? null : new JSONObject().put("source",source).put("enable",enable).put("script",script.getPath());}catch(JSONException e){return null;}
+            try{return script==null ? null : new JSONObject().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);}catch(JSONException e){return null;}
         }
         public static Container fromJSON(JSONObject json){
             try{
-                return new Container(Manga_Scripted.getScript(json.optString("source"), json.optString("script")),json.optBoolean("enable", true));
+                return new Container(Manga_Scripted.getScript(json.optString("source"), json.optString("script")),json.optBoolean("enable", true),json.optString("cookies",null));
             }catch (JSONException e){
                 return null;
             }catch (Throwable e){
@@ -192,6 +196,10 @@ public class Catalogs extends Fragment implements MenuProvider {
         final HolderClickListener listener;
         public CatalogsAdapter(ArrayList<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
         public String getSave(){return Container.toJSON(list).toString();}
+        public void update(ArrayList<Container> list){
+            this.list=list;
+            notifyDataSetChanged();
+        }
         @NonNull
         @NotNull
         @Override
@@ -217,7 +225,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         public class CatalogHolder extends RecyclerView.ViewHolder{
             AppCompatCheckBox checkBox;
             TextView name,description;
-            ImageView reorder;
+            ImageView reorder,login;
             Container container;
 
             public CatalogHolder(ViewGroup parent, HolderClickListener listener) {
@@ -228,11 +236,17 @@ public class Catalogs extends Fragment implements MenuProvider {
                 name=itemView.findViewById(R.id.source);
                 description=itemView.findViewById(R.id.description);
                 reorder=itemView.findViewById(R.id.reorder);
+                login=itemView.findViewById(R.id.login);
                 reorder.setOnTouchListener((v, event) -> {
                     switch(event.getAction()){
                         case MotionEvent.ACTION_DOWN: helper.startDrag(CatalogsAdapter.CatalogHolder.this); break;
                     }
                     return false;
+                });
+                login.setOnClickListener(v -> {
+                    if(container!=null && container.source!=null){
+                        v.getContext().startActivity(new Intent(v.getContext(), AuthorizationActivity.class).putExtra("source",container.source));
+                    }
                 });
             }
             public void bind(Container catalog){
@@ -240,6 +254,7 @@ public class Catalogs extends Fragment implements MenuProvider {
                 name.setText(catalog.source);
                 checkBox.setChecked(catalog.enable);
                 description.setText(Manga.getSourceDescription(catalog.source));
+                login.getDrawable().setTint(container.cookies!=null? Color.GREEN:Color.RED);
             }
         }
     }
