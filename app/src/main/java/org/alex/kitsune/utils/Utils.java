@@ -27,6 +27,7 @@ import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.widget.RecyclerView;
+import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import java.io.*;
@@ -500,5 +501,12 @@ public class Utils {
         selection.forEach(l->list.add(l.intValue()));
         if(sort){list.sort(Integer::compareTo);}
         return list;
+    }
+
+    public static void showToolTip(View anchor){
+        showToolTip(anchor.getContext(),anchor);
+    }
+    public static void showToolTip(Context context,View anchor){
+        new SimpleTooltip.Builder(context).anchorView(anchor).contentView(R.layout.tooltip).text(R.string.auth_help_info).arrowColor(context.getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
     }
 }

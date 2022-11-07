@@ -182,7 +182,7 @@
 
     <!-- Info -->
     <string name="scripts_updates">After updating the application, the scripts are overwritten, so if you make changes, then save them to yourself outside the application so as not to lose them.</string>
-    <string name="auth_help_info">To log in, you need to log in to your account and reload the page.</string>
+    <string name="auth_help_info">To log in, you need to log in to your account and reload the page.\nFor some sources, you also need to restart the application.</string>
     <string name="text_copied">Text copied</string>
     <string name="install_update">Install update</string>
     <string name="no_updates_found">No updates found</string>

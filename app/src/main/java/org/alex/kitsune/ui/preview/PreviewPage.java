@@ -12,18 +12,20 @@ import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
+import android.webkit.CookieManager;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageButton;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.commons.ClickSpan;
 import org.alex.kitsune.commons.MultiSelectListPreference;
+import org.alex.kitsune.commons.WebViewBottomSheetDialog;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.main.Constants;
@@ -34,6 +36,7 @@ import org.alex.kitsune.commons.AspectRatioImageView;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
+import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -47,12 +50,13 @@ public class PreviewPage extends PreviewHolder {
     private final TextView info;
     private final RatingBar ratingBar;
     private final Button read;
-    private final AppCompatImageButton favorite;
+    private final AppCompatImageButton favorite, web;
     private final ListItemView genres;
     private final ListItemView averageTime;
     private final ListItemView description;
     private MangaAdapter similar;
     private final Drawable caution;
+    private final WebViewBottomSheetDialog web_dialog=new WebViewBottomSheetDialog();
 
     public PreviewPage(ViewGroup parent){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_page,parent,false));
@@ -63,6 +67,9 @@ public class PreviewPage extends PreviewHolder {
         info=itemView.findViewById(R.id.info);
         info.setMovementMethod(LinkMovementMethod.getInstance());
         favorite=itemView.findViewById(R.id.button_favourite);
+        web=itemView.findViewById(R.id.button_web);
+        web.setOnClickListener(v-> web_dialog.show(((FragmentActivity)web.getContext()).getSupportFragmentManager(),""));
+        web.setOnLongClickListener(v -> {Utils.showToolTip(web); return true;});
         read=itemView.findViewById(R.id.button_read);
         ratingBar=itemView.findViewById(R.id.ratingBar);
         genres=itemView.findViewById(R.id.genres);
@@ -153,6 +160,18 @@ public class PreviewPage extends PreviewHolder {
         read.setEnabled(manga.getChapters().size()>0);
         favorite.setOnClickListener(v -> createDialog(v.getContext(),manga).show());
         similar.replace(MangaService.replaceIfExists(manga.getSimilar(),MangaService.getAll()));
+        final String source=manga.getProviderName(),url_web=manga.getUrl_WEB();
+        web_dialog.setCallback(web->{
+            web.setWebViewClient(new WebViewClient(){
+                @Override
+                public void onPageFinished(WebView view, String url) {
+                    super.onPageFinished(view, url);
+                    String cookie=CookieManager.getInstance().getCookie(url);
+                    Catalogs.updateCookies(web.getContext(),source,cookie);
+                }
+            });
+            web.loadUrl(url_web);
+        });
     }
 
     private String calculateTime(Resources res, int size) {

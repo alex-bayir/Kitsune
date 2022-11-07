@@ -8,7 +8,6 @@ import android.util.Log;
 import info.guardianproject.netcipher.NetCipher;
 import okhttp3.*;
 import org.alex.kitsune.commons.SSLSocketFactoryExtended;
-import org.alex.kitsune.services.MangaService;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -56,7 +55,7 @@ public class NetworkUtils {
 
     public static Headers getHeadersDefault(){return getHeadersDefault(null);}
     public static Headers getHeadersDefault(String url){
-        String cookie=MangaService.getCookieByUrl(url,null);
+        String cookie=org.alex.kitsune.ui.shelf.Catalogs.getCookieByUrl(url,null);
         if(cookie!=null){
             return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add("Cookie", cookie).build();
         }else{
@@ -74,12 +73,12 @@ public class NetworkUtils {
         try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
         response.close();
     return answer;}
-    public static JSONObject getJSONObject(String str) throws IOException, JSONException {
-        return new JSONObject(getString(str));
+    public static JSONObject getJSONObject(String url) throws IOException, JSONException {
+        return new JSONObject(getString(url));
     }
 
-    public static Document getDocument(String str) throws IOException {
-        return getDocument(str, HEADERS_DEFAULT);
+    public static Document getDocument(String url) throws IOException {
+        return getDocument(url, null);
     }
 
     public static Document getDocument(String str, Headers headers) throws IOException {

@@ -48,8 +48,8 @@ public class Updater {
                     JSONObject jo=json.getJSONObject(i);
                     String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
                     JSONArray assets=jo.optJSONArray("assets");
-                    for(int a=0;a<(assets!=null?assets.length():0) && (url==null || !url.contains(".apk"));a++){
-                        url=assets.getJSONObject(i).optString("browser_download_url");
+                    for(int j=0;j<(assets!=null?assets.length():0) && (url==null || !url.contains(".apk"));j++){
+                        url=assets.getJSONObject(j).optString("browser_download_url");
                     }
                     if(url!=null && url.contains(".apk")){
                         switch (compareVersions(BuildConfig.VERSION_NAME,version)){

@@ -18,6 +18,7 @@ provider="mangalib.me"
 providerName="MangaLib"
 sourceDescription="Один из самых популярных источников манги в СНГ."
 host="https://"..provider
+auth_tokens={"remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d"}
 
 Sorts={["По рейтингу"]="rate", ["По названию"]="name", ["По дате обновлениям"]="last_chapter_at",["По дате добавления"]="created_at",["По просмотрам"]="views",["По количеству глав"]="chap_count"}
 sorts={[1]="rate",[2]="created_at",[3]="last_chapter_at"}

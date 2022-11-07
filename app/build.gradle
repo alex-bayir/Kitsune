@@ -59,6 +59,7 @@ dependencies {
     implementation project(path: ':NestedScrollWebView')
     implementation 'org.luaj:luaj-jse:3.0.1'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+    implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20220320'

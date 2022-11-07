@@ -1,6 +1,7 @@
 package org.alex.kitsune.ui.shelf;
 
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -42,6 +43,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     ItemTouchHelper helper;
     SharedPreferences prefs;
     private static boolean updatingScrips=false;
+    public static ArrayList<Container> containers=new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         rv=root.findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         prefs=PreferenceManager.getDefaultSharedPreferences(getContext());
-        adapter=new CatalogsAdapter(getCatalogs(prefs), (v, index) -> getContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
+        adapter=new CatalogsAdapter(containers=getCatalogs(prefs), (v, index) -> getContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
@@ -68,7 +70,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-        if(adapter!=null){adapter.update(getCatalogs(prefs));}
+        if(adapter!=null){adapter.update(containers=getCatalogs(prefs));}
     }
 
 
@@ -140,12 +142,14 @@ public class Catalogs extends Fragment implements MenuProvider {
 
     public static class Container{
         public String source;
+        public String domain;
         public Boolean enable;
         public Script script;
         public String cookies;
         public Container(Script script,Boolean enable,String cookies){
             this.script=script;
-            this.source=script.get(Constants.providerName,String.class);
+            this.source=script.getString(Constants.providerName,null);
+            this.domain=script.getString(Constants.provider,null);
             this.enable=enable;
             this.cookies=cookies;
         }
@@ -189,6 +193,29 @@ public class Catalogs extends Fragment implements MenuProvider {
             for(Container container: containers){list.add(container.source);}
             return list;
         }
+        public static String getCookies(Container container, String def){
+            return container!=null ? container.cookies : def;
+        }
+        public static Container getContainerByUrl(Collection<Container> containers,String url){
+            return url!=null?containers.stream().filter(c->url.contains(c.domain)).findFirst().orElse(null):null;
+        }
+        public static String getCookieByUrl(Collection<Container> containers,String url,String def){
+            return url!=null?getCookies(getContainerByUrl(containers,url), def):def;
+        }
+    }
+    public static String getCookieByUrl(String url,String def){return Container.getCookieByUrl(containers,url,def);}
+    public static String[] updateCookies(Context context, String source, String cookies){
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
+        ArrayList<Container> containers=getCatalogs(prefs);
+        for(Container c:containers){
+            if(c.source.equals(source)){
+                String[] original_decoded=Manga_Scripted.filterCookies(source,cookies);
+                c.cookies=original_decoded[0];
+                prefs.edit().putString(Constants.source_order,Container.toJSON(containers).toString()).apply();
+                return original_decoded;
+            }
+        }
+        return new String[2];
     }
 
     public class CatalogsAdapter extends RecyclerView.Adapter<CatalogsAdapter.CatalogHolder>{

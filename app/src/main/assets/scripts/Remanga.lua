@@ -18,6 +18,7 @@ provider="remanga.org"
 providerName="Remanga"
 sourceDescription="Ещё один довольно популярный каталог манги."
 host="https://api."..provider
+auth_tokens={"user","token"}
 
 Sorts={["По популярности"]="-rating", ["Новинки"]="-id", ["По обновлениям"]="-chapter_date",["По голосам"]="-votes",["По просмотрам"]="-views",["По количеству глав"]="-count_chapters"}
 sorts={[1]="-rating",[2]="-id",[3]="-chapter_date"}

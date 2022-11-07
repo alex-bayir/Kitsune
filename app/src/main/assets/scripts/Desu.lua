@@ -18,6 +18,7 @@ provider="desu.me"
 providerName="Desu"
 sourceDescription="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
 host="https://"..provider
+auth_tokens={"xf_user","xf_session"}
 
 Sorts={["По популярности"]="popular", ["По добавлению"]="id",["По алфавиту"]="name", ["По обновлениям"]="updated"}
 sorts={[1]="popular",[2]="id",[3]="updated"}

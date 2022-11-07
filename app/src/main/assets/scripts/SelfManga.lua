@@ -18,6 +18,7 @@ provider="selfmanga.live"
 providerName="SelfManga"
 sourceDescription="На этом источнике размещается только русская авторская манга и журналы о манге."
 host="https://"..provider
+auth_tokens={"JSESSIONID"}
 
 Filters={["Высокий рейтинг"]="s_high_rate", ["Переведено"]="s_translated", ["Завершённая"]="s_completed",["Для взрослых"]="s_mature",["Сингл"]="s_single",["Длинная"]="s_many_chapters",["Ожидает загрузки"]="s_wait_upload",["Продаётся"]="s_sale"}
 filters={[1]="s_high_rate"}
