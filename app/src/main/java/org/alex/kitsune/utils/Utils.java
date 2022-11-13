@@ -116,7 +116,7 @@ public class Utils {
 
     }
     public static class Activity {
-        public static void clippingToolbarTexts(Toolbar toolbar){
+        public static void clippingToolbarTexts(Toolbar toolbar, View.OnLongClickListener listener){
             for(int i=0; i<toolbar.getChildCount();i++){
                 View view=toolbar.getChildAt(i);
                 if(view instanceof TextView){
@@ -124,6 +124,7 @@ public class Utils {
                         Utils.setClipboard(v.getContext(),((TextView) v).getText().toString());
                         Toast.makeText(v.getContext(),((TextView) v).getText().toString(),Toast.LENGTH_SHORT).show();
                     });
+                    view.setOnLongClickListener(listener);
                 }
             }
         }

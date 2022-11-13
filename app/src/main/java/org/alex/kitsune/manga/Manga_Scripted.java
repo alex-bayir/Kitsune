@@ -24,15 +24,15 @@ public class Manga_Scripted extends Manga{
     public String providerName;
     private final Script script;
 
-    public static Manga_Scripted newInstance(String providerName,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters){
-        return newInstance(getScript(providerName),url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters);
+    public static Manga_Scripted newInstance(String providerName,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters,boolean edited){
+        return newInstance(getScript(providerName),url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters,edited);
     }
-    public static Manga_Scripted newInstance(Script script,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters){
-        return script==null ? null : new Manga_Scripted(script,url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters);
+    public static Manga_Scripted newInstance(Script script,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters,boolean edited){
+        return script==null ? null : new Manga_Scripted(script,url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters,edited);
     }
 
-    public Manga_Scripted(Script script,String url, int id, String name, String name_alt, String author, String author_url, String genres, double rating, int status, String description, String thumbnail, String url_web, ArrayList<Chapter> chapters, ArrayList<BookMark> bookMarks, BookMark history, String CategoryFavorite, int lastSize, String dir, long lastTimeSave, long lastTimeFavorite, int lastMaxChapters) {
-        super(url, id, name, name_alt, author, author_url, genres, rating, status, description, thumbnail, url_web, chapters, bookMarks, history, CategoryFavorite, lastSize, dir, lastTimeSave, lastTimeFavorite, lastMaxChapters);
+    public Manga_Scripted(Script script,String url, int id, String name, String name_alt, String author, String author_url, String genres, double rating, int status, String description, String thumbnail, String url_web, ArrayList<Chapter> chapters, ArrayList<BookMark> bookMarks, BookMark history, String CategoryFavorite, int lastSize, String dir, long lastTimeSave, long lastTimeFavorite, int lastMaxChapters,boolean edited) {
+        super(url, id, name, name_alt, author, author_url, genres, rating, status, description, thumbnail, url_web, chapters, bookMarks, history, CategoryFavorite, lastSize, dir, lastTimeSave, lastTimeFavorite, lastMaxChapters, edited);
         this.script=script;
         provider=script.getString(Constants.provider,null);
         providerName=script.getString(Constants.providerName,null);
@@ -52,8 +52,10 @@ public class Manga_Scripted extends Manga{
         Wrapper w=script.invokeMethod(Constants.methodUpdate,Wrapper.class,url);
         if(w!=null){
             id=w.id;
-            name=w.name;
-            name_alt=w.name_alt;
+            if(!edited){
+                name=w.name;
+                name_alt=w.name_alt;
+            }
             author=w.author;
             author_url=w.author_url;
             genres=w.genres;
@@ -72,7 +74,7 @@ public class Manga_Scripted extends Manga{
         return new Wrapper(manga.url,manga.id,manga.name,manga.name_alt,manga.author,manga.author_url,manga.genres,manga.rating,manga.status,manga.description,manga.thumbnail,manga.url_web,null,null);
     }
     private static Manga_Scripted unwrap(Script script,Wrapper w){
-        return new Manga_Scripted(script, w.url, w.id, w.name, w.name_alt, w.author, w.author_url, w.genres, w.rating, w.status, w.description, w.thumbnail,w.url_web, null, null, null, null, 0, null, 0, 0, 0);
+        return new Manga_Scripted(script, w.url, w.id, w.name, w.name_alt, w.author, w.author_url, w.genres, w.rating, w.status, w.description, w.thumbnail,w.url_web, null, null, null, null, 0, null, 0, 0, 0, false);
     }
 
     @Override
@@ -139,7 +141,7 @@ public class Manga_Scripted extends Manga{
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
             String provider=entry.getValue().getString(Constants.provider,null);
             if(provider!=null && url.contains(provider)){
-                return newInstance(entry.getValue(), url, 0, null, null, null, null, null, 0, 0, null, null, null, null, null, null, null, 0, null, 0, 0, 0);
+                return newInstance(entry.getValue(), url, 0, null, null, null, null, null, 0, 0, null, null, null, null, null, null, null, 0, null, 0, 0, 0,false);
             }
         }
         return null;

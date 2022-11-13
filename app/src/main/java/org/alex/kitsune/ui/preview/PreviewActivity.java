@@ -3,6 +3,8 @@ package org.alex.kitsune.ui.preview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.*;
 import android.net.Uri;
@@ -10,6 +12,7 @@ import android.os.*;
 import android.provider.Settings;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.EditText;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.MenuBuilder;
@@ -20,6 +23,7 @@ import androidx.preference.PreferenceManager;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.google.android.material.textfield.TextInputLayout;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.commons.Callback;
@@ -54,7 +58,7 @@ public class PreviewActivity extends AppCompatActivity{
             manga.loadSimilar(obj -> {MangaService.setCacheDirIfNull((List<Manga>) obj); adapter.bindPages();},errorCallback);
             invalidateOptionsMenu();
         }
-        Utils.Activity.clippingToolbarTexts(toolbar);
+        Utils.Activity.clippingToolbarTexts(toolbar,v->{createDialog(this,manga).show(); return true;});
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -191,5 +195,41 @@ public class PreviewActivity extends AppCompatActivity{
     }
     public boolean createShortCutManga(Manga manga){
         return Utils.createShortCutPreview(this,manga.hashCode(),manga.getAnyName(),manga.getCoverPath(),new Intent(Intent.ACTION_VIEW,null,this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.manga,manga.toString()));
+    }
+    private Dialog createDialog(Context context, Manga manga){
+        View view=LayoutInflater.from(context).inflate(R.layout.dialog_edit_names,null);
+        Dialog changeNames=new AlertDialog.Builder(context).setView(view).create();
+        EditText name=view.findViewById(R.id.input_name);
+        EditText name_alt=view.findViewById(R.id.input_name_alt);
+        name.setText(manga.getName());
+        name_alt.setText(manga.getNameAlt());
+        ((TextInputLayout) view.findViewById(R.id.input_name_layout)).setEndIconOnClickListener(v -> {
+            Utils.setClipboard(v.getContext(),name.getText().toString());
+            Toast.makeText(v.getContext(),name.getText().toString(),Toast.LENGTH_SHORT).show();
+        });
+        ((TextInputLayout) view.findViewById(R.id.input_name_alt_layout)).setEndIconOnClickListener(v -> {
+            Utils.setClipboard(v.getContext(),name_alt.getText().toString());
+            Toast.makeText(v.getContext(),name_alt.getText().toString(),Toast.LENGTH_SHORT).show();
+        });
+        view.findViewById(R.id.close).setOnClickListener(v -> changeNames.cancel());
+        view.findViewById(R.id.save).setOnClickListener(v -> {
+            boolean canSave=true;
+            if(name.getText()==null || name.getText().length()==0){
+                name.setError("Length must more than zero"); canSave=false;
+            }
+            if(name_alt.getText()==null || name_alt.getText().length()==0){
+                name_alt.setError("Length must more than zero"); canSave=false;
+            }
+            if(canSave){
+                manga.setNames(name.getText().toString(),name_alt.getText().toString());
+                changeNames.cancel();
+                updateContent();
+            }
+        });
+        view.findViewById(R.id.discard).setOnClickListener(v->{
+            manga.setEdited(false);
+            changeNames.cancel();
+        });
+        return changeNames;
     }
 }

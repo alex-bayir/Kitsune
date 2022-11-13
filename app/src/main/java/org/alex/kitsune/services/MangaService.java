@@ -36,7 +36,6 @@ public class MangaService {
         prefs=PreferenceManager.getDefaultSharedPreferences(context);
         Catalogs.containers=Catalogs.getCatalogs(prefs);
         dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
-        clearUnused(new File(dir));
         copyScriptsFromAssets(context);
         Manga_Scripted.setScripts(Catalogs.getMangaScripts(context.getExternalFilesDir(Constants.manga_scripts)));
         update();
@@ -155,7 +154,8 @@ public class MangaService {
         File[] files=new File(dir).listFiles();
         if(files==null){return map;}
         for (File file : files) {
-            put(map,Manga.loadFromStorage(file.getAbsolutePath()+"/summary"));
+            int hash=put(map,Manga.loadFromStorage(file.getAbsolutePath()+"/summary"));
+            if(hash==-1){Utils.File.delete(file);}
         }
         return map;
     }
@@ -204,18 +204,5 @@ public class MangaService {
         }
         return destination;
     }
-
-    public static void clearUnused(File dir){
-        if(dir.isDirectory()){
-            File[] list=dir.listFiles(File::isDirectory);
-            if(list!=null){
-                for(File d:list){
-                    File[] l=d.listFiles();
-                    if(l!=null && (l.length==0 || (l.length==1 && "card".equals(l[0].getName())))){
-                        Utils.File.delete(d);
-                    }
-                }
-            }
-        }
-    }
+    public static String getPathSourceIcon(String domain){return dir+"icons/"+domain;}
 }

@@ -55,13 +55,13 @@ public abstract class Manga {
     private int lastMaxChapters;
     private boolean updated=false;
     protected final ListSet<Manga> similar=new ListSet<>(new ArrayList<>(10));
-
+    protected boolean edited;
     public static final int Status_None=0;
     public static final int Status_Ongoing=1;
     public static final int Status_Released=2;
-    public static final String[] FN={"Source","url","id","name","name_alt","author","author url","genres","rating","status","description","thumbnail","url_web","chapters","bookmarks","history","CategoryFavorite","lastSize","dir","lastTimeSave","lastTimeFavorite","lastMaxChapters"};
+    public static final String[] FN={"Source","url","id","name","name_alt","author","author url","genres","rating","status","description","thumbnail","url_web","chapters","bookmarks","history","CategoryFavorite","lastSize","dir","lastTimeSave","lastTimeFavorite","lastMaxChapters","edited"};
 
-    public Manga(String url, int id, String name, String name_alt, String author,String author_url, String genres, double rating, int status, String description, String thumbnail, String url_web, ArrayList<Chapter> chapters, ArrayList<BookMark> bookMarks, BookMark history, String CategoryFavorite, int lastSize, String dir, long lastTimeSave, long lastTimeFavorite, int lastMaxChapters){
+    public Manga(String url, int id, String name, String name_alt, String author,String author_url, String genres, double rating, int status, String description, String thumbnail, String url_web, ArrayList<Chapter> chapters, ArrayList<BookMark> bookMarks, BookMark history, String CategoryFavorite, int lastSize, String dir, long lastTimeSave, long lastTimeFavorite, int lastMaxChapters, boolean edited){
         this.url=url.replace("http://","https://");
         this.id=id;
         this.name=name;
@@ -88,13 +88,14 @@ public abstract class Manga {
         this.lastTimeSave=lastTimeSave;
         this.lastTimeFavorite=lastTimeFavorite;
         this.lastMaxChapters=lastMaxChapters;
+        this.edited=edited;
     }
     public Manga clone(){
-        return Objects.requireNonNull(newInstance(getProviderName(), url, id, name, name_alt, author, author_url, genres, rating, status, description, thumbnail, url_web, new ArrayList<>(chapters), new ArrayList<>(bookMarks), history, CategoryFavorite, lastSize, dir, lastTimeSave, lastTimeFavorite,lastMaxChapters));
+        return Objects.requireNonNull(newInstance(getProviderName(), url, id, name, name_alt, author, author_url, genres, rating, status, description, thumbnail, url_web, new ArrayList<>(chapters), new ArrayList<>(bookMarks), history, CategoryFavorite, lastSize, dir, lastTimeSave, lastTimeFavorite,lastMaxChapters,edited));
     }
 
-    public static Manga newInstance(String providerName,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters){
-        return Manga_Scripted.newInstance(providerName,url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters);
+    public static Manga newInstance(String providerName,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters, boolean edited){
+        return Manga_Scripted.newInstance(providerName,url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters,edited);
     }
 
     public abstract String getProvider();
@@ -220,7 +221,7 @@ public abstract class Manga {
                     .put(FN[1],url).put(FN[2],id).put(FN[3],name).put(FN[4], name_alt).put(FN[5],author).put(FN[6],author_url)
                     .put(FN[7],genres).put(FN[8],rating).put(FN[9],status).put(FN[10],description).put(FN[11],thumbnail).put(FN[12],url_web)
                     .put(FN[13],Chapter.toJSON(chapters)).put(FN[14],BookMark.toJSON(bookMarks)).put(FN[15],history!=null ? history.toJSON() : null)
-                    .put(FN[16],CategoryFavorite).put(FN[17],lastSize).put(FN[18],dir).put(FN[19],lastTimeSave).put(FN[20],lastTimeFavorite).put(FN[21],lastMaxChapters);
+                    .put(FN[16],CategoryFavorite).put(FN[17],lastSize).put(FN[18],dir).put(FN[19],lastTimeSave).put(FN[20],lastTimeFavorite).put(FN[21],lastMaxChapters).put(FN[22],edited);
         }catch(JSONException e){e.printStackTrace();}
     return null;}
 
@@ -253,7 +254,8 @@ public abstract class Manga {
                 json.optString(FN[18],null),
                 json.optLong(FN[19],0),
                 json.optLong(FN[20],0),
-                json.optInt(FN[21],0)
+                json.optInt(FN[21],0),
+                json.optBoolean(FN[22],false)
         );
     }
 
@@ -285,6 +287,7 @@ public abstract class Manga {
         for(Chapter chapter : this.chapters){if(checkChapter(chapter)){manga.chapters.add(chapter);}}
         FileOutputStream out=null;
         try{
+            new File(dir).mkdirs();
             out=new FileOutputStream(getInfoPath());
             out.write(manga.toString().getBytes());
         }catch(IOException e){
@@ -297,7 +300,8 @@ public abstract class Manga {
     public final void moveTo(String path){
         if(dir==null){
             setDir(path); save();
-        } else if(Utils.File.move(new File(dir),new File(setDir(path)))){
+        } else {
+            Utils.File.move(new File(dir),new File(setDir(path)));
             save();
         }
     }
@@ -422,6 +426,8 @@ public abstract class Manga {
             }).start();
         }else{if(onNotUpdated!=null){onNotUpdated.call(null);}}
     }
+    public void setNames(String name,String name_alt){this.name=name; this.name_alt=name_alt; setEdited(true);}
+    public void setEdited(boolean edited){this.edited=edited; save();}
     public boolean isUpdated(){return updated;}
     public int getCheckedNew(){int size=chapters!=null ? chapters.size() : 0; return size>lastSize ? size-lastSize : 0;}
     public void seen(int chapter){

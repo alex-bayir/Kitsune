@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -14,13 +15,16 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.scripts.Script;
+import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
@@ -28,6 +32,7 @@ import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
 import org.alex.kitsune.ui.settings.AuthorizationActivity;
+import org.alex.kitsune.utils.LoadTask;
 import org.alex.kitsune.utils.Updater;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -44,6 +49,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     SharedPreferences prefs;
     private static boolean updatingScrips=false;
     public static ArrayList<Container> containers=new ArrayList<>();
+    FragmentActivity activity;
 
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
@@ -55,8 +61,9 @@ public class Catalogs extends Fragment implements MenuProvider {
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
-        requireActivity().removeMenuProvider(this);
-        requireActivity().addMenuProvider(this);
+        activity=requireActivity();
+        activity.removeMenuProvider(this);
+        activity.addMenuProvider(this);
         return root;
     }
 
@@ -90,7 +97,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         switch (item.getItemId()){
             case R.id.action_add_source: startActivity(new Intent(getContext(), ScriptsActivity.class)); return true;
-            case R.id.action_update_sctips:  Updater.checkAndUpdateScripts(getActivity(), obj -> {updatingScrips=obj; requireActivity().invalidateOptionsMenu();}); return true;
+            case R.id.action_update_sctips:  Updater.checkAndUpdateScripts(activity, obj -> {updatingScrips=obj; activity.invalidateOptionsMenu();}); return true;
         }
         return false;
     }
@@ -127,7 +134,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     }
     public static Hashtable<String,Script> getMangaScripts(File dir){
         Hashtable<String,Script> table=new Hashtable<>(); File[] files;
-        if(dir!=null && dir.isDirectory() && (files=dir.listFiles())!=null){
+        if(dir!=null && dir.isDirectory() && (files=dir.listFiles(File::isFile))!=null){
             for(File file:files){
                 try{
                     Script script=Script.getInstance(file); String source=script.get(Constants.providerName,String.class);
@@ -146,12 +153,14 @@ public class Catalogs extends Fragment implements MenuProvider {
         public Boolean enable;
         public Script script;
         public String cookies;
+        public String icon_url;
         public Container(Script script,Boolean enable,String cookies){
             this.script=script;
             this.source=script.getString(Constants.providerName,null);
             this.domain=script.getString(Constants.provider,null);
             this.enable=enable;
             this.cookies=cookies;
+            this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
         }
         public JSONObject toJSON(){
             try{return script==null ? null : new JSONObject().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);}catch(JSONException e){return null;}
@@ -201,6 +210,32 @@ public class Catalogs extends Fragment implements MenuProvider {
         }
         public static String getCookieByUrl(Collection<Container> containers,String url,String def){
             return url!=null?getCookies(getContainerByUrl(containers,url), def):def;
+        }
+        public static void loadSourceIcon(Container container, Callback<Boolean> callback){
+            new LoadTask<Container,Void,Boolean>(){
+                @Override
+                protected Boolean doInBackground(Container container) {
+                    return LoadTask.loadInBackground(container.icon_url,container.domain,new File(MangaService.getPathSourceIcon(container.domain)),null,null,false);
+                }
+
+                @Override
+                protected void onFinished(Boolean downloaded) {
+                    callback.call(downloaded);
+                }
+
+                @Override
+                protected void onBraked(Throwable throwable) {
+                    callback.call(false);
+                }
+            }.start(container);
+        }
+        public void getDrawableIconSource(Callback<Drawable> callback){
+            Drawable drawable=Drawable.createFromPath(MangaService.getPathSourceIcon(domain));
+            if(drawable==null){
+                loadSourceIcon(this, obj -> callback.call(obj?Drawable.createFromPath(MangaService.getPathSourceIcon(domain)):null));
+            }else{
+                callback.call(drawable);
+            }
         }
     }
     public static String getCookieByUrl(String url,String def){return Container.getCookieByUrl(containers,url,def);}
@@ -278,6 +313,7 @@ public class Catalogs extends Fragment implements MenuProvider {
             }
             public void bind(Container catalog){
                 container=catalog;
+                container.getDrawableIconSource(d->checkBox.setBackgroundDrawable(d));
                 name.setText(catalog.source);
                 checkBox.setChecked(catalog.enable);
                 description.setText(Manga.getSourceDescription(catalog.source));

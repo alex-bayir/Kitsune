@@ -94,6 +94,8 @@
     <string name="loading_page">Loading page…</string>
     <string name="next_chapter" translatable="false">Next chapter</string>
     <string name="CREATE" translatable="false">CREATE</string>
+    <string name="SAVE" translatable="false">SAVE</string>
+    <string name="DISCARD" translatable="false">DISCARD AFTER UPDATE</string>
     <string name="RETRY" translatable="false">RETRY</string>
     <string name="RESET" translatable="false">RESET</string>
     <string name="CLOSE" translatable="false">CLOSE</string>
