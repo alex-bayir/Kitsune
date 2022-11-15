@@ -60,6 +60,7 @@
     <string name="genres">Genres</string>
     <string name="estimated_time">Estimated reading time</string>
     <string name="average_time">Average reading time</string>
+    <string name="average_reading_time_per_day">Average reading time per day</string>
     <string name="calculating" translatable="false">Calculating…</string>
     <string name="description">Description</string>
     <string name="loading" translatable="false">Loading…</string>
@@ -195,8 +196,9 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
-        Version 1.7.5:\n
-        \t-Add authentication.\n\n
+        Version 1.7.5-1.7.6:\n
+        \t-Add authentication.\n
+        \t-Optimization and error correction.\n\n
         Version 1.7.1-1.7.4:\n
         \t-Auto-updating scripts.\n\n
         Version 1.7.0:\n

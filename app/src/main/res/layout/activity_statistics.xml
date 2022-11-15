@@ -23,7 +23,7 @@
                 app:liv_icon="@drawable/ic_fast_clock"
                 app:liv_multiline="false"
                 app:liv_subtitle="@string/calculating"
-                app:liv_title="@string/average_time"
+                app:liv_title="@string/average_reading_time_per_day"
         />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

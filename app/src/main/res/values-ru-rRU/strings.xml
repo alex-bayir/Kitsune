@@ -62,7 +62,7 @@
     <string name="scripts_sources">Скрипты/Источники</string>
     <string name="version">Версия: %1$s (%2$d)</string>
     <string name="disclaimer">Вся манга, персонажи и логотипы принадлежат соответствующим владельцам авторских прав. Разработчик этого приложения не имеет никакого отношения к поставщикам контента.</string>
-    <string name="sort_popular">Попурярное</string>
+    <string name="sort_popular">Популярное</string>
     <string name="sort_latest">Новинки</string>
     <string name="sort_updated">Обновления</string>
     <string name="menu_shelf">Полка</string>
@@ -89,8 +89,9 @@
     <string name="what_new">Что нового</string>
     <string name="sourcenotdefined">Источник не определён для ссылки: \"%1$s\"</string>
     <string name="what_new_innovations">
-        Версия 1.7.5:\n
-        \t-Добавлена авторизация.\n\n
+        Версия 1.7.5-1.7.6:\n
+        \t-Добавлена авторизация.\n
+        \t-Оптимизация и исправление ошибок.\n\n
         Версия 1.7.1-1.7.4:\n
         \t-Автообновление скриптов.\n\n
         Версия 1.7.0:\n
@@ -136,4 +137,5 @@
     <string name="all_scripts_updated">Все скрипты обновлены</string>
     <string name="access_denial">Отказ доступа</string>
     <string name="auth_help_info">Для авторизации необходимо войти в аккаунт и перезагрузить страницу.\nДля некоторых источников ещё необходимо перезагрузить приложение.</string>
+    <string name="average_reading_time_per_day">Среднее время чтения в день</string>
 </resources>

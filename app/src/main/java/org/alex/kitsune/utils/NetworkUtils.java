@@ -7,6 +7,7 @@ import android.text.TextUtils;
 import android.util.Log;
 import info.guardianproject.netcipher.NetCipher;
 import okhttp3.*;
+import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.SSLSocketFactoryExtended;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
@@ -72,6 +73,7 @@ public class NetworkUtils {
         Response response=sHttpClient.newCall(new Request.Builder().url(url).headers(headers!=null ? headers : getHeadersDefault(url)).cacheControl(CACHE_CONTROL_DEFAULT).get().build()).execute();
         try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
         response.close();
+        if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
     return answer;}
     public static JSONObject getJSONObject(String url) throws IOException, JSONException {
         return new JSONObject(getString(url));

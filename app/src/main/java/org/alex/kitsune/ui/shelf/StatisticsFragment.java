@@ -34,6 +34,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -105,7 +106,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
                     case MotionEvent.ACTION_CANCEL:
                     case MotionEvent.ACTION_UP: v.getParent().requestDisallowInterceptTouchEvent(false); break;
                     case MotionEvent.ACTION_DOWN: ly=event.getY(); v.getParent().requestDisallowInterceptTouchEvent(!(chart.getLowestVisibleX()-round<chart.getXAxis().getAxisMinimum() && chart.getXAxis().getAxisMaximum()<chart.getHighestVisibleX()+round)); break;
-                    case  MotionEvent.ACTION_MOVE: float y=event.getY(); v.getParent().requestDisallowInterceptTouchEvent(!(y-ly<0 ? chart.getLowestVisibleX()-round<=chart.getXAxis().getAxisMinimum() : chart.getHighestVisibleX()+round>=chart.getXAxis().getAxisMaximum())); ly=y; break;
+                    case MotionEvent.ACTION_MOVE: float y=event.getY(); v.getParent().requestDisallowInterceptTouchEvent(!(y-ly<0 ? chart.getLowestVisibleX()-round<=chart.getXAxis().getAxisMinimum() : chart.getHighestVisibleX()+round>=chart.getXAxis().getAxisMaximum())); ly=y; break;
                 }
                 return false;
             }
@@ -239,12 +240,38 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
 
 
         public static void updateReading(SharedPreferences prefs,long new_time){
-            if(new_time>10000){
-                prefs.edit().putLong(Constants.reading_time,prefs.getLong(Constants.reading_time,0)+new_time).putLong(Constants.reading_counts,prefs.getLong(Constants.reading_counts,0)+1).apply();
+            JSONObject json=new JSONObject();
+            try{
+                json=new JSONObject(prefs.getString(Constants.reading_time,null));
+            }catch (Throwable ignored){}
+            long all_time=json.optLong("all time");
+            long today_time=json.optLong("today time");
+            long days=json.optLong("days",0);
+            String today=json.optString("today");
+            String date=new SimpleDateFormat("dd.MM.yyyy",Locale.getDefault(Locale.Category.FORMAT)).format(Calendar.getInstance().getTime());
+            if(date.equals(today)){
+                today_time+=new_time;
+                all_time+=new_time;
+            }else{
+                today=date;
+                all_time+=new_time;
+                today_time=new_time;
+                days+=1;
             }
+            try{
+                json.put("all time",all_time).put("today time",today_time).put("days",days).put("today",today);
+            }catch (Throwable e){
+                e.printStackTrace();
+            }
+            prefs.edit().putString(Constants.reading_time,json.toString()).apply();
         }
         public static long getAverageTimeReading(SharedPreferences prefs){
-            return prefs.getLong(Constants.reading_time,0)/prefs.getLong(Constants.reading_counts,1);
+            JSONObject json=new JSONObject();
+            try{
+                json=new JSONObject(prefs.getString(Constants.reading_time,null));
+            }catch (Throwable ignored){}
+            return json.optLong("all time")/json.optLong("days",1);
         }
+
     }
 }

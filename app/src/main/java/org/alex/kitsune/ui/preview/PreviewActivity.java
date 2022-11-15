@@ -28,6 +28,7 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
+import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
@@ -48,7 +49,16 @@ public class PreviewActivity extends AppCompatActivity{
     long throwableTime=0;
     SharedPreferences prefs;
     private static int hashManga=-1;
-    private final Callback<Throwable> errorCallback=(throwable) -> {progressBar.progressiveStop(); adapter.bindPages(throwable); throwableTime=Logs.saveLog(throwable); this.throwable=throwable; invalidateOptionsMenu();};
+    private final Callback<Throwable> errorCallback=(throwable) -> {
+        progressBar.progressiveStop(); adapter.bindPages(throwable); this.throwable=throwable;
+        if(throwable!=null && throwable.getCause() instanceof HttpStatusException e){
+            Toast.makeText(this,e.message("%d - %s\nURL:%s"),Toast.LENGTH_LONG).show();
+            adapter.bindPages();
+        }else{
+            throwableTime=Logs.saveLog(throwable);
+        }
+        invalidateOptionsMenu();
+    };
     private void updateContent(){
         toolbar.setTitle(manga.getName());
         toolbar.setSubtitle(manga.getNameAlt());

@@ -110,7 +110,6 @@ public abstract class LoadTask<Params, Progress, Result>{
         }
     return true;}
 
-    public static void searchManga(String source, String query, int order, Callback<Collection<Manga>> callback){searchManga(source,query,order,callback,null);}
     public static void searchManga(String source, String query, int order, Callback<Collection<Manga>> callback, TextView out_error){
         if(callback!=null){
             new LoadTask<Object[], Void, ArrayList<Manga>>() {
@@ -135,7 +134,7 @@ public abstract class LoadTask<Params, Progress, Result>{
             if(Logs.checkType(e, SocketTimeoutException.class)){
                 out_error.setText(R.string.time_out);
             }else if(Logs.checkType(e, HttpStatusException.class)) {
-                out_error.setText(((HttpStatusException) e).description_code());
+                out_error.setText(((HttpStatusException) e).message());
             }else if(Logs.checkType(e, SSLException.class)){
                 out_error.setText(e.getClass().getSimpleName());
             }else{

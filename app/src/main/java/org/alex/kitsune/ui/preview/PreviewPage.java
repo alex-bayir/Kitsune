@@ -17,22 +17,20 @@ import android.webkit.CookieManager;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.*;
+import android.widget.RadioGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
-import org.alex.kitsune.commons.ClickSpan;
-import org.alex.kitsune.commons.MultiSelectListPreference;
-import org.alex.kitsune.commons.WebViewBottomSheetDialog;
+import org.alex.kitsune.commons.*;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
 import com.alex.ratingbar.RatingBar;
-import org.alex.kitsune.commons.AspectRatioImageView;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
@@ -57,6 +55,8 @@ public class PreviewPage extends PreviewHolder {
     private MangaAdapter similar;
     private final Drawable caution;
     private final WebViewBottomSheetDialog web_dialog=new WebViewBottomSheetDialog();
+
+    private boolean wasHttpError=false;
 
     public PreviewPage(ViewGroup parent){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_page,parent,false));
@@ -136,9 +136,14 @@ public class PreviewPage extends PreviewHolder {
     @Override
     public void bind(Object obj) {
         if(obj instanceof Manga){
-            bind((Manga) obj,((Manga) obj).isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
+            bind((Manga) obj,((Manga) obj).isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()) || wasHttpError);
         }else if(obj instanceof Throwable){
-            notifyError((Throwable) obj);
+            if((((Throwable) obj).getCause() instanceof HttpStatusException)){
+                wasHttpError=true;
+            }else{
+                wasHttpError=false;
+                notifyError((Throwable) obj);
+            }
         }
     }
 

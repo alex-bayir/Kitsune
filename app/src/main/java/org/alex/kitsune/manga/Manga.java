@@ -10,6 +10,7 @@ import android.text.Html;
 import androidx.annotation.Nullable;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.ClickSpan;
+import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.ListSet;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
@@ -412,7 +413,7 @@ public abstract class Manga {
                 Message msg=new Message();
                 try{
                     if(!updated){updated=update();}
-                }catch(Throwable e){updated=false; Logs.saveLog(e); msg.obj=e;}
+                }catch(Throwable e){updated=false; if(!(e.getCause() instanceof HttpStatusException)){Logs.saveLog(e);} msg.obj=e;}
                 new Handler(Looper.getMainLooper()){
                     @Override
                     public void handleMessage(Message msg){
