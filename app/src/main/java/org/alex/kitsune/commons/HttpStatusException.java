@@ -7,7 +7,7 @@ public class HttpStatusException extends IOException {
     private final String url;
 
     public HttpStatusException(int code, String message, String url) {
-        super(message("Http code=%d - %s, URL=[%s]",code,message,url));
+        super(message(code,message,url));
         this.code=code;
         this.description=message;
         this.url=url;
@@ -19,8 +19,9 @@ public class HttpStatusException extends IOException {
     public String url(){return url;}
     public String description(){return description;}
     private static String message(String format,int code,String description,String url){return String.format(format,code,description,url);}
+    private static String message(int code,String description,String url){return message("%d - %s\nURL:%s",code,description,url);}
     public String message(String format){return message(format,code,description,url);}
-    public String message(){return message("Http code=%d - %s\nURL:%s");}
+    public String message(){return message(code,description,url);}
 
     public static String message(int code){
         return switch (code) {

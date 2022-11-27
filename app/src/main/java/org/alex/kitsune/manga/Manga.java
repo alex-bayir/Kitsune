@@ -22,6 +22,7 @@ import org.alex.kitsune.utils.Utils;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.*;
+import java.net.SocketException;
 import java.util.*;
 
 
@@ -413,7 +414,7 @@ public abstract class Manga {
                 Message msg=new Message();
                 try{
                     if(!updated){updated=update();}
-                }catch(Throwable e){updated=false; if(!(e.getCause() instanceof HttpStatusException)){Logs.saveLog(e);} msg.obj=e;}
+                }catch(Throwable e){updated=false; if(!(e.getCause() instanceof HttpStatusException || e.getCause() instanceof SocketException)){Logs.saveLog(e);} msg.obj=e;}
                 new Handler(Looper.getMainLooper()){
                     @Override
                     public void handleMessage(Message msg){

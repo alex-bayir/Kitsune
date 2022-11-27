@@ -80,6 +80,12 @@ public class Logs {
     public static boolean clearLog(long date){
         return new File(dir+"/"+date).delete();
     }
+    public static void clearAll(){
+        File[] list=new File(dir).listFiles(File::isFile);
+        for(int i=0;i<(list!=null ? list.length:0);i++){
+            list[i].delete();
+        }
+    }
 
     public static ArrayList<Log> getLogs(){
         File[] list=new File(dir).listFiles(pathname -> !pathname.isDirectory());

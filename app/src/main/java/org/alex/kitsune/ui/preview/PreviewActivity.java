@@ -28,7 +28,7 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
-import org.alex.kitsune.commons.HttpStatusException;
+import java.io.IOException;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
@@ -50,12 +50,13 @@ public class PreviewActivity extends AppCompatActivity{
     SharedPreferences prefs;
     private static int hashManga=-1;
     private final Callback<Throwable> errorCallback=(throwable) -> {
-        progressBar.progressiveStop(); adapter.bindPages(throwable); this.throwable=throwable;
-        if(throwable!=null && throwable.getCause() instanceof HttpStatusException e){
-            Toast.makeText(this,e.message("%d - %s\nURL:%s"),Toast.LENGTH_LONG).show();
-            adapter.bindPages();
+        progressBar.progressiveStop(); this.throwable=throwable;
+        if(throwable!=null && throwable.getCause() instanceof IOException e){
+            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+            adapter.bindPages(manga,true);
         }else{
             throwableTime=Logs.saveLog(throwable);
+            adapter.bindPages(throwable);
         }
         invalidateOptionsMenu();
     };

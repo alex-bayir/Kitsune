@@ -38,6 +38,7 @@ public class Updater {
         f=new File(context.getExternalCacheDir().getAbsolutePath()+File.separator+"update.apk"); f.delete();
         if(compareVersions(PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.version,""),BuildConfig.VERSION_NAME)!=0){
             showWhatisNew(context,true);
+            Logs.clearAll();
         }
     }
     private static JSONObject getUpdate(Context context){

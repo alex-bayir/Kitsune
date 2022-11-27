@@ -51,9 +51,9 @@ public class PreviewPagerAdapter extends RecyclerView.Adapter<PreviewHolder> {
     public BookMarksPage getBookMarksPage(){return bookMarksPage;}
 
     public void bindPages(){
-        bindPages(manga);
+        bindPages(manga, true);
     }
-    public void bindPages(Object obj){
+    public void bindPages(Object... obj){
         if(previewPage!=null){previewPage.bind(obj);}
         if(chaptersPage!=null){chaptersPage.bind(obj);}
         if(bookMarksPage!=null){bookMarksPage.bind(obj);}

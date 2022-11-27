@@ -25,7 +25,6 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.commons.*;
-import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
@@ -38,7 +37,6 @@ import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import java.net.SocketTimeoutException;
 import java.util.HashSet;
 
 
@@ -56,7 +54,6 @@ public class PreviewPage extends PreviewHolder {
     private final Drawable caution;
     private final WebViewBottomSheetDialog web_dialog=new WebViewBottomSheetDialog();
 
-    private boolean wasHttpError=false;
 
     public PreviewPage(ViewGroup parent){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_page,parent,false));
@@ -135,15 +132,12 @@ public class PreviewPage extends PreviewHolder {
 
     @Override
     public void bind(Object obj) {
-        if(obj instanceof Manga){
-            bind((Manga) obj,((Manga) obj).isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()) || wasHttpError);
-        }else if(obj instanceof Throwable){
-            if((((Throwable) obj).getCause() instanceof HttpStatusException)){
-                wasHttpError=true;
-            }else{
-                wasHttpError=false;
-                notifyError((Throwable) obj);
-            }
+        if(obj instanceof Manga manga){
+            bind(manga,manga.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
+        }else if(obj instanceof Object[] a){
+            bind((Manga)a[0], (boolean)a[1]);
+        }else if(obj instanceof Throwable th){
+            notifyError(th.getCause()!=null ? th.getCause() : th);
         }
     }
 
@@ -222,10 +216,6 @@ public class PreviewPage extends PreviewHolder {
     }
 
     public void notifyError(Throwable th){
-        if(Logs.checkType(th,SocketTimeoutException.class)){
-            description.setSubtitle(R.string.time_out);
-        }else{
-            description.setSubtitle("Type: "+(th.getCause()!=null ? th.getCause() : th).getClass().getName()+"\nCause: "+th.getMessage()+"\nStackTrace see in menu");
-        }
+        description.setSubtitle("Type: "+th.getClass().getName()+"\nCause: "+th.getMessage()+"\nStackTrace see in menu");
     }
 }
