@@ -119,6 +119,7 @@ public class Manga_Scripted extends Manga{
     }
 
     public static String[] filterCookies(String source,String cookies_original){
+        if(cookies_original==null){return new String[]{null,null};}
         String[] cookies=cookies_original.split("; ");
         String[] decoded=(android.os.Build.VERSION.SDK_INT >= 33? URLDecoder.decode(cookies_original, StandardCharsets.UTF_8) : URLDecoder.decode(cookies_original)).split("; ");
         StringBuilder text=new StringBuilder(),save=new StringBuilder();
