@@ -33,6 +33,7 @@ import com.alex.ratingbar.RatingBar;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
+import org.alex.kitsune.ui.settings.SettingsShelf;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
@@ -112,9 +113,10 @@ public class PreviewPage extends PreviewHolder {
         v2.findViewById(R.id.close).setOnClickListener(v -> inputNewCategory.cancel());
         v2.findViewById(R.id.create).setOnClickListener(v -> {
             if(input.getText()!=null && input.getText().length()>0){
-                if(!MangaService.getCategories().contains(input.getText().toString())){
-                    MangaService.getCategories().add(input.getText().toString());
-                    MultiSelectListPreference.save(PreferenceManager.getDefaultSharedPreferences(v.getContext()),Constants.categories,MangaService.getCategories());
+                String category=input.getText().toString();
+                if(!MangaService.getCategories().contains(category)){
+                    MangaService.getCategories().add(category);
+                    SettingsShelf.add(PreferenceManager.getDefaultSharedPreferences(v.getContext()),category);
                     setGroups(v.getContext(),MangaService.getCategories(),group,manga.getCategoryFavorite());
                     manga.setCategoryFavorite(input.getText().toString());
                     MangaService.allocate(manga,false);
@@ -134,10 +136,10 @@ public class PreviewPage extends PreviewHolder {
     public void bind(Object obj) {
         if(obj instanceof Manga manga){
             bind(manga,manga.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
-        }else if(obj instanceof Object[] a){
-            bind((Manga)a[0], (boolean)a[1]);
         }else if(obj instanceof Throwable th){
             notifyError(th.getCause()!=null ? th.getCause() : th);
+        }else if(obj instanceof Object[] a){
+            bind((Manga)a[0], (boolean)a[1]);
         }
     }
 

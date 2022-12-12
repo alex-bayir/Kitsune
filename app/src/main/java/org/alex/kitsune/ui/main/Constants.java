@@ -13,6 +13,7 @@ public class Constants {
     public static final String chapter="Chapter";
     public static final String bookmark="Bookmark";
     public static final String history="History";
+    public static final String saved="Saved";
     public static final String load="load";
     public static final String delete="delete";
     public static final String favorites="favorites";
@@ -20,10 +21,7 @@ public class Constants {
     public static final String author="author";
     public static final String author_url="author url";
     public static final String source_order="source_order";
-    public static final String historyRows="history_rows";
-    public static final String savedRows="saved_rows";
-    public static final String favoritesRows="favorites_rows";
-    public static final String categories="categories";
+    public static final String shelf_order="shelf_order";
     public static final String category="category";
     public static final String catalog="catalog";
     public static final String reversed="reversed";

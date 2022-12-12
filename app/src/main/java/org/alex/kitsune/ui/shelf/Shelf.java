@@ -22,23 +22,25 @@ import org.alex.kitsune.manga.views.LimitedMangaAdapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.R;
 import org.alex.kitsune.manga.views.MangaAdapter;
-import org.alex.kitsune.commons.MultiSelectListPreference;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
+import org.alex.kitsune.ui.settings.SettingsShelf;
 import org.alex.kitsune.ui.shelf.favorite.FavoritesActivity;
 import org.alex.kitsune.ui.shelf.history.HistoryActivity;
 import org.alex.kitsune.ui.shelf.saved.SavedActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 
 public class Shelf extends Fragment implements MenuProvider {
     LinearLayout l;
-    LimitedMangaAdapter adapterH,adapterS;
-    Hashtable<String,LimitedMangaAdapter> adaptersF;
+    Hashtable<String,LimitedMangaAdapter> adapters;
     Hashtable<MangaAdapter,View> views;
-    HashSet<String> categoriesShowing;
+    public static final String History=Constants.history,Saved=Constants.saved;
+    LinkedHashMap<String,Integer> sequence=new LinkedHashMap<>();
+    LinkedHashMap<String, SettingsShelf.Container> shelf_sequence=new LinkedHashMap<>();
     SharedPreferences prefs;
     public SmoothProgressBar progress;
     private int p=0;
@@ -70,53 +72,47 @@ public class Shelf extends Fragment implements MenuProvider {
                         String tmp=intent.getStringExtra(Constants.option);
                         switch(tmp!=null ? tmp : ""){
                             case Constants.history:
-                                adapterH.add(0,manga);
-                                manageViewIfAdapter(l,views,adapterH,0);
-                                adapterS.update(manga);
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
+                                manageViewIfAdapter(l,views,adapters.get(History),0).add(0,manga);
+                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
                                     entry.getValue().update(manga);
                                 }
                                 break;
                             case Constants.load:
-                                adapterH.update(manga);
-                                adapterS.add(0,manga);
-                                manageViewIfAdapter(l,views,adapterS,-1);
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
+                                manageViewIfAdapter(l,views,adapters.get(Saved),-1).add(0,manga);
+                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
                                     entry.getValue().update(manga);
                                 }
                                 break;
                             case Constants.favorites:
-                                adapterH.update(manga);
-                                adapterS.update(manga);
-                                boolean history_view=checkViewInChildren(l,views.get(adapterH));
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
-                                    if(entry.getKey().equals(manga.getCategoryFavorite())){
+                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
+                                    String key=entry.getKey();
+                                    if(History.equals(key) || Saved.equals(key)){
+                                        entry.getValue().update(manga);
+                                    }else if(key.equals(manga.getCategoryFavorite())){
                                         entry.getValue().add(0,manga);
                                     }else{
                                         entry.getValue().remove(manga);
                                     }
-                                    manageViewIfAdapter(l,views,entry.getValue(),history_view ? 1 : 0);
+                                    manageViewIfAdapter(l,views,entry.getValue(),getOrDefault(sequence,key,-1));
                                 }
                                 String key=manga.getCategoryFavorite();
-                                if(key!=null && !adaptersF.containsKey(key)){
+                                if(key!=null && !adapters.containsKey(key)){
                                     createView(createAdapter(MangaService.Type.Favorites,key),new GridLayoutManager(getContext(),3),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),LayoutInflater.from(getContext()),l);
-                                    manageViewIfAdapter(l,views,adaptersF.get(key),history_view ? 1 : 0);
+                                    manageViewIfAdapter(l,views, adapters.get(key),getOrDefault(sequence,key,-1));
                                 }
                                 break;
                             default:
                                 if(manga.getHistory()!=null){
-                                    adapterH.update(manga);
+                                    adapters.get(History).update(manga);
                                 }else{
-                                    adapterH.remove(manga);
-                                    manageViewIfAdapter(l,views,adapterH,-1);
+                                    manageViewIfAdapter(l,views,adapters.get(History),-1).remove(manga);
                                 }
                                 if(manga.countSaved()>0){
-                                    adapterS.update(manga);
+                                    adapters.get(Saved).update(manga);
                                 }else{
-                                    adapterS.remove(manga);
-                                    manageViewIfAdapter(l,views,adapterS,-1);
+                                    manageViewIfAdapter(l,views,adapters.get(Saved),-1).remove(manga);
                                 }
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
+                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
                                     entry.getValue().update(manga);
                                 }
                             break;
@@ -133,24 +129,36 @@ public class Shelf extends Fragment implements MenuProvider {
         return root;
     }
 
+    private <K,V> V getOrDefault(HashMap<K,V> map,K key,V def){
+        V value=map.get(key);
+        return value!=null?value:def;
+    }
     private void update(LayoutInflater inflater){
         l.removeAllViews();
         views=new Hashtable<>();
-        createAdapter(MangaService.Type.History,null);
-        createView(adapterH,MangaAdapter.create(getContext(), 4, position->position==0 ? 4:1),getString(R.string.History), v -> startActivity(new Intent(getContext(), HistoryActivity.class)),inflater, l);
-        manageViewIfAdapter(l,views,adapterH,0);
-
-        adaptersF=new Hashtable<>();
-        if(prefs.getInt(Constants.favoritesRows,4)>0){
-            for(String key:categoriesShowing=getShowingFavoriteCategories(prefs)){
-                createView(createAdapter(MangaService.Type.Favorites,key),MangaAdapter.create(getContext(),3),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),LayoutInflater.from(getContext()),l);
-                manageViewIfAdapter(l,views,adaptersF.get(key),-1);
+        adapters=new Hashtable<>();
+        sequence=new LinkedHashMap<>();
+        shelf_sequence=SettingsShelf.getShelfSequence(prefs);
+        int i=0;
+        for(Map.Entry<String,SettingsShelf.Container> entry:shelf_sequence.entrySet()){
+            String key=entry.getKey();
+            SettingsShelf.Container value=entry.getValue();
+            sequence.put(key,value.count>0? i++ : -1);
+            switch (key){
+                case History->{
+                    createView(createAdapter(MangaService.Type.History,key),MangaAdapter.create(getContext(), 4, value.first?position->position==0 ? 4:1:null),getString(R.string.History), v -> startActivity(new Intent(getContext(), HistoryActivity.class)),inflater, l);
+                    manageViewIfAdapter(l,views,adapters.get(key),-1);
+                }
+                case Saved->{
+                    createView(createAdapter(MangaService.Type.Saved,key),MangaAdapter.create(getContext(),4, value.first?position->position==0 ? 4:1:null),getString(R.string.Saved), v -> startActivity(new Intent(getContext(), SavedActivity.class)),inflater, l);
+                    manageViewIfAdapter(l,views,adapters.get(key),-1);
+                }
+                default -> {
+                    createView(createAdapter(MangaService.Type.Favorites,key),MangaAdapter.create(getContext(),3, value.first?position->position==0 ? 3:1:null),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),inflater,l);
+                    manageViewIfAdapter(l,views, adapters.get(key),-1);
+                }
             }
         }
-
-        createAdapter(MangaService.Type.Saved,null);
-        createView(adapterS,MangaAdapter.create(getContext(),4),getString(R.string.Saved), v -> startActivity(new Intent(getContext(), SavedActivity.class)),inflater, l);
-        manageViewIfAdapter(l,views,adapterS,-1);
     }
 
     @Override
@@ -187,9 +195,7 @@ public class Shelf extends Fragment implements MenuProvider {
                 if(!manga.isUpdated()){
                     manga.update(progress.getContext(), ()->{
                         MangaService.setCacheDirIfNull(manga.getSimilar());
-                        adapterH.update(manga);
-                        adapterS.update(manga);
-                        for(Map.Entry<String,LimitedMangaAdapter> entry: adaptersF.entrySet()){
+                        for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
                             entry.getValue().update(manga);
                         }
                         if(manga.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash,manga.hashCode()));}
@@ -219,35 +225,33 @@ public class Shelf extends Fragment implements MenuProvider {
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
     }
 
-    public HashSet<String> getShowingFavoriteCategories(SharedPreferences prefs){
-        return MultiSelectListPreference.getEntries(prefs,Constants.categories,MangaService.defFavoriteCategory);
-    }
-
     public LimitedMangaAdapter createAdapter(MangaService.Type type,String key){
         switch (type){
             default:
             case History:
-                return adapterH=new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.History), MangaAdapter.Mode.MIXED, prefs.getInt(Constants.historyRows,4)>0 ? (prefs.getInt(Constants.historyRows,4)-1)*4+1 : 0,
+                adapters.put(History,new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.History), MangaAdapter.Mode.MIXED, getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
                         manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
                         manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true)
-                        ));
+                        )));
+                return adapters.get(History);
             case Saved:
-                return adapterS=new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.Saved),MangaAdapter.Mode.GRID,prefs.getInt(Constants.savedRows,4)*4,
+                adapters.put(Saved,new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.Saved),MangaAdapter.Mode.GRID,getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
                         manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())
-                        ));
+                        )));
+                return adapters.get(Saved);
             case Favorites:
-                adaptersF.put(key,new LimitedMangaAdapter(MangaService.getFavorites(key),MangaAdapter.Mode.GRID,prefs.getInt(Constants.favoritesRows,4)*3,
+                adapters.put(key,new LimitedMangaAdapter(MangaService.getFavorites(key),MangaAdapter.Mode.GRID,getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
                         manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()))
                 ));
-                return adaptersF.get(key);
+                return adapters.get(key);
         }
     }
 
-    public View createView(MangaAdapter adapter, GridLayoutManager layoutManager, String title, View.OnClickListener listener, LayoutInflater inflater, ViewGroup container){
+    public View createView(LimitedMangaAdapter adapter, GridLayoutManager layoutManager, String title, View.OnClickListener listener, LayoutInflater inflater, ViewGroup container){
         View root=inflater.inflate(R.layout.fragment_shelf, container, false);
         ((TextView)root.findViewById(R.id.title)).setText(title);
         root.findViewById(R.id.more).setOnClickListener(listener);
-        adapter.initRV(root.findViewById(R.id.rv_list),layoutManager);
+        adapter.initRV(root.findViewById(R.id.rv_list),layoutManager, adapter.getMaxCount());
         views.put(adapter,root);
     return root;}
 
@@ -257,14 +261,15 @@ public class Shelf extends Fragment implements MenuProvider {
         }
         return false;
     }
-    public void manageViewIfAdapter(ViewGroup l,Hashtable<MangaAdapter, View> views,LimitedMangaAdapter adapter, int index){
-        manageViewIfAdapter(l,views.get(adapter),adapter,index);
+    public LimitedMangaAdapter manageViewIfAdapter(ViewGroup l,Hashtable<MangaAdapter, View> views,LimitedMangaAdapter adapter, int index){
+        return manageViewIfAdapter(l,views.get(adapter),adapter,index);
     }
-    public void manageViewIfAdapter(ViewGroup l,View view,LimitedMangaAdapter adapter, int index){
+    public LimitedMangaAdapter manageViewIfAdapter(ViewGroup l,View view,LimitedMangaAdapter adapter, int index){
         if(adapter.getItemCount()==0){
             l.removeView(view);
         }else if(!checkViewInChildren(l,view)){
             l.addView(view,index);
         }
+        return adapter;
     }
 }

@@ -61,10 +61,10 @@ public class SettingsActivity extends AppCompatActivity {
             case TYPE_READER: type=SettingsFragment.Type.Reader; break;
             case TYPE_SHELF: type=SettingsFragment.Type.Shelf; break;
         }
-        if(type==SettingsFragment.Type.List){
-            ((RecyclerView)findViewById(R.id.rv_list)).setAdapter(new ListAdapter(this));
-        }else{
-            replace(new SettingsFragment(type));
+        switch (type){
+            case List -> ((RecyclerView)findViewById(R.id.rv_list)).setAdapter(new ListAdapter(this));
+            case Shelf -> replace(new SettingsShelf());
+            default -> replace(new SettingsFragment(type));
         }
     }
     public void replace(Fragment fragment){
@@ -135,12 +135,6 @@ public class SettingsActivity extends AppCompatActivity {
                     Utils.Activity.restartActivity(getActivity());
                     return false;
                 });
-            }
-            if(type==Type.Shelf){
-                Preference p=findPreference(Constants.categories);
-                if(p instanceof MultiSelectListPreference){
-                    ((MultiSelectListPreference)p).setEntries(MangaService.getCategories(), false);
-                }
             }
             if(type==Type.Reader){
                 setChangeListener(Constants.adjust_brightness_value,(preference, newValue) -> {

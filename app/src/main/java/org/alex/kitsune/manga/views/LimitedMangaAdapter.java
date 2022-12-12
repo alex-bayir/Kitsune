@@ -1,5 +1,7 @@
 package org.alex.kitsune.manga.views;
 
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.manga.Manga;
 import java.util.Collection;
@@ -49,5 +51,17 @@ public class LimitedMangaAdapter extends MangaAdapter {
             notifyItemChanged(pos);
         }
         return old!=pos && moveIfExist;
+    }
+    public void initRV(RecyclerView rv, GridLayoutManager layoutManager, int max_rows){
+        setLayoutManager(layoutManager);
+        rv.setLayoutManager(getLayoutManager());
+        if(getMode()!=Mode.LIST){
+            setViewMode(getLayoutManager().getSpanSizeLookup().getSpanSize(0)==1?Mode.GRID:Mode.MIXED);
+        }
+        switch (getMode()){
+            case GRID -> setMaxCount(layoutManager.getSpanCount()*max_rows);
+            case MIXED -> setMaxCount(layoutManager.getSpanCount()*(max_rows-1)+1);
+        }
+        rv.setAdapter(this);
     }
 }

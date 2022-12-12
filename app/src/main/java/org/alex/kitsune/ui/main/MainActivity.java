@@ -263,4 +263,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         toolbar.setTitle(item.getTitle());
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        if(adapter.getCurrentIndex()==0){
+            super.onBackPressed();
+        }else{
+            onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
+        }
+    }
 }

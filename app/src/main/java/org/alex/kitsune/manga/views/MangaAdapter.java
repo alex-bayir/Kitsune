@@ -188,6 +188,9 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
     public void initRV(RecyclerView rv, GridLayoutManager layoutManager){
         setLayoutManager(layoutManager);
         rv.setLayoutManager(getLayoutManager());
+        if(getMode()!=Mode.LIST){
+            setViewMode(getLayoutManager().getSpanSizeLookup().getSpanSize(0)==1?Mode.GRID:Mode.MIXED,false);
+        }
         rv.setAdapter(this);
     }
     public static class DiffCallback<E> extends DiffUtil.Callback{

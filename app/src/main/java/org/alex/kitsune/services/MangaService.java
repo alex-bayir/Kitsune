@@ -29,11 +29,10 @@ public class MangaService {
     public static String defFavoriteCategory="Favorite";
     public static boolean isUpdating=false;
     private static String cacheDir;
-    private static SharedPreferences prefs;
 
     public static String init(Context context){
-        cacheDir=context.getExternalCacheDir().getAbsolutePath();
-        prefs=PreferenceManager.getDefaultSharedPreferences(context);
+        clearCache(cacheDir=context.getExternalCacheDir().getAbsolutePath());
+        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
         Catalogs.containers=Catalogs.getCatalogs(prefs);
         dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
         copyScriptsFromAssets(context);
@@ -205,4 +204,7 @@ public class MangaService {
         return destination;
     }
     public static String getPathSourceIcon(String domain){return dir+"icons/"+domain;}
+    public static void clearCache(String cacheDir){
+        Utils.File.delete(new File(cacheDir));
+    }
 }

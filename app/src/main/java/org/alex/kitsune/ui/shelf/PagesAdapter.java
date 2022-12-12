@@ -30,6 +30,7 @@ public class PagesAdapter {
     }
 
     public Fragment getCurrent(){return get(current);}
+    public int getCurrentIndex(){return current;}
 
     public int getItemCount(){return 4;}
 }

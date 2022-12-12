@@ -39,6 +39,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -56,8 +58,8 @@ public class Catalogs extends Fragment implements MenuProvider {
         View root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
         rv=root.findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
-        prefs=PreferenceManager.getDefaultSharedPreferences(getContext());
-        adapter=new CatalogsAdapter(containers=getCatalogs(prefs), (v, index) -> getContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
+        prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
+        adapter=new CatalogsAdapter(containers=getCatalogs(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
@@ -244,13 +246,32 @@ public class Catalogs extends Fragment implements MenuProvider {
         ArrayList<Container> containers=getCatalogs(prefs);
         for(Container c:containers){
             if(c.source.equals(source)){
-                String[] original_decoded=Manga_Scripted.filterCookies(source,cookies);
+                String[] original_decoded=filterCookies(source,cookies);
                 c.cookies=original_decoded[0];
                 prefs.edit().putString(Constants.source_order,Container.toJSON(containers).toString()).apply();
                 return original_decoded;
             }
         }
         return new String[2];
+    }
+    public static String[] filterCookies(String source,String cookies_original){
+        if(cookies_original==null){return new String[2];}
+        String[] cookies=cookies_original.split("; ");
+        String[] decoded=(android.os.Build.VERSION.SDK_INT >= 33? URLDecoder.decode(cookies_original, StandardCharsets.UTF_8) : URLDecoder.decode(cookies_original)).split("; ");
+        StringBuilder text=new StringBuilder(),save=new StringBuilder();
+        String[] tokens=Manga_Scripted.getScript(source).get("auth_tokens",String[].class);
+        for(int i=0;i<cookies.length;i++){
+            String[] nvd=decoded[i].split("=",2);
+            try{decoded[i]=nvd[0]+"="+new JSONObject(nvd[1]).toString(2);}catch(JSONException ignored){}
+            String tmp=nvd[0].toLowerCase();
+            for(String token:tokens){
+                if(tmp.contains(token.toLowerCase())){
+                    text.append("\n\n").append(decoded[i]);
+                    save.append("; ").append(cookies[i]);
+                }
+            }
+        }
+        return new String[]{save.length()==0?null:save.substring(2),text.length()==0?null:text.substring(2)};
     }
 
     public class CatalogsAdapter extends RecyclerView.Adapter<CatalogsAdapter.CatalogHolder>{

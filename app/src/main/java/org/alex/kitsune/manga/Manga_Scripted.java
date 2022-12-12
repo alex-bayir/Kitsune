@@ -4,10 +4,7 @@ import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.IOException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class Manga_Scripted extends Manga{
@@ -116,26 +113,6 @@ public class Manga_Scripted extends Manga{
             FilterSortAdapter.getTitles(createAdvancedSearchAdapter(script), set);
         }
         return set;
-    }
-
-    public static String[] filterCookies(String source,String cookies_original){
-        if(cookies_original==null){return new String[]{null,null};}
-        String[] cookies=cookies_original.split("; ");
-        String[] decoded=(android.os.Build.VERSION.SDK_INT >= 33? URLDecoder.decode(cookies_original, StandardCharsets.UTF_8) : URLDecoder.decode(cookies_original)).split("; ");
-        StringBuilder text=new StringBuilder(),save=new StringBuilder();
-        String[] tokens=Manga_Scripted.getScript(source).get("auth_tokens",String[].class);
-        for(int i=0;i<cookies.length;i++){
-            String[] nvd=decoded[i].split("=",2);
-            try{decoded[i]=nvd[0]+"="+new JSONObject(nvd[1]).toString(2);}catch(JSONException ignored){}
-            String tmp=nvd[0].toLowerCase();
-            for(String token:tokens){
-                if(tmp.contains(token.toLowerCase())){
-                    text.append("\n\n").append(decoded[i]);
-                    save.append("; ").append(cookies[i]);
-                }
-            }
-        }
-        return new String[]{save.length()==0?null:save.substring(2),text.length()==0?null:text.substring(2)};
     }
 
     public static Manga_Scripted determinate(String url){
