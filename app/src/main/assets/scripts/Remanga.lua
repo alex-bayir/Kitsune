@@ -28,8 +28,9 @@ Categories={["Веб"]="5",["В цвете"]="6",["Ёнкома"]="8",["Сбор
 function update(url) -- Wrapper
     local jo=JSONObject.new(Wrapper:loadPage(url)):get("content")
     if(JSONObject:equals(jo:getClass())) then
-        local branch=jo:getJSONArray("branches"):getJSONObject(0)
-        local count=branch:getInt("count_chapters")
+        local branches=jo:getJSONArray("branches")
+        local branch=branches:length()>0 and branches:getJSONObject(0) or nil
+        local count=branch~=nil and branch:getInt("count_chapters") or 0
         local chapters=ArrayList.new(count)
         for page=math.ceil(count/100),1,-1 do
             local list=JSONObject.new(Wrapper:loadPage(host.."/api/titles/chapters/?branch_id="..branch:getInt("id").."&count=100&page="..page)):getJSONArray("content")

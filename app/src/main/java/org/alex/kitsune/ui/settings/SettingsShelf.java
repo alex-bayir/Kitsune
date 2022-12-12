@@ -39,7 +39,7 @@ public class SettingsShelf  extends Fragment {
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         rv=view.findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
-        adapter=new Adapter(containers=getSequence(prefs),null);
+        adapter=new Adapter(containers=getSequence(prefs));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
@@ -125,8 +125,7 @@ public class SettingsShelf  extends Fragment {
     }
     public class Adapter extends RecyclerView.Adapter<Holder>{
         ArrayList<Container> list;
-        final HolderClickListener listener;
-        public Adapter(ArrayList<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
+        public Adapter(ArrayList<Container> list){this.list=list;}
         public ArrayList<Container> getList(){return list;}
         public void update(ArrayList<Container> list){
             this.list=list;
@@ -136,7 +135,7 @@ public class SettingsShelf  extends Fragment {
         @NotNull
         @Override
         public Holder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-            return new Holder(parent,listener);
+            return new Holder(parent);
         }
 
         @Override
@@ -161,9 +160,8 @@ public class SettingsShelf  extends Fragment {
         SeekBar seekBar;
         Container container;
 
-        public Holder(ViewGroup parent, HolderClickListener listener) {
+        public Holder(ViewGroup parent) {
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_shelf_pref,parent,false));
-            itemView.setOnClickListener(view->listener.onItemClick(view,getBindingAdapterPosition()));
             checkBox=itemView.findViewById(R.id.checkbox);
             checkBox.setOnCheckedChangeListener((buttonView, isChecked)->{if(container!=null){container.first =isChecked;}});
             name=itemView.findViewById(R.id.source);

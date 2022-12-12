@@ -40,7 +40,7 @@ function update(url) -- Wrapper
     if(chapters:size()==0) then chapters:add(Chapter.new(num(url:match("%d+")),0,0,"Сингл",0)) end
     return Wrapper.new(
             url,
-            num(Wrapper:attr(e:selectFirst("a.title_top_a"),"href"):match("%d+")),
+            num(Wrapper:attr(e:selectFirst("a.title_top_a"),"href",""):match("%d+")),
             Wrapper:text(e:selectFirst("a.title_top_a"),""):match("[a-zA-Z].*[a-zA-Z]"),
             Wrapper:text(e:selectFirst("a.title_top_a"),""):match("[а-яА-Я].*[а-яА-Я]"),
             Wrapper:text(e:select("div.row"):get(1):selectFirst("a")),
