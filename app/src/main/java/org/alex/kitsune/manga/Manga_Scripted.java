@@ -45,21 +45,22 @@ public class Manga_Scripted extends Manga{
     public static String getSourceDescription(String source){return getSourceDescription(getScript(source));}
     public static String getSourceDescription(Script script){return script.getString(Constants.sourceDescription,null);}
 
+    private static String fromHtml(String string){return string!=null?Html.fromHtml(string,Html.FROM_HTML_MODE_LEGACY).toString():null;}
     @Override
     public boolean update() throws Exception {
         Wrapper w=script.invokeMethod(Constants.methodUpdate,Wrapper.class,url);
         if(w!=null){
             id=w.id;
             if(!edited){
-                name=Html.fromHtml(w.name,Html.FROM_HTML_MODE_LEGACY).toString();
-                name_alt=Html.fromHtml(w.name_alt,Html.FROM_HTML_MODE_LEGACY).toString();
+                name=fromHtml(w.name);
+                name_alt=fromHtml(w.name_alt);
             }
-            author=Html.fromHtml(w.author,Html.FROM_HTML_MODE_LEGACY).toString();
+            author=fromHtml(w.author);
             author_url=w.author_url;
-            genres=Html.fromHtml(w.genres,Html.FROM_HTML_MODE_LEGACY).toString();
+            genres=fromHtml(w.genres);
             rating=w.rating;
             status=w.status;
-            description=Html.fromHtml(w.description,Html.FROM_HTML_MODE_LEGACY).toString();
+            description=fromHtml(w.description);
             thumbnail=w.thumbnail;
             url_web=w.url_web;
             updateChapters(uniqueChapters(w.chapters));
