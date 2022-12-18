@@ -1,5 +1,6 @@
 package org.alex.kitsune.manga;
 
+import android.text.Html;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
@@ -50,15 +51,15 @@ public class Manga_Scripted extends Manga{
         if(w!=null){
             id=w.id;
             if(!edited){
-                name=w.name;
-                name_alt=w.name_alt;
+                name=Html.fromHtml(w.name,Html.FROM_HTML_MODE_LEGACY).toString();
+                name_alt=Html.fromHtml(w.name_alt,Html.FROM_HTML_MODE_LEGACY).toString();
             }
-            author=w.author;
+            author=Html.fromHtml(w.author,Html.FROM_HTML_MODE_LEGACY).toString();
             author_url=w.author_url;
-            genres=w.genres;
+            genres=Html.fromHtml(w.genres,Html.FROM_HTML_MODE_LEGACY).toString();
             rating=w.rating;
             status=w.status;
-            description=w.description;
+            description=Html.fromHtml(w.description,Html.FROM_HTML_MODE_LEGACY).toString();
             thumbnail=w.thumbnail;
             url_web=w.url_web;
             updateChapters(uniqueChapters(w.chapters));
@@ -127,18 +128,27 @@ public class Manga_Scripted extends Manga{
 
     public static List<Chapter> uniqueChapters(List<Chapter> chapters){
         String translator=chapters.size()>0?chapters.get(0).getInfo():null;
-        Set<String> translators=new LinkedHashSet<>();
-        chapters.forEach(chapter -> translators.add(chapter.getInfo()));
+        HashMap<String,Integer> translators=new LinkedHashMap<>();
+        int max=0; Integer value; String translator_max=translator;
+        for (Chapter chapter:chapters) {
+            String key=chapter.getInfo();
+            translators.put(key,value=((value=translators.getOrDefault(key,0))!=null?value:0)+1);
+            if(value>max){max=value; translator_max=key;}
+            else if(value==max && Objects.equals(key,translator)){
+                translator_max=translator;
+            }
+        }
+        translator=translator_max;
         if(translators.size()>1){
             final HashMap<String,Chapter> map=new LinkedHashMap<>();
-            chapters.forEach(chapter -> {
+            for (Chapter chapter:chapters) {
                 String key=chapter.getVol()+"--"+chapter.getNum();
                 if(Objects.equals(translator,chapter.getInfo())){
                     map.put(key,chapter);
                 }else{
                     map.putIfAbsent(key,chapter);
                 }
-            });
+            };
             chapters.clear();
             chapters.addAll(map.values());
         }

@@ -29,8 +29,12 @@ function update(url) -- Wrapper
     local jo=JSONObject.new(Wrapper:loadPage(url)):get("content")
     if(JSONObject:equals(jo:getClass())) then
         local branches=jo:getJSONArray("branches")
-        local branch=branches:length()>0 and branches:getJSONObject(0) or nil
-        local count=branch~=nil and branch:getInt("count_chapters") or 0
+        local count=0; local branch
+        for i=0,branches:length()-1,1 do
+            local b=branches:length()>0 and branches:getJSONObject(i) or nil
+            local c=b~=nil and b:getInt("count_chapters") or 0
+            if(c>count) then count=c; branch=b; end
+        end
         local chapters=ArrayList.new(count)
         for page=math.ceil(count/100),1,-1 do
             local list=JSONObject.new(Wrapper:loadPage(host.."/api/titles/chapters/?branch_id="..branch:getInt("id").."&count=100&page="..page)):getJSONArray("content")

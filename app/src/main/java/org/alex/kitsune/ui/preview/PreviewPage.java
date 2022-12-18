@@ -1,5 +1,6 @@
 package org.alex.kitsune.ui.preview;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
@@ -35,10 +36,13 @@ import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
 import org.alex.kitsune.ui.settings.SettingsShelf;
 import org.alex.kitsune.ui.shelf.Catalogs;
+import org.alex.kitsune.ui.shelf.Shelf;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
+import static org.alex.kitsune.ui.preview.PreviewActivity.CALL_FILE_STORE;
+import static org.alex.kitsune.ui.preview.PreviewActivity.PERMISSION_REQUEST_CODE;
 
 
 public class PreviewPage extends PreviewHolder {
@@ -61,6 +65,7 @@ public class PreviewPage extends PreviewHolder {
         backdrop=itemView.findViewById(R.id.backdrop);
         cover=itemView.findViewById(R.id.cover);
         cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
+        cover.setOnLongClickListener(v->{Utils.Activity.callFilesStore((Activity)v.getContext(),CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE); return true;});
         caution=cover.getDrawable();
         info=itemView.findViewById(R.id.info);
         info.setMovementMethod(LinkMovementMethod.getInstance());
@@ -114,7 +119,10 @@ public class PreviewPage extends PreviewHolder {
         v2.findViewById(R.id.create).setOnClickListener(v -> {
             if(input.getText()!=null && input.getText().length()>0){
                 String category=input.getText().toString();
-                if(!MangaService.getCategories().contains(category)){
+                HashSet<String> categories=new HashSet<>(MangaService.getCategories());
+                categories.add(Shelf.History);
+                categories.add(Shelf.Saved);
+                if(!categories.contains(category)){
                     MangaService.getCategories().add(category);
                     SettingsShelf.add(PreferenceManager.getDefaultSharedPreferences(v.getContext()),category);
                     setGroups(v.getContext(),MangaService.getCategories(),group,manga.getCategoryFavorite());

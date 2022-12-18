@@ -28,6 +28,7 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
@@ -49,6 +50,8 @@ public class PreviewActivity extends AppCompatActivity{
     long throwableTime=0;
     SharedPreferences prefs;
     private static int hashManga=-1;
+    static final int PERMISSION_REQUEST_CODE=1;
+    static final int CALL_FILE_STORE=2;
     private final Callback<Throwable> errorCallback=(throwable) -> {
         progressBar.progressiveStop(); this.throwable=throwable;
         if(throwable!=null && throwable.getCause() instanceof IOException e){
@@ -196,6 +199,19 @@ public class PreviewActivity extends AppCompatActivity{
                 return false;
             }
         });
+    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data){
+        super.onActivityResult(requestCode,resultCode,data);
+        switch(requestCode){
+            case PERMISSION_REQUEST_CODE: break;
+            case CALL_FILE_STORE:
+                if(resultCode==RESULT_OK){
+                    try{Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(manga.getCoverPath()));}catch(Exception e){e.printStackTrace();}
+                    updateContent();
+                }
+                break;
+        }
     }
     public void setSelectMode(boolean select_mode){
         Menu menu=bottomBar.getMenu();

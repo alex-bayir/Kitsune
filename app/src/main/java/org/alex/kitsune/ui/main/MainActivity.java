@@ -65,9 +65,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         public boolean onQueryTextSubmit(String query) {
             if(query!=null){
-                int pos=query.lastIndexOf("http");
-                if(pos>=0){
-                    query=query.substring(pos);
+                int start=query.lastIndexOf("http"),end=query.indexOf('?',start+1);
+                if(start>=0){
+                    query=query.substring(start,end!=-1?end:query.length());
                     try{query=URLDecoder.decode(query, StandardCharsets.UTF_8.name());}catch(UnsupportedEncodingException e){Logs.saveLog(e);}
                     Manga manga=MangaService.getOrPutNewWithDir(Manga_Scripted.determinate(query.trim()));
                     if(manga!=null){

@@ -1,24 +1,23 @@
 apply plugin: 'com.android.application'
 android {
-    compileSdkVersion 33
-    buildToolsVersion "32.0.0"
+    compileSdk 33
     defaultConfig {
         applicationId "org.alex.kitsune"
         minSdkVersion 24
         targetSdkVersion 33
-        versionCode 13
-        versionName "1.7.6"
+        versionCode 14
+        versionName "1.7.7"
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""
     }
-    buildTypes.all {
+    buildTypes.configureEach {
         resValue "string", "version_number", "Version ${defaultConfig.versionName}"
         shrinkResources false
         minifyEnabled true
         proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-        android.applicationVariants.all { variant ->
-            variant.outputs.all {
+        android.applicationVariants.configureEach { variant ->
+            variant.outputs.configureEach {
                 outputFileName = "${rootProject.name}_${variant.versionName}.apk"
             }
         }
@@ -32,7 +31,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.5.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.8.0-alpha03'
+    implementation 'com.google.android.material:material:1.8.0-beta01'
     implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment:2.5.3'

@@ -45,8 +45,8 @@ function update(url) -- Wrapper
         end
     end
     for i=list:length()-1,0,-1 do
-        local jobj=list:getJSONObject(i)
-        chapters:add(Chapter.new(jobj:getInt("chapter_id"),jobj:getInt("chapter_volume"),num(jobj:getString("chapter_number")),jobj:optString("chapter_name"), Wrapper:parseDate(jobj:optString("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),translaters[jobj:optInt("branch_id")]))
+        local jobj=list:getJSONObject(i); local branch_id=jobj:optInt("branch_id")
+        chapters:add(Chapter.new(jobj:getInt("chapter_id"),jobj:getInt("chapter_volume"),num(jobj:getString("chapter_number")),jobj:optString("chapter_name"), Wrapper:parseDate(jobj:optString("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),translaters[branch_id],branch_id))
     end
     local author=container:selectFirst("div.media-info-list.paper"):getElementsContainingOwnText("Автор"):first()
     author=author~=nil and author:nextElementSibling():selectFirst("a") or nil
@@ -106,7 +106,7 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
     return list
 end
 function getPages(url,chapter) -- ArrayList<Page>
-    local scripts=Wrapper:loadDocument(url.."/v"..chapter.vol.."/c"..chapter.num.."?page=1"):select("script")
+    local scripts=Wrapper:loadDocument(url.."/v"..chapter.vol.."/c"..chapter.num.."?"..(chapter.branch_id>0 and "bid="..chapter.branch_id.."&" or "").."page=1"):select("script")
     local json=JSONObject.new(scripts:toString():match("window.__info = (.-);"))
     local array=JSONArray.new(scripts:toString():match("window.__pg = (.-);"))
     local domain=json:getJSONObject("servers"):getString("main").."/"..json:getJSONObject("img"):getString("url")

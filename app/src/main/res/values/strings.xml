@@ -196,6 +196,9 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
+        Version 1.7.7:\n
+        \t-You can change the order in the shelf.\n
+        \t-Optimization and error correction.\n\n
         Version 1.7.5-1.7.6:\n
         \t-Add authentication.\n
         \t-Optimization and error correction.\n\n

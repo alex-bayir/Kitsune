@@ -15,12 +15,15 @@ public class Chapter {
     float num;
     String name;
     long date;
+    String translater;
+    int branch_id=-1;
     String info;
     ArrayList<Page> pages;
     private static final String[] FN={"id","vol","num","name","date","pages"};
 
     public Chapter(int id,int vol,float num,String name,long date){this(id,vol,num,name,date,null,null);}
     public Chapter(int id,int vol,float num,String name,long date,String info){this(id,vol,num,name,date,null, info);}
+    public Chapter(int id,int vol,float num,String name,long date,String translater,int branch_id){this(id,vol,num,name,date,null, translater,branch_id);}
     public Chapter(int id,int vol,float num,String name,long date,ArrayList<Page> pages){this(id,vol,num,name,date,pages,null);}
     public Chapter(int id,int vol,float num,String name,long date,ArrayList<Page> pages, String info){
         this.id=id;
@@ -30,6 +33,11 @@ public class Chapter {
         this.date=date;
         this.pages=pages;
         this.info=info;
+    }
+    public Chapter(int id,int vol,float num,String name,long date,ArrayList<Page> pages, String translater,int branch_id){
+        this(id, vol, num, name, date, pages, translater);
+        this.translater=translater;
+        this.branch_id=branch_id;
     }
 
     public Page getPage(int page){return (pages!=null && page<pages.size()) ? pages.get(page) : null;}
