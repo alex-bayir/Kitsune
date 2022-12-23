@@ -33,7 +33,7 @@ function update(url) -- Wrapper
     for i=0,list:size()-1,1 do
         local el=list:get(i)
         local str=el:attr("value")
-        if(str:match("-(.*?)-%d")==url:match("-(.*?)-%d")) then
+        if(str:match("%a[-%a]+%a")==url:match("%a[-%a]+%a")) then
             chapters:add(Chapter.new(num(str:match("%d+")),0,num(str:match("(%d*%.?%d+)[%D]*$")),nil,0))
         end
     end
