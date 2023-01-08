@@ -13,7 +13,7 @@ JSONArray=luajava.bindClass("org.json.JSONArray")
 ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
-version="1.2"
+version="1.3"
 provider="readmanga.live"
 providerName="ReadManga"
 sourceDescription="Один из самых популярных источников манги в СНГ."
@@ -54,18 +54,18 @@ end
 
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url=UrlBuilder.new(host.."/search/advanced")
-    url:addParam("q",name)
-    url:addParam("page",page+1)
+    url:add("q",name)
+    url:add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
-            url:addParams(params[1]:getSelected(),"in"):addParams(params[1]:getDeselected(),"ex")
-            if(#params>1) then url:addParams("many-el_40",params[2]:getSelected()) end
-            if(#params>2) then url:addParams(params[3]:getSelected(),"in"):addParams(params[3]:getDeselected(),"ex") end
+            url:add(params[1]:getSelected(),"in"):add(params[1]:getDeselected(),"ex")
+            if(#params>1) then url:add("many-el_40",params[2]:getSelected()) end
+            if(#params>2) then url:add(params[3]:getSelected(),"in"):add(params[3]:getDeselected(),"ex") end
         else
-            url:addParam(filters[params[1]],"in")
+            url:add(filters[params[1]],"in")
         end
     end
-    url=url:getUrl()
+    url=url:build()
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
     print(url)
     local selects=Wrapper:loadDocument(url):select("div.tile")

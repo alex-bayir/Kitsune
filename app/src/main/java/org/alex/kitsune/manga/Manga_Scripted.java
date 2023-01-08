@@ -63,7 +63,7 @@ public class Manga_Scripted extends Manga{
             description=fromHtml(w.description);
             thumbnail=w.thumbnail;
             url_web=w.url_web;
-            updateChapters(uniqueChapters(w.chapters));
+            updateChapters(w.chapters);
             updateSimilar(getSimilar(w.similar));
             return true;
         }
@@ -125,34 +125,5 @@ public class Manga_Scripted extends Manga{
             }
         }
         return null;
-    }
-
-    public static List<Chapter> uniqueChapters(List<Chapter> chapters){
-        String translator=chapters.size()>0?chapters.get(0).getInfo():null;
-        HashMap<String,Integer> translators=new LinkedHashMap<>();
-        int max=0; Integer value; String translator_max=translator;
-        for (Chapter chapter:chapters) {
-            String key=chapter.getInfo();
-            translators.put(key,value=((value=translators.getOrDefault(key,0))!=null?value:0)+1);
-            if(value>max){max=value; translator_max=key;}
-            else if(value==max && Objects.equals(key,translator)){
-                translator_max=translator;
-            }
-        }
-        translator=translator_max;
-        if(translators.size()>1){
-            final HashMap<String,Chapter> map=new LinkedHashMap<>();
-            for (Chapter chapter:chapters) {
-                String key=chapter.getVol()+"--"+chapter.getNum();
-                if(Objects.equals(translator,chapter.getInfo())){
-                    map.put(key,chapter);
-                }else{
-                    map.putIfAbsent(key,chapter);
-                }
-            };
-            chapters.clear();
-            chapters.addAll(map.values());
-        }
-        return chapters;
     }
 }

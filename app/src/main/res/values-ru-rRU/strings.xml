@@ -89,6 +89,8 @@
     <string name="what_new">Что нового</string>
     <string name="sourcenotdefined">Источник не определён для ссылки: \"%1$s\"</string>
     <string name="what_new_innovations">
+        Версия 1.7.8:\n
+        \t-Оптимизация и исправление ошибок.\n\n
         Версия 1.7.7:\n
         \t-Можно менять порядок в полке.\n
         \t-Оптимизация и исправление ошибок.\n\n

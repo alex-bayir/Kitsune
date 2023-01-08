@@ -6,7 +6,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
+import java.util.*;
 
 public class Wrapper{
     public static String loadPage(String url) throws IOException{
@@ -69,6 +69,37 @@ public class Wrapper{
 
         this.chapters=chapters!=null ? chapters : new ArrayList<>();
         this.similar=similar!=null ? similar : new ArrayList<>();
+    }
+    public static List<Chapter> uniqueChapters(List<Chapter> chapters,boolean translator_with_max_chapters,String translator){
+        HashMap<String,Integer> translators=new LinkedHashMap<>();
+        int max=0; Integer value;
+        String translator_max=translator;
+        for (Chapter chapter:chapters) {
+            String key=chapter.getTranslater();
+            translators.put(key,value=((value=translators.getOrDefault(key,0))!=null?value:0)+1);
+            if(value>max){max=value; translator_max=key;}
+            else if(value==max && Objects.equals(key,translator)){
+                translator_max=translator;
+            }
+        }
+        if(translator_with_max_chapters){translator=translator_max;}
+        if(translators.size()>1){
+            final HashMap<String,Chapter> map=new LinkedHashMap<>();
+            for (Chapter chapter:chapters) {
+                String key=chapter.getVol()+"--"+chapter.getNum();
+                if(Objects.equals(translator,chapter.getTranslater())){
+                    map.put(key,chapter);
+                }else{
+                    map.putIfAbsent(key,chapter);
+                }
+            }
+            chapters.clear();
+            chapters.addAll(map.values());
+        }
+        return chapters;
+    }
+    public static List<Chapter> uniqueChapters(List<Chapter> chapters,boolean translator_with_max_chapters){
+        return uniqueChapters(chapters,translator_with_max_chapters,chapters.size()>0?chapters.get(0).getTranslater():null);
     }
 }
 

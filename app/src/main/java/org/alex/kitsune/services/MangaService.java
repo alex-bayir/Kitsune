@@ -203,7 +203,7 @@ public class MangaService {
         }
         return destination;
     }
-    public static String getPathSourceIcon(String domain){return dir+"icons/"+domain;}
+    public static String getPathSourceIcon(String domain){return dir+"/icons/"+domain;}
     public static void clearCache(String cacheDir){
         Utils.File.delete(new File(cacheDir));
     }

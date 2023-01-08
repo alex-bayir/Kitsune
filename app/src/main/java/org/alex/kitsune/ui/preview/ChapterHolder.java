@@ -31,7 +31,7 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
     }
     public void bind(Chapter chapter, boolean selected){
         title.setText(chapter.text(title.getContext()));
-        subtitle.setText(chapter.getInfo());
+        subtitle.setText(chapter.getTranslater());
         date.setText(getDate(chapter.getDate()));
         download.setVisibility(manga.checkChapter(chapter) ? View.VISIBLE : View.GONE);
         play.setVisibility((manga.getHistory()!=null && chapter.equals(manga.getHistory().getChapter())) ? View.VISIBLE : View.INVISIBLE);

@@ -13,7 +13,7 @@ JSONArray=luajava.bindClass("org.json.JSONArray")
 ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
-version="1.2"
+version="1.3"
 provider="manga-chan.me"
 providerName="MangaChan"
 sourceDescription="Тоже хороший источник манги. Но часто падает, из-за чего бывает недоступен от нескольких часов до пары дней."
@@ -56,7 +56,7 @@ end
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url;
     if(name~=nil and name:len()>0) then
-        url=UrlBuilder.new(host.."/"):addParam("do","search"):addParam("subaction","search"):addParam("story",name):addParam("offset",page>0 and (page+1)*10 or nil):getUrl();
+        url=UrlBuilder.new(host.."/"):add("do","search"):add("subaction","search"):add("story",name):add("offset",page>0 and (page+1)*10 or nil):build();
     else
         if(params~=nil and #params>0 and type(params[1])=="userdata" and Options:equals(params[1]:getClass()))then
             if(params~=nil and #params>0) then

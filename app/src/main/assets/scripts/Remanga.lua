@@ -13,7 +13,7 @@ JSONArray=luajava.bindClass("org.json.JSONArray")
 ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
-version="1.2"
+version="1.3"
 provider="remanga.org"
 providerName="Remanga"
 sourceDescription="Ещё один довольно популярный каталог манги."
@@ -40,7 +40,7 @@ function update(url) -- Wrapper
             local list=JSONObject.new(Wrapper:loadPage(host.."/api/titles/chapters/?branch_id="..branch:getInt("id").."&count=100&page="..page)):getJSONArray("content")
             for i=list:length()-1,0,-1 do
                 local jobj=list:getJSONObject(i); local p=jobj:getJSONArray("publishers") local str="" for j=0,p:length()-1,1 do str=str..", "..p:getJSONObject(j):getString("name") end p=str:sub(3)
-                chapters:add(Chapter.new(jobj:getInt("id"),jobj:getInt("tome"),jobj:getDouble("chapter"),jobj:optString("name"), Wrapper:parseDate(jobj:getString("upload_date"),"yyyy-MM-dd'T'HH:mm:ss"),p))
+                chapters:add(Chapter.new(jobj,"id","tome","chapter","name","upload_date","yyyy-MM-dd'T'HH:mm:ss",convert({["translater"]=p})))
             end
         end
         local genres=jo:getJSONArray("genres") local str="" for i=0,genres:length()-1,1 do str=str..", "..genres:getJSONObject(i):getString("name") end genres=str:sub(3)
@@ -63,19 +63,19 @@ function update(url) -- Wrapper
 end
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url=UrlBuilder.new(host.."/api/search"..(name==nil and "/catalog/" or "/"))
-    url:addParam("query",name)
-    url:addParam("page",page+1)
+    url:add("query",name)
+    url:add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
-            url:addParam("ordering",params[1]:getSelected()[1])
-            if(#params>1) then url:addParams("genres",params[2]:getSelected()) end
-            if(#params>2) then url:addParams("categories",params[3]:getSelected()) end
+            url:add("ordering",params[1]:getSelected()[1])
+            if(#params>1) then url:add("genres",params[2]:getSelected()) end
+            if(#params>2) then url:add("categories",params[3]:getSelected()) end
         else
-            url:addParam("ordering",sorts[params[1]])
+            url:add("ordering",sorts[params[1]])
         end
     end
 
-    url=url:getUrl()
+    url=url:build()
     print(url)
     local array=JSONObject.new(Wrapper:loadPage(url)):getJSONArray("content")
     local list=ArrayList.new(array:length())
@@ -98,7 +98,7 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
     return list
 end
 function getPages(url,chapter) -- ArrayList<Page>
-    local array=JSONObject.new(Wrapper:loadPage(url:sub(1,url:find("/[^/]*$")).."chapters/"..chapter.id)):getJSONObject("content"):getJSONArray("pages")
+    local array=JSONObject.new(Wrapper:loadPage(string.gsub(url,"[^/]+$","chapters/"..chapter.id))):getJSONObject("content"):getJSONArray("pages")
     local pages=ArrayList.new(array:length())
     for i=0,array:length()-1,1 do
         local jo=array:get(i)

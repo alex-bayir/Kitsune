@@ -371,6 +371,9 @@ public class Utils {
         }
     }
     public static class Bitmap{
+        public static IconCompat createShortcut(Context context,String iconPath){
+            return IconCompat.createWithBitmap(Bitmap.createShortcutBitmap(context,iconPath));
+        }
         public static android.graphics.Bitmap createShortcutBitmap(Context context,String iconPath){
             return createShortcutBitmap(context.getDrawable(R.drawable.ic_launcher_logo),BitmapFactory.decodeFile(iconPath),getLauncherIconSize(context));
         }
@@ -424,7 +427,7 @@ public class Utils {
                 return false;
             }
              */
-            return ShortcutManagerCompat.requestPinShortcut(context,new ShortcutInfoCompat.Builder(context, context.getString(R.string.app_name)+" "+hash).setShortLabel(name).setIntent(intent).setIcon(IconCompat.createWithBitmap(Bitmap.createShortcutBitmap(context,iconPath))).build(),null);
+            return ShortcutManagerCompat.requestPinShortcut(context,new ShortcutInfoCompat.Builder(context, context.getString(R.string.app_name)+" "+hash).setShortLabel(name).setIntent(intent).setIcon(Bitmap.createShortcut(context,iconPath)).build(),null);
         }else{
             context.getApplicationContext().sendBroadcast(new Intent(Manifest.permission.INSTALL_SHORTCUT).putExtra(Intent.EXTRA_INTENT,intent).putExtra(Intent.EXTRA_SHORTCUT_NAME,name).putExtra(Intent.EXTRA_SHORTCUT_ICON, Bitmap.createShortcutBitmap(context,iconPath)));
         }

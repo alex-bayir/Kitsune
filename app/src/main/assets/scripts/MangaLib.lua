@@ -13,7 +13,7 @@ JSONArray=luajava.bindClass("org.json.JSONArray")
 ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
-version="1.2"
+version="1.3"
 provider="mangalib.me"
 providerName="MangaLib"
 sourceDescription="Один из самых популярных источников манги в СНГ."
@@ -29,6 +29,7 @@ Tags={["Азартные игры"]="304",["Алхимия"]="225",["Амнез�
 function update(url) -- Wrapper
     local doc=Wrapper:loadDocument(url)
     local json=JSONObject.new(doc:select("script"):toString():match("window.__DATA__ = (%b{})"))
+    local ui=json:getJSONObject("user"):optInt("id",-1); if(ui==-1) then ui=nil end
     local jo=json:getJSONObject("manga")
     local container=doc:selectFirst("div.media-container")
     local genres=container:select("a.media-tag-item") local str="" for i=0,genres:size()-1,1 do str=str..", "..genres:get(i):text() end genres=str:sub(3)
@@ -45,11 +46,10 @@ function update(url) -- Wrapper
         end
     end
     for i=list:length()-1,0,-1 do
-        local jobj=list:getJSONObject(i); local branch_id=jobj:optInt("branch_id")
-        chapters:add(Chapter.new(jobj:getInt("chapter_id"),jobj:getInt("chapter_volume"),num(jobj:getString("chapter_number")),jobj:optString("chapter_name"), Wrapper:parseDate(jobj:optString("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),translaters[branch_id],branch_id))
+        local jobj=list:getJSONObject(i); local branch_id=jobj:optInt("branch_id",-1); if(branch_id==-1) then branch_id=nil end
+        chapters:add(Chapter.new(jobj,"chapter_id","chapter_volume","chapter_number","chapter_name", "chapter_created_at","yyyy-MM-dd' 'HH:mm:ss",convert({["translater"]=translaters[branch_id],["bid"]=branch_id,["ui"]=ui})))
     end
-    local author=container:selectFirst("div.media-info-list.paper"):getElementsContainingOwnText("Автор"):first()
-    author=author~=nil and author:nextElementSibling():selectFirst("a") or nil
+    local author=container:selectFirst("a[abs:href*=/people/]")
     return Wrapper.new(
             url,
             jo:getInt("id"),
@@ -63,25 +63,25 @@ function update(url) -- Wrapper
             Wrapper:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
             container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
             url,
-            chapters,
+            Wrapper:uniqueChapters(chapters,true),
             similar(container:select("div.media-slider__item"))
     )
 end
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url=UrlBuilder.new(host.."/manga-list")
-    url:addParam("name",name)
-    url:addParam("page",page+1)
+    url:add("name",name)
+    url:add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
-            url:addParam("sort",params[1]:getSelected()[1])
-            url:addParam("dir",params[1]:getTitleSortSelected())
-            if(#params>1) then url:addParams("genres[include][]",params[2]:getSelected()):addParams("genres[exclude][]",params[2]:getDeselected()) end
-            if(#params>2) then url:addParams("tags[include][]",params[3]:getSelected()):addParams("tags[exclude][]",params[3]:getDeselected()) end
+            url:add("sort",params[1]:getSelected()[1])
+            url:add("dir",params[1]:getTitleSortSelected())
+            if(#params>1) then url:add("genres[include][]",params[2]:getSelected()):add("genres[exclude][]",params[2]:getDeselected()) end
+            if(#params>2) then url:add("tags[include][]",params[3]:getSelected()):add("tags[exclude][]",params[3]:getDeselected()) end
         else
-            url:addParam("sort",sorts[params[1]])
+            url:add("sort",sorts[params[1]])
         end
     end
-    url=url:getUrl()
+    url=url:build()
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
     print(url)
     local selects=Wrapper:loadDocument(url):selectFirst("div.media-cards-grid"):select("div.media-card-wrap")
@@ -106,7 +106,7 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
     return list
 end
 function getPages(url,chapter) -- ArrayList<Page>
-    local scripts=Wrapper:loadDocument(url.."/v"..chapter.vol.."/c"..chapter.num.."?"..(chapter.branch_id>0 and "bid="..chapter.branch_id.."&" or "").."page=1"):select("script")
+    local scripts=Wrapper:loadDocument(UrlBuilder.new(url.."/v"..chapter.vol.."/c"..chapter.num):add("page",1):add(chapter.info):build()):select("script")
     local json=JSONObject.new(scripts:toString():match("window.__info = (.-);"))
     local array=JSONArray.new(scripts:toString():match("window.__pg = (.-);"))
     local domain=json:getJSONObject("servers"):getString("main").."/"..json:getJSONObject("img"):getString("url")

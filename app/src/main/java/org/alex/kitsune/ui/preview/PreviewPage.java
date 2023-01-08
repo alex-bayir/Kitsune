@@ -147,7 +147,11 @@ public class PreviewPage extends PreviewHolder {
         }else if(obj instanceof Throwable th){
             notifyError(th.getCause()!=null ? th.getCause() : th);
         }else if(obj instanceof Object[] a){
-            bind((Manga)a[0], (boolean)a[1]);
+            if(a[0] instanceof Manga){
+                bind((Manga)a[0], (boolean)a[1]);
+            }else if(a[0] instanceof Throwable th) {
+                notifyError(th.getCause()!=null ? th.getCause() : th);
+            }
         }
     }
 

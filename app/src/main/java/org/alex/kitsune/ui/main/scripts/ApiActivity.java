@@ -64,54 +64,6 @@ public class ApiActivity extends AppCompatActivity {
                 "\n" +
                 "Для загрузки данных похожей манги можете реализовать функцию loadSimilar, которая будет возвращать ArrayList<Wrapper> (если в функции update не возможно получить эти данные не загружая другую страницу).\n" +
                 "ArrayList<Wrapper> loadSimilar(Wrapper)\n" +
-                "\n" +
-                "Конструкторы:\n" +
-                "public Wrapper(String url, int id, String name, String name_rus, String author, String genres, float rating, String status, String description, String thumbnail, ArrayList<Chapter> chapters, ArrayList<Wrapper> similars)\n" +
-                "public Wrapper(String url, int id, String name, String name_rus, String author, String genres, float rating, int status, String description, String thumbnail_url, ArrayList<Chapter> chapters, ArrayList<Wrapper> similars) //chapters и similars можут быть null впрочем и остальные не важные тоже могут быть null\n" +
-                "public Chapter(int id,int vol,float num,String name,long date) \n" +
-                "public Chapter(int id,int vol,float num,String name,long date, ArrayList<Page> pages) \n" +
-                "public Page(int id,float num,String url)\n" +
-                "public Options(String string, Map<String,String> values, int mode) \n" +
-                "public Options(String string,String descending,String ascending, @NotNull Map<String,String> values, int mode)\n" +
-                "//mode=0 – выбор одного из группы\n" +
-                "//mode=1 – два состояния (выбрано/не выбрано)\n" +
-                "//mode=2 – три состояния (выбрано/исключено/не выбрано)\n" +
-                "// descending и ascending – параметры для url\n" +
-                "Методы:\n" +
-                "Класса Wrapper\n" +
-                "public static String loadPage(String url) //загружает страницу по адресу(нужен только в методе query)\n" +
-                "public static Document loadDocument(String url) //тоже самое только в виде объекта Document\n" +
-                "public static long parseDate(String date,String format)//парсинг даты\n" +
-                "//остальные методы просто предотвращают NullPointerException\n" +
-                "public static String attr(Element element, String attr, String defValue)\n" +
-                "public static String attr(Element element, String attr)\n" +
-                "public static String text(Element element, String defText)\n" +
-                "public static String text(Element element)\n" +
-                "public static String attr(Elements elements, String attr, String defValue)\n" +
-                "public static String attr(Elements elements, String attr)\n" +
-                "public static String text(Elements elements,String defText)\n" +
-                "public static String text(Elements elements)\n" +
-                "Класса Options \n" +
-                "public String getTitleSortSelected() //возвращает descending или ascending\n" +
-                "public String[] getSelected()\n" +
-                "public String[] getDeselected()\n" +
-                "public String[] getUnselected\n" +
-                "Класса Сhapter\n" +
-                "public int getId();\n" +
-                "public int getVol();\n" +
-                "public float getNum;\n" +
-                "public String getName;\n" +
-                "public long getDate;\n" +
-                "\n" +
-                "Полные имена классов:\n" +
-                "org.alex.kitsune.manga.search.Options\n" +
-                "org.alex.kitsune.manga.Wrapper\n" +
-                "org.alex.kitsune.manga.Chapter\n" +
-                "org.alex.kitsune.manga.Page\n" +
-                "\n" +
-                "org.jsoup:jsoup:1.14.3 \n" +
-                "\torg.jsoup.nodes.Document\n" +
-                "\torg.jsoup.nodes. Element\n" +
-                "\tи другие (смотри библиотеку jsoup)\n";
+                "\n"+"Весь проект вместе с примерами скриптов можно посмотреть на github: https://github.com/alex-bayir/Kitsune";
     }
 }

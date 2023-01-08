@@ -2,6 +2,7 @@ package org.alex.kitsune.commons;
 
 import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 public class URLBuilder {
     private final String url;
@@ -9,32 +10,36 @@ public class URLBuilder {
     public URLBuilder(String url){
         this.url=url;
     }
-    public URLBuilder addParam(String key, Object value){
+    public URLBuilder add(String key, Object value){
         if(key!=null && value!=null){
             params.append(params.length()==0 ? '?' : '&').append(key).append('=').append(value);
         }
         return this;
     }
-    public URLBuilder addParam(String key, Object[] values,String delimiter){
+    public URLBuilder add(String key, Object[] values,String delimiter){
         if(key!=null && values!=null && values.length>0){
-            addParam(key,join(delimiter,values));
+            add(key,join(delimiter,values));
         }
         return this;
     }
-    public URLBuilder addParams(String key, Object[] values){
+    public URLBuilder add(String key, Object[] values){
         if(key!=null && values!=null && values.length>0){
             for(Object value:values){
-                addParam(key,value);
+                add(key,value);
             }
         }
         return this;
     }
-    public URLBuilder addParams(String[] keys,Object value){
+    public URLBuilder add(String[] keys,Object value){
         if(keys!=null && value!=null){
             for(String key:keys){
-                addParam(key,value);
+                add(key,value);
             }
         }
+        return this;
+    }
+    public URLBuilder add(JSONObject params){
+        params.keys().forEachRemaining(key->add(key,params.opt(key)));
         return this;
     }
     public URLBuilder add(String param){
@@ -47,14 +52,11 @@ public class URLBuilder {
         return this;
     }
 
-    public String getUrl(){
+    public String build(){
         return toString()
                 .replace(" ","%20")
                 .replace("[","%5B")
                 .replace("]","%5D");
-    }
-    public String getUrl1(){
-        return toString().replace(" ","%20");
     }
     @NonNull
     @NotNull

@@ -13,7 +13,7 @@ JSONArray=luajava.bindClass("org.json.JSONArray")
 ArrayList=luajava.bindClass("java.util.ArrayList")
 Map_class=luajava.bindClass("java.util.TreeMap")
 
-version="1.2"
+version="1.3"
 provider="desu.me"
 providerName="Desu"
 sourceDescription="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
@@ -29,8 +29,7 @@ function update(url) -- Wrapper
     local list=jo:getJSONObject("chapters"):getJSONArray("list")
     local chapters=ArrayList.new(list:length())
     for i=list:length()-1,0,-1 do
-        local jobj=list:getJSONObject(i)
-        chapters:add(Chapter.new(jobj:getInt("id"),jobj:getInt("vol"),jobj:getDouble("ch"),jobj:optString("title"), jobj:getLong("date")*1000))
+        chapters:add(Chapter.new(list:getJSONObject(i),"id","vol","ch","title","date",1000))
     end
     local genres=jo:getJSONArray("genres") local str="" for i=0,genres:length()-1,1 do str=str..", "..genres:getJSONObject(i):getString("russian") end genres=str:sub(3)
     return Wrapper.new(
@@ -51,19 +50,18 @@ function update(url) -- Wrapper
 end
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
     local url=UrlBuilder.new(host.."/manga/api/")
-    url:addParam("limit",100)
-    url:addParam("search",name)
-    url:addParam("page",page+1)
+    url:add("limit",100)
+    url:add("search",name)
+    url:add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
-            url:addParam("order",params[1]:getSelected()[1])
-            if(#params>1) then url:addParam("genres",params[2]:getSelected(),',') end
+            url:add("order",params[1]:getSelected()[1])
+            if(#params>1) then url:add("genres",params[2]:getSelected(),',') end
         else
-            url:addParam("order",sorts[params[1]])
+            url:add("order",sorts[params[1]])
         end
     end
-
-    url=url:getUrl()
+    url=url:build()
     print(url)
     local array=JSONObject.new(Wrapper:loadPage(url)):getJSONArray("response")
     local list=ArrayList.new(array:length())
