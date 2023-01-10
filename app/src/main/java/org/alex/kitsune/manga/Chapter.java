@@ -32,22 +32,22 @@ public class Chapter {
         this(id, vol, num, name, date, null, null);
     }
     public Chapter(JSONObject json,String id,String vol,String num,String name,String date,String format){
-        this(json.optInt(id),json.optInt(vol),json.optInt(num),json.optString(name),parse(json.optString(date),format));
+        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),parse(json.optString(date),format));
     }
     public Chapter(JSONObject json,String id,String vol,String num,String name,String date){
-        this(json.optInt(id),json.optInt(vol),json.optInt(num),json.optString(name),json.optLong(date));
+        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date));
     }
     public Chapter(JSONObject json,String id,String vol,String num,String name,String date,int scale){
-        this(json.optInt(id),json.optInt(vol),json.optInt(num),json.optString(name),json.optLong(date)*scale);
+        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date)*scale);
     }
     public Chapter(int id, int vol, float num, String name, long date, Map<String,Object> map){
         this(id, vol, num, name, date, null, map.size()>0?new JSONObject(map):null);
     }
     public Chapter(JSONObject json,String id,String vol,String num,String name,String date,String format,Map<String,Object> map){
-        this(json.optInt(id),json.optInt(vol),json.optInt(num),json.optString(name),parse(json.optString(date),format),map);
+        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),parse(json.optString(date),format),map);
     }
     public Chapter(JSONObject json,String id,String vol,String num,String name,String date,Map<String,Object> map){
-        this(json.optInt(id),json.optInt(vol),json.optInt(num),json.optString(name),json.optLong(date),map);
+        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date),map);
     }
     public Page getPage(int page){return (pages!=null && page<pages.size()) ? pages.get(page) : null;}
     public int getId(){return id;}
@@ -79,7 +79,7 @@ public class Chapter {
     @NotNull
     public String toString(){try{return toJSON().toString();}catch(JSONException e){e.printStackTrace(); return "null";}}
     private static final java.text.DecimalFormat f=new java.text.DecimalFormat("#.##");
-    public String text(Context context){return context.getString(R.string.Volume)+" "+vol+" "+context.getString(R.string.Chapter)+" "+f.format(num)+(name.length()>0 ? " - "+name : "");}
+    public String text(Context context){return context.getString(R.string.Volume)+" "+vol+" "+context.getString(R.string.Chapter)+" "+f.format(num).replace(',','.')+(name.length()>0 ? " - "+name : "");}
     public int countPages(){return pages!=null ? pages.size() : 0;}
     private static long parse(String date,String format){
         try{return java.util.Objects.requireNonNull(new java.text.SimpleDateFormat(format,java.util.Locale.US).parse(date)).getTime();}catch (Exception e){return System.currentTimeMillis();}
