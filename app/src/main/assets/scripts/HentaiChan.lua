@@ -34,7 +34,7 @@ function update(url) -- Wrapper
         local el=list:get(i)
         local str=el:attr("value")
         if(str:match("-(%a[-%a]+%a)")==url:match("-(%a[-%a]+%a)")) then
-            chapters:add(Chapter.new(num(str:match("%d+")),0,num(str:match("(%d*%.?%d+)[%D]*$")),nil,0))
+            chapters:add(Chapter.new(num(str:match("%d+")),0,num(str:match("%-(%d*%.?%d+)")),nil,0))
         end
     end
     if(chapters:size()==0) then chapters:add(Chapter.new(num(url:match("%d+")),0,0,"Сингл",0)) end
