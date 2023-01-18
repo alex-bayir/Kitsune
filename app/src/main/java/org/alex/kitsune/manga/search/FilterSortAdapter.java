@@ -31,10 +31,15 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     public FilterSortAdapter(Script script,Options... options){
         this.options=options;
         this.script=script;
-        for(Options option: options){if(option!=null){pairs.add(option.title); pairs.addAll(Arrays.asList(option.values));}}
+        update_pairs();
         reset(false);
     }
 
+    public void update_pairs(){
+        pairs.clear();
+        for(Options option: options){if(option!=null){pairs.add(option.title); if(option.title.getValue()==0){pairs.addAll(Arrays.asList(option.values));}}}
+        notifyDataSetChanged();
+    }
     public Options[] getOptions(){return options;}
     private Options getOptions(int index){
         int s=0; for(Options options:this.options){if(options!=null && index<(s+=options.values.length+1)){return options;}} return null;
@@ -70,7 +75,10 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     public FilterSortAdapter.CheckedHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater from=LayoutInflater.from(parent.getContext());
         switch (viewType){
-            case -1: return new CheckedHolder(from.inflate(R.layout.header_group,parent,false),null);
+            case -1: return new CheckedHolder(from.inflate(R.layout.header_group,parent,false),(v, position) -> {
+                pairs.get(position).change();
+                update_pairs();
+            });
             case +0: return new CheckedHolder(from.inflate(R.layout.header_group_checked_sort,parent,false),(v, position) -> {
                 pairs.get(position).change();
                 notifyItemChanged(position);

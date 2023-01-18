@@ -35,7 +35,7 @@ public class NetworkUtils {
     public static final String TAG_ERROR = "NetworkUtils-error";
     public static final String TAG_REQUEST = "NetworkUtils-request";
     public static final String TAG_RESPONSE = "NetworkUtils-response";
-    public static final String USER_AGENT_DEFAULT = "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0";
+    public static final String USER_AGENT_DEFAULT = System.getProperty("http.agent");
     public static final Headers HEADERS_DEFAULT = getHeadersDefault();
     private static final CacheControl CACHE_CONTROL_DEFAULT = new CacheControl.Builder().maxAge(10, TimeUnit.MINUTES).build();
 
