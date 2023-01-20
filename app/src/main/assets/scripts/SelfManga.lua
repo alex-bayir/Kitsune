@@ -32,7 +32,7 @@ function update(url) -- Wrapper
     for i=list:size()-1,0,-1 do
         local tmp=list:get(i)
         local href=tmp:selectFirst("a"):attr("href")
-        chapters:add(Chapter.new(num(href:match("%d+")),num(href:match("/vol(%d+)")),num(href:match("/vol%d+/(%d*%.?%d*)")), tmp:select("td"):first():text():match("%d+%s%-%s%d+%s+(.+)"),Wrapper:parseDate(tmp:select("td"):last():attr("data-date"),"dd.MM.yy")))
+        chapters:add(Chapter.new(num(href:match("%d+")),num(href:match("/vol(%d+)")),num(href:match("/vol%d+/(%d*%.?%d*)")), tmp:select("td.item-title"):text():match("%d+%s%-%s%d+%s+(.+)"),Wrapper:parseDate(tmp:select("td.date"):attr("data-date"),"dd.MM.yy")))
     end
     return Wrapper.new(
             url,
@@ -53,7 +53,7 @@ function update(url) -- Wrapper
 end
 
 function query(name,page,params) -- java.util.ArrayList<Wrapper>
-    local url=UrlBuilder.new(host.."/search/advanced")
+    local url=UrlBuilder.new(host.."/search/advancedResults")
     url:add("q",name)
     url:add("page",page+1)
     if(params~=nil and #params>0) then
@@ -96,7 +96,7 @@ function getPages(url,chapter) -- ArrayList<Page>
     local pages=ArrayList.new(array:length())
     for i=0,array:length()-1,1 do
         local ja=array:getJSONArray(i)
-        pages:add(Page.new(0,i+1,ja:getString(0)..ja:getString(2)))
+        pages:add(Page.new(0,i+1,(ja:getString(0)..ja:getString(2)):match("[^?]*")))
     end
     return pages
 end
