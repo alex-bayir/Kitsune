@@ -13,7 +13,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.*;
-import me.zhanghai.android.fastscroll.FastScrollerBuilder;
+import org.alex.kitsune.commons.FastScroller;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
@@ -43,7 +43,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         setReversed(PreferenceManager.getDefaultSharedPreferences(itemView.getContext()).getBoolean(Constants.reversed,false));
         rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
         rv.setVerticalScrollBarEnabled(false);
-        (new FastScrollerBuilder(rv)).build();
+        FastScroller.createDefault(rv).setPadding(30,0,30,0);
         noItems.setText(R.string.No_chapters);
         noItems.setVisibility(View.GONE);
         if(manga.getHistory()!=null){rv.scrollToPosition(adapter.getPosition(manga.getHistory().getChapter())-5);}

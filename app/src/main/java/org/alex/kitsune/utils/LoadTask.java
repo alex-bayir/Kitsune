@@ -12,7 +12,6 @@ import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.services.LoadService;
-
 import javax.net.ssl.SSLException;
 import java.io.*;
 import java.net.SocketTimeoutException;
@@ -80,7 +79,7 @@ public abstract class LoadTask<Params, Progress, Result>{
             okhttp3.Response response=NetworkUtils.sHttpClient
                     .newCall(new okhttp3.Request.Builder()
                                     .url(url)
-                                    .header(NetworkUtils.HEADER_USER_AGENT,NetworkUtils.USER_AGENT_DEFAULT)
+                                    .headers(NetworkUtils.getHeadersDefault(url))
                                     .header(NetworkUtils.HEADER_REFERER,domain!=null ? domain : url.substring(0,url.indexOf('/',8)))
                                     .get()
                                     .build()

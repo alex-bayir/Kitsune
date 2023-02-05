@@ -5,8 +5,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.Log;
+import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
 import info.guardianproject.netcipher.NetCipher;
 import okhttp3.*;
+import okio.*;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.SSLSocketFactoryExtended;
 import org.jetbrains.annotations.NotNull;
@@ -139,4 +141,60 @@ public class NetworkUtils {
         return null;
     }
 
+    public static OkHttpUrlLoader.Factory createFactoryForListenProgress(ProgressResponseBody.ProgressListener listener){
+        return new OkHttpUrlLoader.Factory((Call.Factory) NetworkUtils.createClientWithProgressListener(listener));
+    }
+    public static OkHttpClient createClientWithProgressListener(ProgressResponseBody.ProgressListener listener){
+        return sHttpClient.newBuilder().addNetworkInterceptor(chain -> {
+            Response originalResponse = chain.proceed(chain.request());
+            return originalResponse.newBuilder().body(new ProgressResponseBody(originalResponse.body(), listener)).build();
+        }).readTimeout(60,TimeUnit.SECONDS).build();
+    }
+    public static class ProgressResponseBody extends ResponseBody {
+        public interface ProgressListener {
+            void update(long bytesRead, long contentLength, boolean done);
+        }
+
+        private final ResponseBody responseBody;
+        private final ProgressListener progressListener;
+        private BufferedSource bufferedSource;
+
+        public ProgressResponseBody(ResponseBody responseBody, ProgressListener progressListener) {
+            this.responseBody = responseBody;
+            this.progressListener = progressListener;
+        }
+
+        @Override
+        public MediaType contentType() {
+            return responseBody.contentType();
+        }
+
+        @Override
+        public long contentLength() {
+            return responseBody.contentLength();
+        }
+
+        @Override
+        public BufferedSource source() {
+            if (bufferedSource == null) {
+                bufferedSource = Okio.buffer(source(responseBody.source()));
+            }
+            return bufferedSource;
+        }
+
+        private Source source(Source source) {
+            return new ForwardingSource(source) {
+                long totalBytesRead = 0L;
+
+                @Override
+                public long read(Buffer sink, long byteCount) throws IOException {
+                    long bytesRead = super.read(sink, byteCount);
+                    // read() returns the number of bytes read, or -1 if this source is exhausted.
+                    totalBytesRead += bytesRead != -1 ? bytesRead : 0;
+                    progressListener.update(totalBytesRead, responseBody.contentLength(), bytesRead == -1);
+                    return bytesRead;
+                }
+            };
+        }
+    }
 }

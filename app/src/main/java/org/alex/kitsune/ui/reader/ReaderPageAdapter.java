@@ -37,6 +37,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
     }
     public void setScaleType(ReaderPageHolder.ScaleType scaleType){
         this.scaleType=scaleType!=null ? scaleType : ReaderPageHolder.ScaleType.FIT_X;
+        notifyItemRangeChanged(0,getItemCount());
     }
     public int getReaderMode(){return getOrientation()==RecyclerView.HORIZONTAL ? (isReverse() ? 1 : 0) : 2;}
     public int getScaleMode(){return scaleType.ordinal();}
@@ -48,7 +49,6 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
             case 2: setOrientation(RecyclerView.VERTICAL,false); break;
         }
         setScaleType(ReaderPageHolder.ScaleType.valueOf(modeS));
-        notifyItemRangeChanged(0,getItemCount());
     }
 
     @Override public int getItemViewType(int position){return getOrientation();}

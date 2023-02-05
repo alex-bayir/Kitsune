@@ -10,4 +10,7 @@
     <dimen name="appbar_padding_top">8dp</dimen>
     <dimen name="app_bar_height">200sp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="fastscroll_default_thickness">12sp</dimen>
+    <dimen name="fastscroll_minimum_range">10sp</dimen>
+    <dimen name="fastscroll_margin">10sp</dimen>
 </resources>

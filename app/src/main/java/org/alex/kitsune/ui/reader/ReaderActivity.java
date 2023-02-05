@@ -55,7 +55,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     Chapter chapter;
     private int num_chapter;
     private int page=0;
-    public static ImageCache imageCache;
     View menu_button,translate;
     Button btn_next;
     RecyclerView rv;
@@ -172,7 +171,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         showProgress=findViewById(R.id.SHOW_PROGRESS);
         root=findViewById(R.id.root);
         frame=findViewById(R.id.frame);
-        imageCache=new ImageCache(20 * 100 * 1024 * 1024);
         menu_button=findViewById(R.id.action_menu);
         menu_button.setOnClickListener(v -> {
             PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, menu_button,Gravity.START);
@@ -288,8 +286,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onStop() {
         super.onStop();
-        imageCache.evictAll();
-        ReaderPageHolder.clearLocks();
         manga.createHistory(chapter,page);
         MangaService.allocate(manga,false);
         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.history));
