@@ -4,6 +4,8 @@ package org.alex.kitsune.ui.reader;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -23,7 +25,6 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.model.GlideUrl;
-import com.bumptech.glide.load.model.LazyHeaders;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.github.chrisbanes.photoview.PhotoView;
@@ -33,11 +34,11 @@ import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Page;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.io.File;
 import java.io.InputStream;
+import java.util.Locale;
 import java.util.Random;
 
 public class ReaderPageHolder extends RecyclerView.ViewHolder {
@@ -68,7 +69,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     TextView progress,text_faces, text_info;
     BaseCurveProgressView progressBar;
     Button retry, change_url;
-    View load_info,retry_layout, error_layout;
+    View load_info,retry_layout;
     private float proportion=2;
     public static String[] faces=new String[]{"(￣ヘ￣)", "ヾ(`ヘ´)ﾉﾞ", "Σ(ಠ_ಠ)", "ಥ_ಥ", "(˘･_･˘)", "(；￣Д￣)", "(･Д･。)", "o(╥﹏╥)", "(◞ ‸ ◟ㆀ)", "(ᗒᗣᗕ)՞", "(-ω-、)", "(⋟﹏⋞)", "(ノ﹏ヽ)", "(T⌓T)", "(◕︿◕✿)", "⊙︿⊙", "(ノ_<。)ヾ(´ ▽ ` )", "ヽ(￣ω￣(。。 )ゝ","(ﾉ_；)ヾ(´ ∀ ` )","\t(っ´ω`)ﾉ(╥ω╥)","ρ(- ω -、)ヾ(￣ω￣; )","ヽ(~_~(・_・ )ゝ","(ｏ・_・)ノ”(ノ_<、)", "(＃`Д´)","(`皿´＃)","( ` ω ´ )","ヽ( `д´*)ノ","٩(╬ʘ益ʘ╬)۶","\t(╬ Ò﹏Ó)","(ﾉಥ益ಥ)ﾉ","(凸ಠ益ಠ)凸","▓▒░(°◡°)░▒▓", "(ᓀ ᓀ)","(⊙_⊙)","(づ ◕‿◕ )づ","(*￣ii￣)","\t|ʘ‿ʘ)╯","(^=◕ᴥ◕=^)","ヾ(=`ω´=)ノ”","ʕಠᴥಠʔ","(∩ᄑ_ᄑ)⊃━☆ﾟ*･｡*･:≡( ε:)","(⌐■_■)","(◕‿◕✿)"};
     private static final Random random=new Random();
@@ -116,10 +117,8 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         change_url=itemView.findViewById(R.id.change_url);
         change_url.setOnClickListener(v->dialog.show());
         retry_layout=itemView.findViewById(R.id.retry_layout);
-        error_layout=itemView.findViewById(R.id.error_layout);
         load_info.setVisibility(View.GONE);
         retry_layout.setVisibility(View.GONE);
-        error_layout.setVisibility(View.GONE);
         this.manga=manga;
         this.vertical=vertical;
         itemView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
@@ -128,7 +127,10 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
 
     private boolean retry(boolean trying){
         text_faces.setText(faces[Math.abs(random.nextInt(faces.length))]);
-        if(trying){draw(input.getText().toString());}
+        if(trying){
+            if(file.length()==0){file.delete();}
+            draw(input.getText().toString());
+        }
         return trying;
     }
 
@@ -150,7 +152,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             imageView.setAdjustViewBounds(true);
             Drawable d=Drawable.createFromPath(file.getAbsolutePath());
             if(d instanceof BitmapDrawable){
-                imageView.setImageDrawable(d);
+                imageView.setImageBitmap(adapt_size(((BitmapDrawable) d).getBitmap(),file));
                 setScaleType(scaleType,vertical);
             }else{
                 RequestBuilder<Drawable> bro=Glide.with(imageView).load(d).diskCacheStrategy(DiskCacheStrategy.NONE).override(4000,20000);
@@ -158,33 +160,51 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                     default -> bro.optionalCenterCrop();
                     case CENTER_INSIDE -> bro.optionalCenterInside();
                     case FIT_CENTER -> bro.optionalFitCenter();
+                }).error(R.drawable.ic_broken_image).listener(new RequestListener<>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable @org.jetbrains.annotations.Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        new Handler(Looper.getMainLooper()).post(() -> {
+                            String str=String.format(Locale.getDefault(),"File size=%d\n%s",file.length(),e!=null?Utils.getRootCause(e,2).getMessage():"");
+                            if(file.length()==0){str+="\nMaybe edit domain in url can help.\nOr downloading via a direct link may not working.";}
+                            input.setText(url);
+                            text_info.setText(str);
+                            retry_layout.setVisibility(View.VISIBLE);
+                        });
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        return false;
+                    }
                 }).into(imageView);
             }
         }else{ //only load
             Glide.get(imageView.getContext()).getRegistry().replace(GlideUrl.class, InputStream.class, NetworkUtils.createFactoryForListenProgress((bytesRead, contentLength, done) -> {
-                float p = bytesRead / (float)contentLength;
+                float p = Math.min(Math.max(bytesRead / (float)contentLength,1),0);
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    progressBar.setColor(getColor(p));
-                    progressBar.setLineMaxLength(p);
-                    progressBar.setLineMinLength(p);
-                    progress.setText("Loaded "+p*100+"%");
-                    if(done){
+                    if(p>0 && p<=1){
+                        progressBar.setColor(getColor(p));
+                        progressBar.setLineMaxLength(p);
+                        progressBar.setLineMinLength(p);
+                    }else{
                         progressBar.setColor(colorProgress);
                         progressBar.setLineMaxLength(1);
                         progressBar.setLineMinLength(0.01f);
                     }
+                    progress.setText(String.format(Locale.getDefault(),"Loaded %.1f%%",p*100));
                 });
             }));
             load_info.setVisibility(View.VISIBLE);
             retry_layout.setVisibility(View.GONE);
-            input.setText(url);
             progress.setText(R.string.loading);
-            GlideUrl glideUrl=new GlideUrl(url,new LazyHeaders.Builder().addHeader("Cookie", Catalogs.getCookieByUrl(url,"")).build());
-            Glide.with(imageView.getContext()).download(glideUrl).timeout(60000).listener(new RequestListener<>() {
+            Glide.with(imageView.getContext()).download(NetworkUtils.getGlideUrl(url,manga.getProvider())).timeout(60000).listener(new RequestListener<>() {
                 @Override
                 public boolean onLoadFailed(@Nullable @org.jetbrains.annotations.Nullable GlideException e, Object model, Target<File> target, boolean isFirstResource) {
                     new Handler(Looper.getMainLooper()).post(() -> {
                         load_info.setVisibility(View.GONE);
+                        text_info.setText(String.format(Locale.getDefault(),"%s",e!=null?Utils.getRootCause(e,2).getMessage():"Failed to load resource"));
+                        input.setText(url);
                         retry_layout.setVisibility(View.VISIBLE);
                     });
                     return false;
@@ -212,6 +232,15 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             case FIT_X -> drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() > proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER;
             case FIT_Y -> drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER;
         }:def;
+    }
+
+    public static Bitmap adapt_size(Bitmap bitmap,File file){
+        if(bitmap==null || bitmap.getByteCount()>100*1024*1024){
+            BitmapFactory.Options options=new BitmapFactory.Options();
+            options.inSampleSize=bitmap!=null? ((int)Math.sqrt(bitmap.getByteCount()/((double)(100*1024*1024))))+1 : 2;
+            bitmap=file.exists() ? BitmapFactory.decodeFile(file.getAbsolutePath(),options) : null;
+        }
+        return bitmap;
     }
 
     public void setScaleType(ScaleType scaleType,boolean vertical){

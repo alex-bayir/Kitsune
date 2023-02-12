@@ -109,12 +109,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
     final ValueAnimator mShowHideAnimator = ValueAnimator.ofFloat(0, 1);
     @SuppressWarnings("WeakerAccess") /* synthetic access */
     @AnimationState int mAnimationState = ANIMATION_STATE_OUT;
-    private final Runnable mHideRunnable = new Runnable() {
-        @Override
-        public void run() {
-            hide(HIDE_DURATION_MS);
-        }
-    };
+    private final Runnable mHideRunnable = () -> hide(HIDE_DURATION_MS);
     private final RecyclerView.OnScrollListener
             mOnScrollListener = new RecyclerView.OnScrollListener() {
         @Override
@@ -279,8 +274,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
 
     @Override
     public void onDrawOver(Canvas canvas, RecyclerView parent, RecyclerView.State state) {
-        if (mRecyclerViewWidth != mRecyclerView.getWidth()
-                || mRecyclerViewHeight != mRecyclerView.getHeight()) {
+        if (mRecyclerViewWidth != mRecyclerView.getWidth() || mRecyclerViewHeight != mRecyclerView.getHeight()) {
             mRecyclerViewWidth = mRecyclerView.getWidth();
             mRecyclerViewHeight = mRecyclerView.getHeight();
             // This is due to the different events ordering when keyboard is opened or
@@ -507,15 +501,15 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
 
     @VisibleForTesting
     boolean isPointInsideVerticalThumb(float x, float y) {
-        return (isLayoutRTL() ? x <= mVerticalThumbWidth
-                : x >= mRecyclerViewWidth - mVerticalThumbWidth)
+        return (isLayoutRTL() ? x <= mVerticalThumbWidth + padding.right
+                : x >= mRecyclerViewWidth - mVerticalThumbWidth - padding.right)
                 && y >= mVerticalThumbCenterY - mVerticalThumbHeight / 2
                 && y <= mVerticalThumbCenterY + mVerticalThumbHeight / 2;
     }
 
     @VisibleForTesting
     boolean isPointInsideHorizontalThumb(float x, float y) {
-        return (y >= mRecyclerViewHeight - mHorizontalThumbHeight)
+        return (y >= mRecyclerViewHeight - mHorizontalThumbHeight - padding.bottom)
                 && x >= mHorizontalThumbCenterX - mHorizontalThumbWidth / 2
                 && x <= mHorizontalThumbCenterX + mHorizontalThumbWidth / 2;
     }

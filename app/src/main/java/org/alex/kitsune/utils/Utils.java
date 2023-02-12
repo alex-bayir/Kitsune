@@ -27,9 +27,12 @@ import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.load.HttpException;
+import com.bumptech.glide.load.engine.GlideException;
 import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
+import org.alex.kitsune.commons.HttpStatusException;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -513,5 +516,16 @@ public class Utils {
     }
     public static void showToolTip(Context context,View anchor){
         new SimpleTooltip.Builder(context).anchorView(anchor).contentView(R.layout.tooltip).text(R.string.auth_help_info).arrowColor(context.getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
+    }
+    public static String getDomain(String domain,String url){return domain!=null ? domain : url.substring(url.indexOf('/')+2,url.indexOf('/',8));}
+    public static Throwable getRootCause(Throwable throwable, int depth){
+        return change_known_errors(throwable!=null && throwable.getCause()!=null && (depth>0||depth==-1)? getRootCause(throwable.getCause(),--depth) : throwable);
+    }
+    public static Throwable getRootCause(GlideException throwable, int depth){
+        List<Throwable> list;
+        return getRootCause(throwable!=null && (list=throwable.getRootCauses()).size()>0 && (depth>0||depth==-1)? list.get(0) : throwable,depth);
+    }
+    public static Throwable change_known_errors(Throwable throwable){
+        return throwable instanceof HttpException h? new HttpStatusException(h.getStatusCode(),null) : throwable;
     }
 }

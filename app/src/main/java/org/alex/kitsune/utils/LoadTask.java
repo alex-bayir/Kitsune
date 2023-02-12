@@ -80,7 +80,7 @@ public abstract class LoadTask<Params, Progress, Result>{
                     .newCall(new okhttp3.Request.Builder()
                                     .url(url)
                                     .headers(NetworkUtils.getHeadersDefault(url))
-                                    .header(NetworkUtils.HEADER_REFERER,domain!=null ? domain : url.substring(0,url.indexOf('/',8)))
+                                    .header(NetworkUtils.HEADER_REFERER,Utils.getDomain(domain,url))
                                     .get()
                                     .build()
                     ).execute();

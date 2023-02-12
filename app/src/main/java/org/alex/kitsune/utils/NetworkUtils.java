@@ -6,11 +6,14 @@ import android.net.NetworkInfo;
 import android.text.TextUtils;
 import android.util.Log;
 import com.bumptech.glide.integration.okhttp3.OkHttpUrlLoader;
+import com.bumptech.glide.load.model.GlideUrl;
+import com.bumptech.glide.load.model.LazyHeaders;
 import info.guardianproject.netcipher.NetCipher;
 import okhttp3.*;
 import okio.*;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.SSLSocketFactoryExtended;
+import org.alex.kitsune.ui.shelf.Catalogs;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -139,6 +142,15 @@ public class NetworkUtils {
         if(in!=null){in.close();}
         Log.d("doc",doc.toString());
         return null;
+    }
+
+    public static GlideUrl getGlideUrl(String url,String domain){
+        return new GlideUrl(url,new LazyHeaders.Builder()
+                .addHeader("Cookie", Catalogs.getCookieByUrl(url,""))
+                .addHeader(HEADER_REFERER,Utils.getDomain(domain,url))
+                .addHeader(HEADER_USER_AGENT, USER_AGENT_DEFAULT)
+                .build()
+        );
     }
 
     public static OkHttpUrlLoader.Factory createFactoryForListenProgress(ProgressResponseBody.ProgressListener listener){

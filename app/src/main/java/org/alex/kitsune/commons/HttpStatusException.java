@@ -18,8 +18,8 @@ public class HttpStatusException extends IOException {
     public int code(){return code;}
     public String url(){return url;}
     public String description(){return description;}
-    private static String message(String format,int code,String description,String url){return String.format(format,code,description,url);}
-    private static String message(int code,String description,String url){return message("%d - %s\nURL:%s",code,description,url);}
+    private static String message(String format,int code,String description,String url){return String.format(format,code,description,url!=null?url:"");}
+    private static String message(int code,String description,String url){return message(url!=null?"%d - %s\nURL:%s":"%d - %s",code,description,url);}
     public String message(String format){return message(format,code,description,url);}
     public String message(){return message(code,description,url);}
 

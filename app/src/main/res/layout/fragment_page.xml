@@ -55,6 +55,15 @@
                           android:textSize="30sp"
                           style="?android:textAppearance"
                 />
+                <TextView android:id="@+id/text_info"
+                          android:layout_width="match_parent"
+                          android:layout_height="wrap_content"
+                          android:gravity="center"
+                          android:textSize="16sp"
+                          android:textIsSelectable="true"
+                          android:text="@string/impossible_decode_image"
+                          style="?android:textAppearance"
+                />
                 <Button android:id="@+id/retry"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -68,27 +77,5 @@
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                 />
         </LinearLayout>
-        <FrameLayout android:id="@+id/error_layout"
-                      android:layout_width="match_parent"
-                      android:layout_height="match_parent"
-                      android:gravity="center"
-                      android:orientation="vertical"
-                      android:layout_gravity="center">
-
-                <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_broken_image"
-                        app:tint="?colorPrimary"/>
-                <TextView android:id="@+id/text_info"
-                          android:layout_width="match_parent"
-                          android:layout_height="match_parent"
-                          android:gravity="center"
-                          android:textSize="16sp"
-                          android:textIsSelectable="true"
-                          android:text="@string/impossible_decode_image"
-                          style="?android:textAppearance"
-                />
-        </FrameLayout>
 
 </FrameLayout>
