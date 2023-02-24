@@ -34,7 +34,7 @@ public class DrawerLayout extends FrameLayout {
     private float velocityX;
     private float velocityY;
 
-    private static int defaultMinimalVelocity=30;
+    private static int defaultMinimalVelocity=5;
     private int minimalVelocity=defaultMinimalVelocity;
     private float x=0;
     private float y=0;
@@ -50,6 +50,9 @@ public class DrawerLayout extends FrameLayout {
 
     ArrayList<DrawerListener> listeners=new ArrayList<>();
     private boolean bothSide=false;
+
+    private int skipFirst=3;
+    private int skip=skipFirst;
 
     public DrawerLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
@@ -137,7 +140,6 @@ public class DrawerLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_MOVE:
-
                 float dx=event.getX()-startX;
                 if(direction==LEFT){
                     x=max(min(dx-(opened ?0:drawerWidth),0),-drawerWidth);
@@ -170,13 +172,14 @@ public class DrawerLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 startX = x;
                 startY = y;
+                skip=skipFirst;
                 break;
             case MotionEvent.ACTION_MOVE:
-                final float dx = x - startX;
-                final float dy = y - startY;
-                if(abs(dx)>abs(dy) && abs(velocityX)>abs(velocityY)+minimalVelocity){
-                    if(bothSide && !opened){direction=dx<0?RIGHT:LEFT;} // both sides
-                    if(isNeedIntercept(velocityX,velocityY)){
+                if(skip--<=0){
+                    final float dx = x - startX;
+                    final float dy = y - startY;
+                    if(abs(dx)>abs(dy) && abs(velocityX)>abs(velocityY)+minimalVelocity){
+                        if(bothSide && !opened){direction=dx<0?RIGHT:LEFT;} // both sides
                         startX = x;
                         startY = y;
                         intercept=true;
@@ -195,10 +198,6 @@ public class DrawerLayout extends FrameLayout {
      */
     private float offset(float x){
         return (direction==LEFT?drawerWidth+x:getWidth()-x)/drawerWidth;
-    }
-
-    private boolean isNeedIntercept(float velocityX,float velocityY){
-        return bothSide || ((velocityX*direction>0 && !opened) || (velocityX*direction<0 && opened));
     }
     public void setMinimalVelocity(int velocity){
         minimalVelocity=velocity;
