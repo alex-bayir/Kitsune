@@ -17,6 +17,8 @@ import android.provider.Settings;
 import android.view.*;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -27,12 +29,18 @@ import androidx.core.graphics.drawable.IconCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.widget.RecyclerView;
+import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.HttpException;
 import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.CustomViewTarget;
+import com.bumptech.glide.request.transition.Transition;
 import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HttpStatusException;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
@@ -527,5 +535,20 @@ public class Utils {
     }
     public static Throwable change_known_errors(Throwable throwable){
         return throwable instanceof HttpException h? new HttpStatusException(h.getStatusCode(),null) : throwable;
+    }
+
+    public static void loadToView(View view,String url,String domain,Drawable error){
+        Glide.with(view).load(NetworkUtils.getGlideUrl(url,domain)).error(error).into(new CustomViewTarget<View,Drawable>(view) {
+            @Override
+            public void onLoadFailed(@Nullable @org.jetbrains.annotations.Nullable Drawable errorDrawable) {
+                getView().setBackground(errorDrawable);
+            }
+            @Override
+            public void onResourceReady(@NonNull @NotNull Drawable resource, @Nullable @org.jetbrains.annotations.Nullable Transition<? super Drawable> transition) {
+                getView().setBackgroundDrawable(resource);
+            }
+            @Override
+            protected void onResourceCleared(@Nullable @org.jetbrains.annotations.Nullable Drawable placeholder) {}
+        });
     }
 }

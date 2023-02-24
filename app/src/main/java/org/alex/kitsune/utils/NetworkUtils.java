@@ -146,9 +146,9 @@ public class NetworkUtils {
 
     public static GlideUrl getGlideUrl(String url,String domain){
         return new GlideUrl(url,new LazyHeaders.Builder()
-                .addHeader("Cookie", Catalogs.getCookieByUrl(url,""))
-                .addHeader(HEADER_REFERER,Utils.getDomain(domain,url))
-                .addHeader(HEADER_USER_AGENT, USER_AGENT_DEFAULT)
+                .setHeader("Cookie", Catalogs.getCookieByUrl(url,""))
+                .setHeader(HEADER_REFERER,Utils.getDomain(domain,url))
+                .setHeader(HEADER_USER_AGENT, USER_AGENT_DEFAULT)
                 .build()
         );
     }

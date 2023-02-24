@@ -15,20 +15,19 @@ import android.view.*;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.navigation.NavigationView;
-import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.snackbar.Snackbar;
 import com.soundcloud.android.crop.Crop;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.CustomSnackbar;
+import org.alex.kitsune.commons.DrawerLayout;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
@@ -48,6 +47,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider {
     private static final int PERMISSION_REQUEST_CODE=1;
     private static final int CALL_FILE_STORE=2;
@@ -55,7 +55,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private String headerImagePath;
     Toolbar toolbar;
     NavigationView navigationView;
-    ActionBarDrawerToggle drawerToggle;
     DrawerLayout drawer;
     PagesAdapter adapter;
     public static MediaProjectionManager projectionManager;
@@ -111,16 +110,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         adapter=new PagesAdapter(this.getSupportFragmentManager(),R.id.pager);
         headerImagePath=getExternalFilesDir(null).getAbsolutePath()+"/header";
         drawer=findViewById(R.id.drawer_layout);
-        drawerToggle=new ActionBarDrawerToggle(this, drawer, toolbar, R.string.navigation_drawer_open,  R.string.navigation_drawer_close){
-            final View content=findViewById(R.id.content);
+        drawer.addHamburger(this,toolbar);
+        drawer.addDrawerListener(new androidx.drawerlayout.widget.DrawerLayout.SimpleDrawerListener() {
             @Override
             public void onDrawerSlide(View drawerView, float slideOffset) {
-                super.onDrawerSlide(drawerView, slideOffset);
-                content.setTranslationX(drawerView.getWidth()*slideOffset);
+                drawer.getContent().setAlpha(Math.max(1-slideOffset,0.25f));
+                drawer.getContent().setTranslationX(drawerView.getWidth()*slideOffset*drawer.getDirection());
             }
-        };
-        drawerToggle.setDrawerIndicatorEnabled(true);
-        drawer.addDrawerListener(drawerToggle);
+        });
         navigationView=findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
         findViewById(R.id.progress).setVisibility(View.GONE);
@@ -155,7 +152,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        drawerToggle.syncState();
         Updater.getUpdate(this,json->{
             if(json!=null){
                 Updater.createSnackBarUpdate((ViewGroup) drawer.getParent(),Gravity.CENTER, Snackbar.LENGTH_LONG, v->startActivity(new Intent(this,ActivityAbout.class).putExtra("update",true))).show();
