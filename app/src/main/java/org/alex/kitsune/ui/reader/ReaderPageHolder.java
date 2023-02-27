@@ -29,6 +29,7 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.vlad1m1r.lemniscate.base.BaseCurveProgressView;
 import org.alex.kitsune.R;
+import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Page;
@@ -150,20 +151,18 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
         if(file.exists()){
             imageView.setAdjustViewBounds(true);
-            Drawable drawable=Drawable.createFromPath(file.getAbsolutePath());
-            if(drawable instanceof BitmapDrawable bd){
-                drawable=adapt_size(bd,file);
-            }
-            imageView.setImageDrawable(drawable,file);
-            if(drawable instanceof Animatable animatable){
-                animatable.start();
-            }
-            setScaleType(scaleType,vertical);
-            if(showTranslate){
-                imageView.show();
-            }else{
-                imageView.hide();
-            }
+            loadDrawable(file, drawable -> {
+                imageView.setImageDrawable(drawable,file);
+                if(drawable instanceof Animatable animatable){
+                    animatable.start();
+                }
+                setScaleType(scaleType,vertical);
+                if(showTranslate){
+                    imageView.show();
+                }else{
+                    imageView.hide();
+                }
+            });
         }else{ //only load
             Glide.get(imageView.getContext()).getRegistry().replace(GlideUrl.class, InputStream.class, NetworkUtils.createFactoryForListenProgress((bytesRead, contentLength, done) -> {
                 float p = Math.min(Math.max(bytesRead / (float)contentLength,1),0);
@@ -217,6 +216,21 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             case FIT_X -> drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() > proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER;
             case FIT_Y -> drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER;
         }:def;
+    }
+
+    public static void loadDrawable(File file, Callback<Drawable> onLoad){
+        if(onLoad==null){return;}
+        new Thread(()->{
+            Drawable drawable=loadDrawable(file);
+            new Handler(Looper.getMainLooper()).post(()->onLoad.call(drawable));
+        }).start();
+    }
+    public static Drawable loadDrawable(File file){
+        Drawable drawable=Drawable.createFromPath(file.getAbsolutePath());
+        if(drawable instanceof BitmapDrawable bd){
+            drawable=adapt_size(bd,file);
+        }
+        return drawable;
     }
     public static BitmapDrawable adapt_size(BitmapDrawable drawable,File file){
         if(drawable!=null){

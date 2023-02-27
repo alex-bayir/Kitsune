@@ -12,6 +12,8 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import androidx.core.app.NotificationCompat;
@@ -148,34 +150,38 @@ public class OCRImageView extends PhotoView {
             Logs.e("wrong condition");
             return;
         }
-        int width=bitmap.getWidth();
-        int height=bitmap.getHeight();
-        text=null;
-        LinkedList<Text> blocks=new LinkedList<>();
-        int i=0; count=0;
-        while(i<height){
-            count++;
-            Rect rect=new Rect(0,i,width,Math.min(i+view_height,height));
-            InputImage image=InputImage.fromBitmap(Bitmap.createBitmap(bitmap,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top),0);
-            recognizer.process(image).addOnSuccessListener(text -> {
-                if(text==null){
-                    Logs.e("Text is null");
-                }else{
-                    blocks.add(text);
-                    for(Text.TextBlock block:text.getTextBlocks()){
-                        block.getBoundingBox().offset(rect.left,rect.top);
-                    }
-                    if(--count==0){
-                        this.text=collect(blocks);
-                        texts.put(save,this.text);
-                        if(show){
-                            show();
+        new Thread(()->{
+            int width=bitmap.getWidth();
+            int height=bitmap.getHeight();
+            text=null;
+            LinkedList<Text> blocks=new LinkedList<>();
+            int i=0; count=0;
+            while(i<height){
+                count++;
+                Rect rect=new Rect(0,i,width,Math.min(i+view_height,height));
+                InputImage image=InputImage.fromBitmap(Bitmap.createBitmap(bitmap,rect.left,rect.top,rect.right-rect.left,rect.bottom-rect.top),0);
+                recognizer.process(image).addOnSuccessListener(text -> {
+                    if(text==null){
+                        Logs.e("Text is null");
+                    }else{
+                        blocks.add(text);
+                        for(Text.TextBlock block:text.getTextBlocks()){
+                            block.getBoundingBox().offset(rect.left,rect.top);
+                        }
+                        if(--count==0){
+                            this.text=collect(blocks);
+                            texts.put(save,this.text);
+                            new Handler(Looper.getMainLooper()).post(()->{
+                                if(show){
+                                    show();
+                                }
+                            });
                         }
                     }
-                }
-            }).addOnFailureListener(e -> e.printStackTrace());
-            i+=view_height;
-        }
+                }).addOnFailureListener(e -> e.printStackTrace());
+                i+=view_height;
+            }
+        }).start();
     }
 
     public void show(){
@@ -221,14 +227,12 @@ public class OCRImageView extends PhotoView {
     public void hide(){
         show=false;
         if(text!=null && save!=null && getDrawable() instanceof BitmapDrawable){
-            Drawable drawable=Drawable.createFromPath(save.getAbsolutePath());
-            if(drawable instanceof BitmapDrawable bd){
-                drawable=ReaderPageHolder.adapt_size(bd,save);
-            }
-            setImageDrawable(drawable);
-            if(drawable instanceof Animatable animatable){
-                animatable.start();
-            }
+            ReaderPageHolder.loadDrawable(save,drawable->{
+                setImageDrawable(drawable);
+                if(drawable instanceof Animatable animatable){
+                    animatable.start();
+                }
+            });
         }
     }
 
@@ -241,15 +245,5 @@ public class OCRImageView extends PhotoView {
             list.addAll(text.getTextBlocks());
         }
         return new Text(str.toString(),list);
-    }
-    public static String arrToString(Object[] arr){
-        String str="[";
-        if(arr.length>0){
-            str+=arr[0].toString();
-        }
-        for(int i=1;i<arr.length;i++){
-            str+=","+arr[i].toString();
-        }
-        return str;
     }
 }
