@@ -6,8 +6,10 @@ import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -20,19 +22,17 @@ import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
-import com.bumptech.glide.RequestBuilder;
 import com.bumptech.glide.load.DataSource;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
-import com.github.chrisbanes.photoview.PhotoView;
 import com.vlad1m1r.lemniscate.base.BaseCurveProgressView;
 import org.alex.kitsune.R;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Page;
+import org.alex.kitsune.ocr.OCRImageView;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
@@ -61,7 +61,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    PhotoView imageView;
+    OCRImageView imageView;
     Manga manga;
     Chapter chapter;
     Page page;
@@ -134,50 +134,35 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         return trying;
     }
 
-    public void onBind(int position,Chapter chapter,ScaleType scaleType){
+    public void onBind(int position,Chapter chapter,ScaleType scaleType,boolean showTranslate){
         if(this.position!=position || this.chapter!=chapter){
             this.position=position;
             this.chapter=chapter;
             if(this.chapter!=null){
                 file=manga.getPage(this.chapter,page=this.chapter.getPage(position));
-                draw(page.getUrl(),scaleType,vertical);
+                draw(page.getUrl(),scaleType,vertical,showTranslate);
             }else{imageView.setImageDrawable(null);}
         }
     }
     public void draw(String url){
-        draw(url,null,vertical);
+        draw(url,null,vertical,false);
     }
-    public void draw(String url,ScaleType scaleType,boolean vertical){
+    public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
         if(file.exists()){
             imageView.setAdjustViewBounds(true);
-            Drawable d=Drawable.createFromPath(file.getAbsolutePath());
-            if(d instanceof BitmapDrawable){
-                imageView.setImageBitmap(adapt_size(((BitmapDrawable) d).getBitmap(),file));
-                setScaleType(scaleType,vertical);
+            Drawable drawable=Drawable.createFromPath(file.getAbsolutePath());
+            if(drawable instanceof BitmapDrawable bd){
+                drawable=adapt_size(bd,file);
+            }
+            imageView.setImageDrawable(drawable,file);
+            if(drawable instanceof Animatable animatable){
+                animatable.start();
+            }
+            setScaleType(scaleType,vertical);
+            if(showTranslate){
+                imageView.show();
             }else{
-                RequestBuilder<Drawable> bro=Glide.with(imageView).load(d).diskCacheStrategy(DiskCacheStrategy.NONE).override(4000,20000);
-                (switch (calculate(d,scaleType,vertical,imageView.getScaleType())){
-                    default -> bro.optionalCenterCrop();
-                    case CENTER_INSIDE -> bro.optionalCenterInside();
-                    case FIT_CENTER -> bro.optionalFitCenter();
-                }).error(R.drawable.ic_broken_image).listener(new RequestListener<>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable @org.jetbrains.annotations.Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        new Handler(Looper.getMainLooper()).post(() -> {
-                            String str=String.format(Locale.getDefault(),"File size=%d\n%s",file.length(),e!=null?Utils.getRootCause(e,2).getMessage():"");
-                            if(file.length()==0){str+="\nMaybe edit domain in url can help.\nOr downloading via a direct link may not working.";}
-                            input.setText(url);
-                            text_info.setText(str);
-                            retry_layout.setVisibility(View.VISIBLE);
-                        });
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                }).into(imageView);
+                imageView.hide();
             }
         }else{ //only load
             Glide.get(imageView.getContext()).getRegistry().replace(GlideUrl.class, InputStream.class, NetworkUtils.createFactoryForListenProgress((bytesRead, contentLength, done) -> {
@@ -217,7 +202,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                         retry_layout.setVisibility(View.GONE);
                         manga.setLastTimeSave();
                         itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.load));
-                        draw(url,scaleType,vertical);
+                        draw(url,scaleType,vertical,showTranslate);
                     });
                     return true;
                 }
@@ -233,11 +218,25 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             case FIT_Y -> drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER;
         }:def;
     }
-
+    public static BitmapDrawable adapt_size(BitmapDrawable drawable,File file){
+        if(drawable!=null){
+            Bitmap bitmap=adapt_size(drawable.getBitmap(),file);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                drawable.setBitmap(bitmap);
+            }else{
+                drawable=new BitmapDrawable(null,bitmap);
+            }
+        }
+        return drawable;
+    }
     public static Bitmap adapt_size(Bitmap bitmap,File file){
         if(bitmap==null || bitmap.getByteCount()>100*1024*1024){
             BitmapFactory.Options options=new BitmapFactory.Options();
             options.inSampleSize=bitmap!=null? ((int)Math.sqrt(bitmap.getByteCount()/((double)(100*1024*1024))))+1 : 2;
+            options.inMutable=true;
+        } else if (!bitmap.isMutable()) {
+            BitmapFactory.Options options=new BitmapFactory.Options();
+            options.inMutable=true;
             bitmap=file.exists() ? BitmapFactory.decodeFile(file.getAbsolutePath(),options) : null;
         }
         return bitmap;

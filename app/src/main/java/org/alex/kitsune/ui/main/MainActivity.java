@@ -31,6 +31,7 @@ import org.alex.kitsune.commons.DrawerLayout;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.ocr.OCRImageView;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.settings.SettingsActivity;
@@ -128,6 +129,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //projectionManager=(MediaProjectionManager)getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         executeIntent(getIntent());
         Updater.checkAndUpdateScripts(this,null);
+        OCRImageView.init(this);
     }
 
     @Override

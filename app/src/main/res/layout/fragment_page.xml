@@ -5,7 +5,7 @@
              android:background="@color/transparent"
              android:layout_width="match_parent"
              android:layout_height="match_parent">
-        <com.github.chrisbanes.photoview.PhotoView
+        <org.alex.kitsune.ocr.OCRImageView
                 android:id="@+id/image"
                 android:layout_gravity="center"
                 android:layout_width="match_parent"

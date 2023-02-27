@@ -124,6 +124,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             }else{
                 new Thread(() -> Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),table)).start();
             }
+            if(adapter!=null){
+                adapter.invertShowTranslate();
+            }
         });
         reader=findViewById(R.id.reader);
         adapter=new ReaderPageAdapter(manga,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});

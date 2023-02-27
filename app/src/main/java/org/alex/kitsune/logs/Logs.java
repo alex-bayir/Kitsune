@@ -74,6 +74,8 @@ public class Logs {
                         .putExtra(Intent.EXTRA_TEXT,log.stackTrace)
         ,context.getString(R.string.send_log)));
     }
+    public static void e(Object log){e(log!=null?log.toString():"null");}
+    public static void d(Object log){d(log!=null?log.toString():"null");}
     public static void e(String log){android.util.Log.e("Debug",log);}
     public static void d(String log){android.util.Log.d("Debug",log);}
 

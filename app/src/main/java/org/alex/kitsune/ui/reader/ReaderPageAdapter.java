@@ -14,6 +14,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
     private final  LinearLayoutManager layoutManager;
     private final SnapHelper snapHelper=new PagerSnapHelper();
     private final RecyclerView rv;
+    private boolean showTranslate=false;
 
 
     public ReaderPageAdapter(Manga manga, RecyclerView rv, View.OnClickListener visibleUIListener,View.OnClickListener leftClick,View.OnClickListener rightClick) {
@@ -39,6 +40,14 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
         this.scaleType=scaleType!=null ? scaleType : ReaderPageHolder.ScaleType.FIT_X;
         notifyItemRangeChanged(0,getItemCount());
     }
+    public void setShowTranslate(boolean show){
+        showTranslate=show;
+        notifyItemRangeChanged(0,getItemCount());
+    }
+    public void invertShowTranslate(){
+        setShowTranslate(!isShowTranslate());
+    }
+    public boolean isShowTranslate(){return showTranslate;}
     public int getReaderMode(){return getOrientation()==RecyclerView.HORIZONTAL ? (isReverse() ? 1 : 0) : 2;}
     public int getScaleMode(){return scaleType.ordinal();}
     public void setModes(int modeR, int modeS){
@@ -60,7 +69,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
 
     @Override
     public void onBindViewHolder(ReaderPageHolder holder, int position) {
-        holder.onBind(position,chapter,scaleType);
+        holder.onBind(position,chapter,scaleType,showTranslate);
     }
 
     @Override
