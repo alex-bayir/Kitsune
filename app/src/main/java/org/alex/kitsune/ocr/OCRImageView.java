@@ -1,6 +1,8 @@
 package org.alex.kitsune.ocr;
 
 import android.app.Activity;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -9,9 +11,11 @@ import android.graphics.Rect;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-import android.widget.Toast;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.google.mlkit.common.model.DownloadConditions;
 import com.google.mlkit.nl.translate.TranslateLanguage;
@@ -23,11 +27,10 @@ import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
+import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.ui.reader.ReaderPageHolder;
 import org.alex.kitsune.utils.LoadTask;
-import org.alex.kitsune.utils.Utils;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -42,24 +45,55 @@ public class OCRImageView extends PhotoView {
     private Text text;
     private File save;
     private static File libnative=null;
+    private static String channelID="download";
+    private static int notificationId="libtranslate_jni.so".hashCode();
 
     HashMap<File,Text> texts=new HashMap<>();
     public static void init(Context context){
         libnative=new File(context.getFilesDir().getAbsoluteFile()+"/lib_native/libtranslate_jni.so");
-        Logs.e(context.getFilesDir().getAbsoluteFile()+"/lib_native/libtranslate_jni.so");
         if(!libnative.exists()){
+            NotificationManagerCompat notificationManagerCompat=NotificationManagerCompat.from(context);
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O){
+                notificationManagerCompat.createNotificationChannel(new NotificationChannel(channelID,channelID, NotificationManager.IMPORTANCE_DEFAULT));
+            }
             new LoadTask<String,String,Boolean>(){
-
+                public static int parseProgress(String progress){
+                    if(progress.endsWith("%")){
+                        return (int)Float.parseFloat(progress.substring(0,progress.length()-1));
+                    }else{
+                        return Integer.parseInt(progress.substring(0,progress.length()-2));
+                    }
+                }
                 @Override
                 protected void onProgressUpdate(String s) {
-                    Toast.makeText(context,s,Toast.LENGTH_SHORT).show();
+                    NotificationCompat.Builder builder =
+                            new NotificationCompat.Builder(context)
+                                    .setSmallIcon(R.drawable.ic_launcher)
+                                    .setContentTitle("Downloading libtranslate_jni.so")
+                                    .setContentText("Downloading native library for text translating")
+                                    .setChannelId(channelID)
+                                    .setSilent(true)
+                                    .setOngoing(true)
+                                    .setProgress(100,parseProgress(s),false);
+                    NotificationManager notificationManager = context.getSystemService(NotificationManager.class);
+                    notificationManager.notify(notificationId, builder.build());
+                }
+
+                @Override
+                protected void onFinished(Boolean aBoolean) {
+                    notificationManagerCompat.cancel(notificationId);
+                }
+
+                @Override
+                protected void onBraked(Throwable throwable) {
+                    notificationManagerCompat.cancel(notificationId);
                 }
 
                 @Override
                 protected Boolean doInBackground(String url) {
                     return LoadTask.loadInBackground(url,null,libnative,null,getHandler(),false);
                 }
-            }.start("https://github.com/alex-bayir/Kitsune/tree/master/app/lib/libtranslate_jni.so");
+            }.start("https://raw.githubusercontent.com/alex-bayir/Kitsune/master/app/lib/libtranslate_jni.so");
         }else{
             init();
         }
@@ -70,6 +104,7 @@ public class OCRImageView extends PhotoView {
             System.load(libnative.getAbsolutePath());
             Logs.e("loaded");
         }catch (Throwable e){
+            libnative.delete();
             e.printStackTrace();
         }
         recognizer=TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS);

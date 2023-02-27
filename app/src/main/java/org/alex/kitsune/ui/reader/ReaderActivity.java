@@ -111,21 +111,22 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             return false;
         });
         translate.setOnClickListener(v ->{
-            Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
-            if(table.size()>1){
-                PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
-                for(Map.Entry<String,ResolveInfo> entry:table.entrySet()){
-                    popupMenu.getMenu().add(entry.getValue().loadLabel(getPackageManager())).setIcon(entry.getValue().loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
-                        new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),entry.getValue().activityInfo)).start(); return false;
-                    });
-                }
-                popupMenu.setForceShowIcon(true);
-                popupMenu.show();
-            }else{
-                new Thread(() -> Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),table)).start();
-            }
             if(adapter!=null){
                 adapter.invertShowTranslate();
+            }else{
+                Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
+                if(table.size()>1){
+                    PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
+                    for(Map.Entry<String,ResolveInfo> entry:table.entrySet()){
+                        popupMenu.getMenu().add(entry.getValue().loadLabel(getPackageManager())).setIcon(entry.getValue().loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
+                            new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),entry.getValue().activityInfo)).start(); return false;
+                        });
+                    }
+                    popupMenu.setForceShowIcon(true);
+                    popupMenu.show();
+                }else{
+                    new Thread(() -> Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),table)).start();
+                }
             }
         });
         reader=findViewById(R.id.reader);
