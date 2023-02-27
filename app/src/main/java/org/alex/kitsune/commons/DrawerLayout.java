@@ -21,36 +21,22 @@ public class DrawerLayout extends FrameLayout {
 
     private View drawer;
     private View content;
-
+    ViewDragHelper helper;
     private int drawerWidth;
     private int drawerHeight;
     private int contentWidth;
     private int contentHeight;
-
-
     private float startX;
     private float startY;
-
-    private float velocityX;
-    private float velocityY;
-
-    private static int defaultMinimalVelocity=5;
-    private int minimalVelocity=defaultMinimalVelocity;
+    private final int deltaVelocity=5;
     private float x=0;
     private float y=0;
 
     private boolean opened;
-
-    public static final int LEFT=1;
-    public static final int RIGHT=-1;
-
-    private int direction=LEFT;
-
     private int duration=300;
 
     ArrayList<DrawerListener> listeners=new ArrayList<>();
     private boolean bothSide=false;
-
     private int skipFirst=3;
     private int skip=skipFirst;
 
@@ -87,7 +73,7 @@ public class DrawerLayout extends FrameLayout {
     }
 
     public int getDirection(){
-        return direction;
+        return helper.isRTL()?-1:1;
     }
 
     public void setDuration(int duration){
@@ -111,6 +97,7 @@ public class DrawerLayout extends FrameLayout {
         content = getChildAt(0);
         drawer = getChildAt(1);
         drawer.setElevation(content.getElevation()+1);
+        helper=new ViewDragHelper(this);
     }
 
     @Override
@@ -125,7 +112,7 @@ public class DrawerLayout extends FrameLayout {
     @Override
     public void setLayoutDirection(int layoutDirection) {
         super.setLayoutDirection(layoutDirection);
-        direction=getLayoutDirection()==View.LAYOUT_DIRECTION_RTL?RIGHT:LEFT;
+        helper.setRtl(getLayoutDirection()==View.LAYOUT_DIRECTION_RTL);
     }
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
@@ -140,21 +127,15 @@ public class DrawerLayout extends FrameLayout {
             case MotionEvent.ACTION_DOWN:
                 break;
             case MotionEvent.ACTION_MOVE:
-                float dx=event.getX()-startX;
-                if(direction==LEFT){
-                    x=max(min(dx-(opened ?0:drawerWidth),0),-drawerWidth);
-                }else{
-                    x=max(min(dx-(opened ?drawerWidth:0),0),-drawerWidth)+getWidth();
-                }
-                drawer.animate().x(x).setDuration(0).setListener(null).start();
-                onSlide(drawer,offset(x));
+                drawer.animate().x(helper.slide(opened,event.getX()-startX))
+                        .setUpdateListener(animation -> onSlide(drawer,helper.offset())).setDuration(0).start();
                 break;
             case MotionEvent.ACTION_UP:
-                float w=(direction==LEFT?-x:drawerWidth-getWidth()+x);
-                if (w > drawerWidth / 2f) {
-                    closeDrawer();
-                } else {
+            case MotionEvent.ACTION_CANCEL:
+                if(helper.shouldOpen(opened)){
                     openDrawer();
+                }else{
+                    closeDrawer();
                 }
                 break;
         }
@@ -164,8 +145,8 @@ public class DrawerLayout extends FrameLayout {
     @Override
     public boolean onInterceptTouchEvent(MotionEvent event) {
         boolean intercept = false;
-        velocityX=event.getX()-x;
-        velocityY=event.getY()-y;
+        float velocityX = event.getX() - x;
+        float velocityY = event.getY() - y;
         x = event.getX();
         y = event.getY();
         switch (event.getAction()) {
@@ -173,13 +154,16 @@ public class DrawerLayout extends FrameLayout {
                 startX = x;
                 startY = y;
                 skip=skipFirst;
+                if(opened && !helper.is_dx_in_range(x)){
+                    intercept=true;
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 if(skip--<=0){
                     final float dx = x - startX;
                     final float dy = y - startY;
-                    if(abs(dx)>abs(dy) && abs(velocityX)>abs(velocityY)+minimalVelocity){
-                        if(bothSide && !opened){direction=dx<0?RIGHT:LEFT;} // both sides
+                    if(abs(dx)>abs(dy) && abs(velocityX)>abs(velocityY)+deltaVelocity){
+                        if(bothSide && !opened){helper.setRtl(dx<0);} // both sides
                         startX = x;
                         startY = y;
                         intercept=true;
@@ -191,27 +175,13 @@ public class DrawerLayout extends FrameLayout {
         }
         return intercept;
     }
-
-    /** Get offset for drawer listeners
-     * @param x current x coordinate of view (view.getX())
-     * @return The new offset of this drawer within its range, from 0-1
-     */
-    private float offset(float x){
-        return (direction==LEFT?drawerWidth+x:getWidth()-x)/drawerWidth;
-    }
-    public void setMinimalVelocity(int velocity){
-        minimalVelocity=velocity;
-    }
-    public void resetMinimalVelocity(){
-        minimalVelocity=defaultMinimalVelocity;
-    }
     public void openDrawer() {
         openDrawer(duration);
     }
     public void openDrawer(int duration) {
         opened = true;
-        drawer.animate().x(direction==LEFT?0:getWidth()-drawerWidth)
-                .setUpdateListener(animation -> onSlide(drawer,offset(drawer.getX())))
+        drawer.animate().x(helper.get_open())
+                .setUpdateListener(animation -> onSlide(drawer,helper.offset()))
                 .withEndAction(()->onOpened(drawer)).setDuration(duration).start();
     }
 
@@ -220,8 +190,8 @@ public class DrawerLayout extends FrameLayout {
     }
     public void closeDrawer(int duration) {
         opened = false;
-        drawer.animate().x(direction==LEFT?-drawerWidth:getWidth())
-                .setUpdateListener(animation -> onSlide(drawer,offset(drawer.getX())))
+        drawer.animate().x(helper.get_close())
+                .setUpdateListener(animation -> onSlide(drawer,helper.offset()))
                 .withEndAction(()->onClosed(drawer)).setDuration(duration).start();
     }
 
@@ -249,6 +219,59 @@ public class DrawerLayout extends FrameLayout {
     private void onClosed(View drawer){
         for(DrawerListener listener:listeners){
             listener.onDrawerClosed(drawer);
+        }
+    }
+
+    public static class ViewDragHelper{
+        boolean rtl=false;
+        private int min;
+        private int max;
+        int d_width;
+        int p_width;
+        View drawer;
+        public ViewDragHelper(DrawerLayout drawer){
+            this.drawer=drawer.getDrawer();
+            drawer.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+                p_width=right-left;
+                d_width=this.drawer.getWidth();
+                setRtl(isRTL());
+            });
+        }
+        public boolean isRTL(){return rtl;}
+        public void setRtl(boolean rtl){
+            this.rtl=rtl;
+            max=rtl?p_width:0;
+            min=max-d_width;
+        }
+        public float offset(){
+            return offset(drawer.getX());
+        }
+        public float offset(float x){
+            return (isRTL()?max-range(x):range(x)-min)/(float)d_width;
+        }
+        public float slide(boolean opened,float dx){
+            return range(dx+(opened?get_open():get_close()));
+        }
+        public float range(float x){
+            return max(min(x,max),min);
+        }
+        public boolean is_in_range(float x){
+            return min<=x && x<=max;
+        }
+        public boolean is_dx_in_range(float dx){
+            return is_in_range(dx-(isRTL()?0:d_width));
+        }
+        public float get_open(){
+            return isRTL()?min:max;
+        }
+        public float get_close(){
+            return isRTL()?max:min;
+        }
+        public boolean shouldOpen(boolean opened){
+            return shouldOpen(opened,offset());
+        }
+        public static boolean shouldOpen(boolean opened,float offset){
+            return offset>(opened?0.75f:0.25f);
         }
     }
 }
