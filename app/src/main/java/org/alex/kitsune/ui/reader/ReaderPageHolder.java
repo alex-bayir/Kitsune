@@ -151,18 +151,17 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
         if(file.exists()){
             imageView.setAdjustViewBounds(true);
-            loadDrawable(file, drawable -> {
-                imageView.setImageDrawable(drawable,file);
-                if(drawable instanceof Animatable animatable){
-                    animatable.start();
-                }
-                setScaleType(scaleType,vertical);
-                if(showTranslate){
-                    imageView.show();
-                }else{
-                    imageView.hide();
-                }
-            });
+            Drawable drawable=loadDrawable(file);
+            imageView.setImageDrawable(drawable,file);
+            if(drawable instanceof Animatable animatable){
+                animatable.start();
+            }
+            setScaleType(scaleType,vertical);
+            if(showTranslate){
+                imageView.show();
+            }else{
+                imageView.hide();
+            }
         }else{ //only load
             Glide.get(imageView.getContext()).getRegistry().replace(GlideUrl.class, InputStream.class, NetworkUtils.createFactoryForListenProgress((bytesRead, contentLength, done) -> {
                 float p = Math.min(Math.max(bytesRead / (float)contentLength,1),0);

@@ -14,6 +14,8 @@ import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.text.StaticLayout;
+import android.text.TextPaint;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import androidx.core.app.NotificationCompat;
@@ -37,6 +39,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 public class OCRImageView extends PhotoView {
@@ -139,6 +142,16 @@ public class OCRImageView extends PhotoView {
         save=file;
     }
 
+    @Override
+    public void setImageDrawable(Drawable drawable) {
+        super.setImageDrawable(drawable);
+        if(show){
+            if(drawable instanceof BitmapDrawable bd){
+                recognize(bd.getBitmap());
+            }
+        }
+    }
+
     private int count=0;
     private boolean show=false;
     public void recognize(Bitmap bitmap){
@@ -195,34 +208,30 @@ public class OCRImageView extends PhotoView {
             }
         }
         if(text!=null){
+            final Text text=this.text;
             if(getDrawable() instanceof BitmapDrawable bd && bd.getBitmap()!=null){
                 Canvas canvas=new Canvas(bd.getBitmap());
-                Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
+                TextPaint paint=new TextPaint(Paint.ANTI_ALIAS_FLAG);
                 paint.setColor(0xFF000000);
-                paint.setTextSize(22);
+                paint.setTextSize(10 * getResources().getDisplayMetrics().density);
+                paint.setTextAlign(Paint.Align.CENTER);
                 Paint ok=new Paint(Paint.ANTI_ALIAS_FLAG);
                 ok.setColor(0x7FFFFFFF);
                 Paint error=new Paint(Paint.ANTI_ALIAS_FLAG);
                 error.setColor(0x3FFF0000);
-                for(Text.TextBlock block:text.getTextBlocks()){
-                    translator.translate(block.getText()).addOnSuccessListener(s -> {
-                        Rect rect=block.getBoundingBox();
-                        int lines=countLines(block.getText());
-                        canvas.drawRect(rect,ok);
-                        canvas.drawText(s,rect.left,rect.top+rect.height()/lines,paint);
+                for(TextGroup group:TextGroup.createGroups(clearBlocks(text.getTextBlocks()))){
+                    translator.translate(group.getText()).addOnSuccessListener(s -> {
+                        if(s.length()>1){
+                            canvas.drawRect(group.getBoundingBox(),ok);
+                            drawText(canvas,group.getBoundingBox(),s,paint);
+                        }
                     }).addOnFailureListener(e -> {
-                        canvas.drawRect(block.getBoundingBox(),error);
+                        canvas.drawRect(group.getBoundingBox(),error);
                     });
-
                 }
                 bd.invalidateSelf();
             }
         }
-    }
-
-    private static int countLines(String str){
-        String[] lines = str.split("\r\n|\r|\n");
-        return  lines.length;
     }
     public void hide(){
         show=false;
@@ -236,7 +245,20 @@ public class OCRImageView extends PhotoView {
         }
     }
 
-
+    public static List<Text.TextBlock> clearBlocks(List<Text.TextBlock> blocks){
+        return blocks.stream().filter(b->b.getText().length()>1).collect(Collectors.toList());
+    }
+    private static void drawText(Canvas canvas,Rect bounds,String text,TextPaint paint){
+        StaticLayout l=StaticLayout.Builder.obtain(text, 0,text.length(),paint,bounds.width()).build();
+        canvas.save();
+        switch (paint.getTextAlign()){
+            case CENTER -> canvas.translate(bounds.centerX(),bounds.top+(bounds.height()-l.getHeight())/2f);
+            case LEFT-> canvas.translate(bounds.left,bounds.top+(bounds.height()-l.getHeight())/2f);
+            case RIGHT-> canvas.translate(bounds.right,bounds.top+(bounds.height()-l.getHeight())/2f);
+        }
+        l.draw(canvas);
+        canvas.restore();
+    }
     private static Text collect(List<Text> texts){
         StringBuilder str=new StringBuilder();
         List<Text.TextBlock> list=new LinkedList<>();
