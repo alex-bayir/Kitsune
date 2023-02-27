@@ -15,7 +15,6 @@ import org.alex.kitsune.manga.BookMark;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.List;
 
 public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -26,6 +25,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     HolderMenuItemClickListener menuListener;
     Manga manga;
     SelectionTracker<Long> tracker;
+    private boolean selectable=true;
 
     public CustomAdapter(Context context, Manga manga, List<T> list, int ResourceId, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
         this.context=context;
@@ -37,8 +37,20 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         setHasStableIds(true);
         rv.setAdapter(this);
         if(selectionId!=null){
-            tracker=new SelectionTracker.Builder<>(selectionId, rv, new KeyProvider(rv), new ItemDetailsLookup(rv), StorageStrategy.createLongStorage()).withSelectionPredicate(SelectionPredicates.createSelectAnything()).build();
+            tracker=new SelectionTracker.Builder<>(selectionId, rv, new KeyProvider(rv), new ItemDetailsLookup(rv), StorageStrategy.createLongStorage())
+                    .withSelectionPredicate(new SelectionTracker.SelectionPredicate<>() {
+                        @Override public boolean canSetStateForKey(@NonNull @NotNull Long key, boolean nextState) {return selectable;}
+                        @Override public boolean canSetStateAtPosition(int position, boolean nextState) {return true;}
+                        @Override public boolean canSelectMultiple() {return true;}
+                    }).build();
         }
+    }
+
+    public void setSelectable(boolean selectable){
+        this.selectable=selectable;
+    }
+    public boolean isSelectable(){
+        return selectable;
     }
 
     public void setManga(Manga manga){

@@ -43,7 +43,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         setReversed(PreferenceManager.getDefaultSharedPreferences(itemView.getContext()).getBoolean(Constants.reversed,false));
         rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
         rv.setVerticalScrollBarEnabled(false);
-        FastScroller.createDefault(rv).setPadding(30,0,30,0);
+        FastScroller.createDefault(rv).setPadding(30,0,30,0).setOnStateChangeListener(state -> adapter.setSelectable(state!=FastScroller.STATE_DRAGGING));
         noItems.setText(R.string.No_chapters);
         noItems.setVisibility(View.GONE);
         if(manga.getHistory()!=null){rv.scrollToPosition(adapter.getPosition(manga.getHistory().getChapter())-5);}

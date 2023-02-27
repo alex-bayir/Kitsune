@@ -10,7 +10,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.view.MotionEvent;
-
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +17,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.core.view.ViewCompat;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -27,15 +25,19 @@ import java.lang.annotation.RetentionPolicy;
  */
 @VisibleForTesting
 public class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.OnItemTouchListener {
+    public interface OnStateChangeListener{
+        void onStateChanged(int state);
+    }
+    private OnStateChangeListener stateListener;
     @IntDef({STATE_HIDDEN, STATE_VISIBLE, STATE_DRAGGING})
     @Retention(RetentionPolicy.SOURCE)
     private @interface State { }
     // Scroll thumb not showing
-    private static final int STATE_HIDDEN = 0;
+    public static final int STATE_HIDDEN = 0;
     // Scroll thumb visible and moving along with the scrollbar
-    private static final int STATE_VISIBLE = 1;
+    public static final int STATE_VISIBLE = 1;
     // Scroll thumb being dragged by user
-    private static final int STATE_DRAGGING = 2;
+    public static final int STATE_DRAGGING = 2;
 
     @IntDef({DRAG_X, DRAG_Y, DRAG_NONE})
     @Retention(RetentionPolicy.SOURCE)
@@ -100,7 +102,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
      */
     private boolean mNeedVerticalScrollbar = false;
     private boolean mNeedHorizontalScrollbar = false;
-    @State private int mState = STATE_HIDDEN;
+    @State private int state = STATE_HIDDEN;
     @DragState private int mDragState = DRAG_NONE;
 
     private final int[] mVerticalRange = new int[2];
@@ -181,7 +183,13 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
             setupCallbacks();
         }
     }
-
+    public FastScroller setOnStateChangeListener(OnStateChangeListener listener){
+        stateListener=listener;
+        return this;
+    }
+    public OnStateChangeListener getOnStateChangeListener(){
+        return stateListener;
+    }
     private void setupCallbacks() {
         mRecyclerView.addItemDecoration(this);
         mRecyclerView.addOnItemTouchListener(this);
@@ -201,7 +209,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
     }
 
     void setState(@State int state) {
-        if (state == STATE_DRAGGING && mState != STATE_DRAGGING) {
+        if (state == STATE_DRAGGING && this.state != STATE_DRAGGING) {
             mVerticalThumbDrawable.setState(PRESSED_STATE_SET);
             cancelHide();
         }
@@ -212,13 +220,18 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
             show();
         }
 
-        if (mState == STATE_DRAGGING && state != STATE_DRAGGING) {
+        if (this.state == STATE_DRAGGING && state != STATE_DRAGGING) {
             mVerticalThumbDrawable.setState(EMPTY_STATE_SET);
             resetHideDelay(HIDE_DELAY_AFTER_DRAGGING_MS);
         } else if (state == STATE_VISIBLE) {
             resetHideDelay(HIDE_DELAY_AFTER_VISIBLE_MS);
         }
-        mState = state;
+        if(this.state!=state){
+            this.state=state;
+            if(stateListener!=null){
+                stateListener.onStateChanged(state);
+            }
+        }
     }
 
     private boolean isLayoutRTL() {
@@ -226,11 +239,11 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
     }
 
     public boolean isDragging() {
-        return mState == STATE_DRAGGING;
+        return state == STATE_DRAGGING;
     }
 
     @VisibleForTesting boolean isVisible() {
-        return mState == STATE_VISIBLE;
+        return state == STATE_VISIBLE;
     }
 
     public void show() {
@@ -355,7 +368,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
                 && mRecyclerViewWidth >= mScrollbarMinimumRange;
 
         if (!mNeedVerticalScrollbar && !mNeedHorizontalScrollbar) {
-            if (mState != STATE_HIDDEN) {
+            if (state != STATE_HIDDEN) {
                 setState(STATE_HIDDEN);
             }
             return;
@@ -377,7 +390,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
                     (horizontalVisibleLength * horizontalVisibleLength) / horizontalContentLength);
         }
 
-        if (mState == STATE_HIDDEN || mState == STATE_VISIBLE) {
+        if (state == STATE_HIDDEN || state == STATE_VISIBLE) {
             setState(STATE_VISIBLE);
         }
     }
@@ -386,7 +399,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
     public boolean onInterceptTouchEvent(@NonNull RecyclerView recyclerView,
                                          @NonNull MotionEvent ev) {
         final boolean handled;
-        if (mState == STATE_VISIBLE) {
+        if (state == STATE_VISIBLE) {
             boolean insideVerticalThumb = isPointInsideVerticalThumb(ev.getX(), ev.getY());
             boolean insideHorizontalThumb = isPointInsideHorizontalThumb(ev.getX(), ev.getY());
             if (ev.getAction() == MotionEvent.ACTION_DOWN
@@ -404,7 +417,7 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
             } else {
                 handled = false;
             }
-        } else if (mState == STATE_DRAGGING) {
+        } else if (state == STATE_DRAGGING) {
             handled = true;
         } else {
             handled = false;
@@ -414,10 +427,9 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
 
     @Override
     public void onTouchEvent(@NonNull RecyclerView recyclerView, @NonNull MotionEvent me) {
-        if (mState == STATE_HIDDEN) {
+        if (state == STATE_HIDDEN) {
             return;
         }
-
         if (me.getAction() == MotionEvent.ACTION_DOWN) {
             boolean insideVerticalThumb = isPointInsideVerticalThumb(me.getX(), me.getY());
             boolean insideHorizontalThumb = isPointInsideHorizontalThumb(me.getX(), me.getY());
@@ -425,18 +437,18 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
                 if (insideHorizontalThumb) {
                     mDragState = DRAG_X;
                     mHorizontalDragX = (int) me.getX();
-                } else if (insideVerticalThumb) {
+                } else {
                     mDragState = DRAG_Y;
                     mVerticalDragY = (int) me.getY();
                 }
                 setState(STATE_DRAGGING);
             }
-        } else if (me.getAction() == MotionEvent.ACTION_UP && mState == STATE_DRAGGING) {
+        } else if ((me.getAction() == MotionEvent.ACTION_UP || me.getAction() == MotionEvent.ACTION_CANCEL) && state == STATE_DRAGGING) {
             mVerticalDragY = 0;
             mHorizontalDragX = 0;
             setState(STATE_VISIBLE);
             mDragState = DRAG_NONE;
-        } else if (me.getAction() == MotionEvent.ACTION_MOVE && mState == STATE_DRAGGING) {
+        } else if (me.getAction() == MotionEvent.ACTION_MOVE && state == STATE_DRAGGING) {
             show();
             if (mDragState == DRAG_X) {
                 horizontalScrollTo(me.getX());
@@ -503,15 +515,15 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
     boolean isPointInsideVerticalThumb(float x, float y) {
         return (isLayoutRTL() ? x <= mVerticalThumbWidth + padding.right
                 : x >= mRecyclerViewWidth - mVerticalThumbWidth - padding.right)
-                && y >= mVerticalThumbCenterY - mVerticalThumbHeight / 2
-                && y <= mVerticalThumbCenterY + mVerticalThumbHeight / 2;
+                && y >= mVerticalThumbCenterY - mVerticalThumbHeight / 2f
+                && y <= mVerticalThumbCenterY + mVerticalThumbHeight / 2f;
     }
 
     @VisibleForTesting
     boolean isPointInsideHorizontalThumb(float x, float y) {
         return (y >= mRecyclerViewHeight - mHorizontalThumbHeight - padding.bottom)
-                && x >= mHorizontalThumbCenterX - mHorizontalThumbWidth / 2
-                && x <= mHorizontalThumbCenterX + mHorizontalThumbWidth / 2;
+                && x >= mHorizontalThumbCenterX - mHorizontalThumbWidth / 2f
+                && x <= mHorizontalThumbCenterX + mHorizontalThumbWidth / 2f;
     }
 
     @VisibleForTesting
