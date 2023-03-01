@@ -2,7 +2,6 @@ package org.alex.kitsune.ocr;
 
 import android.graphics.Rect;
 import com.google.mlkit.vision.text.Text;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -12,10 +11,10 @@ import static java.lang.Math.min;
 import static java.lang.Math.hypot;
 
 public class TextGroup {
-    private String text;
-    private List<Text.TextBlock> blocks;
-
-    private Rect boundingBox;
+    private final String text;
+    private String translated;
+    private final List<Text.TextBlock> blocks;
+    private final Rect boundingBox;
     public TextGroup(String text, List<Text.TextBlock> blocks){
         this.text=text;
         this.blocks=blocks;
@@ -33,10 +32,16 @@ public class TextGroup {
     public Rect getBoundingBox(){
         return boundingBox;
     }
+    public String setTranslated(String translated){
+        this.translated=translated; return translated;
+    }
+    public String getTranslated(){
+        return translated;
+    }
     public static List<TextGroup> createGroups(List<Text.TextBlock> blocks){
-        List<TextGroup> groups=new ArrayList<>();
+        List<TextGroup> groups=new LinkedList<>();
         Text.TextBlock last=blocks.get(0);
-        List<Text.TextBlock> group=new ArrayList<>();
+        List<Text.TextBlock> group=new LinkedList<>();
         for(Text.TextBlock block:blocks){
             Rect l=last.getBoundingBox();
             Rect n=block.getBoundingBox();
@@ -45,7 +50,7 @@ public class TextGroup {
                 if(group.size()>0){
                     groups.add(new TextGroup(group));
                 }
-                group = new ArrayList<>();
+                group = new LinkedList<>();
             }
             group.add(block);
             last=block;
@@ -57,7 +62,7 @@ public class TextGroup {
     }
 
     public static String getText(List<Text.TextBlock> blocks){
-        return blocks.stream().map(Text.TextBlock::getText).collect(Collectors.joining("\r\n"));
+        return blocks.stream().map(Text.TextBlock::getText).collect(Collectors.joining(" "));
     }
     public static Rect calculateRect(List<Text.TextBlock> blocks){
         Rect rect=new Rect(blocks.get(0).getBoundingBox());

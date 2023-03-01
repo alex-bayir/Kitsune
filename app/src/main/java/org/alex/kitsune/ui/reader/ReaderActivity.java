@@ -111,23 +111,23 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             return false;
         });
         translate.setOnClickListener(v ->{
-            if(adapter!=null){
-                adapter.invertShowTranslate();
-            }else{
-                Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
-                if(table.size()>1){
-                    PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
-                    for(Map.Entry<String,ResolveInfo> entry:table.entrySet()){
-                        popupMenu.getMenu().add(entry.getValue().loadLabel(getPackageManager())).setIcon(entry.getValue().loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
-                            new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),entry.getValue().activityInfo)).start(); return false;
-                        });
-                    }
-                    popupMenu.setForceShowIcon(true);
-                    popupMenu.show();
-                }else{
-                    new Thread(() -> Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),table)).start();
+            Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
+            if(table.size()>1){
+                PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
+                for(Map.Entry<String,ResolveInfo> entry:table.entrySet()){
+                    popupMenu.getMenu().add(entry.getValue().loadLabel(getPackageManager())).setIcon(entry.getValue().loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
+                        new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),entry.getValue().activityInfo)).start(); return false;
+                    });
                 }
+                popupMenu.setForceShowIcon(true);
+                popupMenu.show();
+            }else {
+                new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), table)).start();
             }
+        });
+        translate.setOnLongClickListener(v -> {
+            adapter.invertShowTranslate();
+            return true;
         });
         reader=findViewById(R.id.reader);
         adapter=new ReaderPageAdapter(manga,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});

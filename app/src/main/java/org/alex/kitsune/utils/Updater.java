@@ -19,6 +19,7 @@ import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.scripts.Script;
+import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -37,7 +38,7 @@ public class Updater {
     public static void init(Context context){
         f=new File(context.getExternalCacheDir().getAbsolutePath()+File.separator+"update.apk"); f.delete();
         if(compareVersions(PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.version,""),BuildConfig.VERSION_NAME)!=0){
-            showWhatisNew(context,true);
+            showWhatisNew(context,false);
             Logs.clearAll();
         }
     }
@@ -118,7 +119,13 @@ public class Updater {
                     }
                     @Override
                     protected void onFinished(Boolean update) {
-                        if(update){Utils.Activity.restartActivity(activity);}
+                        if(update){
+                            if(MangaService.getAll().size()>0){
+                                Utils.Activity.restartActivity(activity);
+                            }else{
+                                MangaService.init(activity);
+                            }
+                        }
                         Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();
                         if(callback!=null){callback.call(false);}
                     }

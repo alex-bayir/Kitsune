@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
-import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
 import org.jetbrains.annotations.NotNull;
@@ -114,12 +113,14 @@ public class SettingsShelf  extends Fragment {
         }
         public static ArrayList<Container> fromJSON(String json){
             ArrayList<Container> list=new ArrayList<>(10);
-            try {
-                JSONArray jsonArray=new JSONArray(json);
-                for(int i=0;i<jsonArray.length();i++){
-                    list.add(Container.fromJSON(jsonArray.getJSONObject(i)));
-                }
-            }catch (JSONException e){e.printStackTrace();}
+            if(json!=null && !json.isEmpty()){
+                try {
+                    JSONArray jsonArray=new JSONArray(json);
+                    for(int i=0;i<jsonArray.length();i++){
+                        list.add(Container.fromJSON(jsonArray.getJSONObject(i)));
+                    }
+                }catch (JSONException e){e.printStackTrace();}
+            }
             return list;
         }
     }

@@ -8,7 +8,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.media.projection.MediaProjectionManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
@@ -31,7 +30,6 @@ import org.alex.kitsune.commons.DrawerLayout;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
-import org.alex.kitsune.ocr.OCRImageView;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.settings.SettingsActivity;
@@ -58,7 +56,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     NavigationView navigationView;
     DrawerLayout drawer;
     PagesAdapter adapter;
-    public static MediaProjectionManager projectionManager;
     public static boolean shouldUpdate=false;
 
     final SearchView.OnQueryTextListener listener=new SearchView.OnQueryTextListener() {
@@ -126,10 +123,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         View headerImage=navigationView.getHeaderView(0);
         updateMenu();
         headerImage.setOnClickListener(view -> Utils.Activity.callFilesStore(MainActivity.this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE));
-        //projectionManager=(MediaProjectionManager)getSystemService(Context.MEDIA_PROJECTION_SERVICE);
         executeIntent(getIntent());
         Updater.checkAndUpdateScripts(this,null);
-        OCRImageView.init(this);
     }
 
     @Override
@@ -175,15 +170,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         switch (item.getItemId()){
-            /*
-            case -1000://R.id.action_start_translate_service:
-                if(Utils.isServiceRunning(this,TranslateService.class.getName())){
-                    stopService(new Intent(this,TranslateService.class));
-                }else{
-                    //startActivityForResult(projectionManager.createScreenCaptureIntent(),100);
-                }
-                return true;
-            */
             case R.id.action_add_source: startActivity(new Intent(this, ScriptsActivity.class)); return true;
         }
         return false;
@@ -264,10 +250,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onBackPressed() {
-        if(adapter.getCurrentIndex()==0){
-            super.onBackPressed();
+        if(drawer.isDrawerOpen()){
+            drawer.closeDrawer();
         }else{
-            onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
+            if(adapter.getCurrentIndex()==0){
+                super.onBackPressed();
+            }else{
+                onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
+            }
         }
     }
 }

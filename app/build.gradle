@@ -10,11 +10,6 @@ android {
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""
-
-
-    }
-    packagingOptions {
-        exclude("lib/arm64-v8a/libtranslate_jni.so")
     }
     buildTypes.configureEach {
         resValue "string", "version_number", "Version ${defaultConfig.versionName}"
@@ -36,7 +31,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.9.0-alpha01'
+    implementation 'com.google.android.material:material:1.9.0-alpha02'
     implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
@@ -70,7 +65,6 @@ dependencies {
     implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'
     //implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
-    implementation 'com.google.mlkit:translate:17.0.1'
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20220320'

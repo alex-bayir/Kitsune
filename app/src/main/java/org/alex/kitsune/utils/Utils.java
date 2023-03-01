@@ -264,7 +264,7 @@ public class Utils {
         }
         public static boolean move(java.io.File from, java.io.File to){
             String tmp=from.getAbsolutePath();
-            tmp=tmp.substring(0,tmp.indexOf('/',1));
+            tmp=tmp.substring(0,tmp.lastIndexOf('/'));
             if(to.getAbsolutePath().startsWith(tmp)){
                 return from.renameTo(to);
             }else{

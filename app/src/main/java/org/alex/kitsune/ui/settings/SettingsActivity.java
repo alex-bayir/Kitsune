@@ -23,7 +23,6 @@ import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.logs.LogsActivity;
-import org.alex.kitsune.commons.MultiSelectListPreference;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
