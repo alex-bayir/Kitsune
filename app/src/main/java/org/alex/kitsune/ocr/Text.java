@@ -5,7 +5,6 @@ import androidx.annotation.Nullable;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.lang.Math.*;

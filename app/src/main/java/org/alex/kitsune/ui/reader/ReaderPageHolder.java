@@ -172,10 +172,11 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                 imageView.hide();
             }
         }else{ //only load
+            imageView.setImageDrawable(null);
             Glide.get(imageView.getContext()).getRegistry().replace(GlideUrl.class, InputStream.class, NetworkUtils.createFactoryForListenProgress((bytesRead, contentLength, done) -> {
-                float p = Math.min(Math.max(bytesRead / (float)contentLength,1),0);
+                float p = Math.max(Math.min(bytesRead / (float)contentLength,1),0);
                 new Handler(Looper.getMainLooper()).post(() -> {
-                    if(p>0 && p<=1){
+                    if(0<p && p<=1){
                         progressBar.setColor(getColor(p));
                         progressBar.setLineMaxLength(p);
                         progressBar.setLineMinLength(p);
