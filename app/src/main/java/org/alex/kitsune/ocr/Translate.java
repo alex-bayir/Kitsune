@@ -18,6 +18,7 @@ public class Translate {
     final String target_lang;
     private LinkedList<Callback<Task>> success;
     private LinkedList<Callback<Task>> failed;
+    private LinkedList<Callback<Task>> complete;
     private final Handler handler=new Handler(Looper.getMainLooper());
     public Translate(String target_lang){
         this(null,target_lang);
@@ -40,29 +41,28 @@ public class Translate {
         failed.add(onFailed);
         return this;
     }
+    public Translate addOnCompleteListener(Callback<Task> onComplete){
+        if(complete==null){complete=new LinkedList<>();}
+        complete.add(onComplete);
+        return this;
+    }
     public void translate(String text){
         if(text!=null && text.length()>1){
             new Thread(()->{
                 Task task=new Task(source_lang,target_lang,text);
                 task.translate();
                 if(task.isSuccess()){
-                    handler.post(()->onSuccess(task));
+                    handler.post(()->callback(success,task));
                 }else{
-                    handler.post(()->onFailed(task));
+                    handler.post(()->callback(failed,task));
                 }
+                handler.post(()->callback(complete,task));
             }).start();
         }
     }
-    private synchronized void onSuccess(Task task){
-        if(success!=null){
-            for(Callback<Task> callback:success){
-                callback.call(task);
-            }
-        }
-    }
-    private synchronized void onFailed(Task task){
-        if(failed!=null){
-            for(Callback<Task> callback:failed){
+    private void callback(LinkedList<Callback<Task>> list,Task task){
+        if(list!=null){
+            for(Callback<Task> callback:list){
                 callback.call(task);
             }
         }

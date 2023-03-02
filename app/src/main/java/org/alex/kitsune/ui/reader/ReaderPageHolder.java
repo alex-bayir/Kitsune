@@ -79,6 +79,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     private static final int[] colors=new int[]{0xFFFF0000,0xFFFFFF00,0xFF00FF00};
     private final boolean vertical;
     final Dialog dialog; TextView input;
+    private boolean showTranslated=false;
 
     ReaderPageHolder(ViewGroup parent, boolean vertical, Manga manga, View.OnClickListener centerClick,View.OnClickListener leftClick,View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
@@ -139,14 +140,22 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         if(this.position!=position || this.chapter!=chapter){
             this.position=position;
             this.chapter=chapter;
+            this.showTranslated=showTranslate;
             if(this.chapter!=null){
                 file=manga.getPage(this.chapter,page=this.chapter.getPage(position));
                 draw(page.getUrl(),scaleType,vertical,showTranslate);
             }else{imageView.setImageDrawable(null);}
+        }else if(this.showTranslated!=showTranslate){
+            this.showTranslated=showTranslate;
+            if(showTranslate){
+                imageView.show();
+            }else{
+                imageView.hide();
+            }
         }
     }
     public void draw(String url){
-        draw(url,null,vertical,false);
+        draw(url,null,vertical,showTranslated);
     }
     public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
         if(file.exists()){
@@ -246,10 +255,6 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         if(bitmap==null || bitmap.getByteCount()>100*1024*1024){
             BitmapFactory.Options options=new BitmapFactory.Options();
             options.inSampleSize=bitmap!=null? ((int)Math.sqrt(bitmap.getByteCount()/((double)(100*1024*1024))))+1 : 2;
-            options.inMutable=true;
-        } else if (!bitmap.isMutable()) {
-            BitmapFactory.Options options=new BitmapFactory.Options();
-            options.inMutable=true;
             bitmap=file.exists() ? BitmapFactory.decodeFile(file.getAbsolutePath(),options) : null;
         }
         return bitmap;
