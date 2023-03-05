@@ -1,13 +1,14 @@
 package org.alex.kitsune.manga.views;
 
 import android.view.ViewGroup;
-import androidx.recyclerview.widget.DiffUtil;
+import org.alex.kitsune.commons.DiffCallback;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.ListSet;
 import org.alex.kitsune.manga.Manga;
+import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
 public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
@@ -61,7 +62,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
     }
 
     @Override
-    public MangaHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public MangaHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
         return new MangaHolder(parent,listener,buttonListener,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
     }
 
@@ -86,6 +87,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         sort(comparator,true);
     }
     public void setShowUpdated(boolean showUpdated){this.showUpdated=showUpdated;}
+    public boolean isShowUpdated(){return showUpdated;}
     public List<Manga> getList(){return this.list;}
     public Manga get(int index){return list.get(index);}
     public int get(Manga manga){return list.indexOf(manga);}
@@ -192,44 +194,6 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
             setViewMode(getLayoutManager().getSpanSizeLookup().getSpanSize(0)==1?Mode.GRID:Mode.MIXED,false);
         }
         rv.setAdapter(this);
-    }
-    public static class DiffCallback<E> extends DiffUtil.Callback{
-        List<E> o, n; int sizeO,sizeN;
-        public DiffCallback(List<E> o, List<E> n){
-            this(o,o.size(),n,n.size());
-        }
-        public DiffCallback(List<E> o, int sizeO, List<E> n, int sizeN){
-            this.o=o; this.sizeO=sizeO;
-            this.n=n; this.sizeN=sizeN;
-        }
-        public DiffCallback(List<E> o, Runnable callback){
-            this.o=new ArrayList<>(o); this.n=o; callback.run();
-            this.sizeO=this.o.size(); this.sizeN=this.n.size();
-        }
-
-        @Override public int getOldListSize(){return sizeO;}
-        @Override public int getNewListSize(){return sizeN;}
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return Objects.equals(o.get(oldItemPosition), n.get(newItemPosition));
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            return false;
-        }
-
-        public DiffUtil.DiffResult calculateDiff(){return DiffUtil.calculateDiff(this);}
-        public DiffUtil.DiffResult calculateDiff(boolean detectMoves){return DiffUtil.calculateDiff(this, detectMoves);}
-        public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter adapter){
-            calculateDiff().dispatchUpdatesTo(adapter);
-            return this;
-        }
-        public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter adapter, boolean detectMoves){
-            calculateDiff(detectMoves).dispatchUpdatesTo(adapter);
-            return this;
-        }
     }
 
     public static GridLayoutManager create(android.content.Context context, int spanCount){return create(context,spanCount, null);}

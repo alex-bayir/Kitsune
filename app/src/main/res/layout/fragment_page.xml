@@ -74,7 +74,7 @@
                 <Button android:id="@+id/change_url"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Change Url"
+                        android:text="@string/change_url"
                         style="@style/Widget.MaterialComponents.Button.TextButton"
                 />
         </LinearLayout>

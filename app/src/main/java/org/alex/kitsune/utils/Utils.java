@@ -524,7 +524,6 @@ public class Utils {
     public static void showToolTip(Context context,View anchor){
         new SimpleTooltip.Builder(context).anchorView(anchor).contentView(R.layout.tooltip).text(R.string.auth_help_info).arrowColor(context.getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
     }
-    public static String getDomain(String domain,String url){return domain!=null ? domain : url.substring(url.indexOf('/')+2,url.indexOf('/',8));}
     public static Throwable getRootCause(Throwable throwable, int depth){
         return change_known_errors(throwable!=null && throwable.getCause()!=null && (depth>0||depth==-1)? getRootCause(throwable.getCause(),--depth) : throwable);
     }

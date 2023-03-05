@@ -2,8 +2,6 @@ package org.alex.kitsune.ocr;
 
 import android.os.Handler;
 import android.os.Looper;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -68,12 +66,9 @@ public class Translate {
         }
     }
 
-    private static JSONArray translate(String source_lang,String target_lang,String text) throws IOException, JSONException {
-        String url=new URLBuilder("https://translate.googleapis.com/translate_a/single").add("client","gtx").add("sl",source_lang).add("tl",target_lang).add("dt","t").add("q",text).toString();
-        Response response=NetworkUtils.sHttpClient.newCall(new Request.Builder().url(url).headers(NetworkUtils.getHeadersDefault()).build()).execute();
-        JSONArray answer=new JSONArray(response.body().string());
-        response.close();
-        return answer;
+    private static String translate(String source_lang,String target_lang,String text) throws IOException {
+        String url=new URLBuilder("https://translate.googleapis.com/translate_a/single").add("client","gtx").add("sl",source_lang).add("tl",target_lang).add("dt","t").add("q",text).build();
+        return NetworkUtils.getString(url);
     }
 
     private static String getSourceLanguage(String text){
@@ -136,7 +131,7 @@ public class Translate {
         }
         public void translate(){
             try{
-                JSONArray json=Translate.translate(source_lang,target_lang,text);
+                JSONArray json=new JSONArray(Translate.translate(source_lang,target_lang,text));
                 json=json.getJSONArray(0);
                 StringBuilder builder=new StringBuilder();
                 for(int i=0;i<json.length();i++){

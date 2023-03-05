@@ -12,6 +12,7 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.*;
 import android.widget.TextView;
 import android.widget.Toast;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.Callback;
@@ -112,28 +113,27 @@ public class Updater {
         if(PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("update_scripts_automatically",true)){
             if(NetworkUtils.isNetworkAvailable(activity)){
                 if(callback!=null){callback.call(true);}
-                new LoadTask<Activity,Void,Boolean>(){
-                    @Override
-                    protected Boolean doInBackground(Activity activity) {
-                        return updateScripts(activity);
-                    }
-                    @Override
-                    protected void onFinished(Boolean update) {
-                        if(update){
-                            if(MangaService.getAll().size()>0){
-                                Utils.Activity.restartActivity(activity);
-                            }else{
-                                MangaService.init(activity);
+                new Thread(()->{
+                    try{
+                        boolean updated=updateScripts(activity);
+                        NetworkUtils.getMainHandler().post(()->{
+                            if(updated){
+                                if(MangaService.getAll().size()>0){
+                                    Utils.Activity.restartActivity(activity);
+                                }else{
+                                    MangaService.init(activity);
+                                }
                             }
-                        }
-                        Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();
-                        if(callback!=null){callback.call(false);}
+                            Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();
+                            if(callback!=null){callback.call(false);}
+                        });
+                    }catch (Throwable e){
+                        NetworkUtils.getMainHandler().post(()->{
+                            if(callback!=null){callback.call(false);}
+                        });
                     }
-                    @Override
-                    protected void onBraked(Throwable throwable) {
-                        if(callback!=null){callback.call(false);}
-                    }
-                }.start(activity);
+
+                }).start();
             }else{
                 Toast.makeText(activity,R.string.no_internet,Toast.LENGTH_SHORT).show();
             }
@@ -155,13 +155,16 @@ public class Updater {
     public static void loadUpdate(Callback<String> progressUpdate, Callback<Boolean> finished){
         if(!f.exists()){
             String url=updateInfo!=null ? updateInfo.optString("url",null) :null;
-            if(url!=null){
-                new LoadTask<String,String,Boolean>(){
-                    @Override protected Boolean doInBackground(String s){return loadInBackground(s,null,f,null,getHandler(),false);}
-                    @Override protected void onProgressUpdate(String s){if(progressUpdate!=null){progressUpdate.call(s);}}
-                    @Override protected void onFinished(Boolean b){if(finished!=null){finished.call(b);}}
-                }.start(url);
-            }
+            if(url==null){return;}
+            new Thread(()->{
+                boolean finish=NetworkUtils.load(url,null,f,null,(read,length)->{
+                    if(length>0){
+                        String progress=read*100/length+"%";
+                        if(progressUpdate!=null){NetworkUtils.getMainHandler().post(()->progressUpdate.call(progress));}
+                    }
+                });
+                if(finished!=null){NetworkUtils.getMainHandler().post(()->finished.call(finish));}
+            }).start();
         }else{
             if(finished!=null){finished.call(true);}
         }
@@ -173,7 +176,7 @@ public class Updater {
         return f.exists() ? R.drawable.ic_update : (getUrl()!=null ? R.drawable.ic_download_arrow : R.drawable.ic_search);
     }
     public static Drawable getStatusIcon(Context context){
-        return context.getDrawable(getStatusIcon());
+        return AppCompatResources.getDrawable(context,getStatusIcon());
     }
 
     public static int compareVersions(String v1, String v2){

@@ -4,7 +4,7 @@ import android.content.*;
 import android.os.Bundle;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
-import android.widget.LinearLayout;
+import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
@@ -13,15 +13,17 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
+import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.DiffCallback;
+import org.alex.kitsune.manga.views.MangaHolder;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.main.MainActivity;
 import org.alex.kitsune.services.MangaService;
-import org.alex.kitsune.manga.views.LimitedMangaAdapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.settings.SettingsShelf;
@@ -31,27 +33,26 @@ import org.alex.kitsune.ui.shelf.saved.SavedActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
-import java.util.function.BiConsumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
 public class Shelf extends Fragment implements MenuProvider {
-    LinearLayout l;
-    Hashtable<String,LimitedMangaAdapter> adapters;
-    Hashtable<MangaAdapter,View> views;
+
     public static final String History=Constants.history,Saved=Constants.saved;
-    LinkedHashMap<String,Integer> sequence=new LinkedHashMap<>();
     LinkedHashMap<String, SettingsShelf.Container> shelf_sequence=new LinkedHashMap<>();
     SharedPreferences prefs;
     public SmoothProgressBar progress;
     private int p=0;
-    View root;
+    RecyclerView root;
+    Adapter adapter;
     MainActivity mainActivity;
     private final LinkedList<Runnable> tasks=new LinkedList<>();
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         requireActivity().removeMenuProvider(this);
         requireActivity().addMenuProvider(this);
-        if(root==null){root=inflater.inflate(R.layout.content_shelf,container,false); mainActivity=(MainActivity)getActivity();}else{return root;}
+        if(root==null){root=(RecyclerView) inflater.inflate(R.layout.content_shelf,container,false); mainActivity=(MainActivity)getActivity();}else{return root;}
         progress=mainActivity.findViewById(R.id.progress);
         progress.setIndeterminateDrawable(new SmoothProgressDrawable.Builder(progress.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).interpolator(new AccelerateDecelerateInterpolator()).callbacks(new SmoothProgressDrawable.Callbacks() {
             @Override public void onStop(){progress.setVisibility(View.GONE);}
@@ -59,106 +60,16 @@ public class Shelf extends Fragment implements MenuProvider {
         }).build());
         progress.progressiveStop();
         prefs=PreferenceManager.getDefaultSharedPreferences(getContext());
-        l=root.findViewById(R.id.linear_layout);
-        update(inflater);
+        adapter=new Adapter(getContext(),createWrappers(true)).initRV(root);
         IntentFilter filter=new IntentFilter(Constants.action_Update);
         filter.addAction(Constants.action_Update_Shelf);
         getContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(Constants.action_Update.equals(intent.getAction())){
-                    Manga manga=MangaService.get(intent.getIntExtra(Constants.hash,-1));
-                    if(manga!=null){
-                        String tmp=intent.getStringExtra(Constants.option);
-                        switch(tmp!=null ? tmp : ""){
-                            case Constants.history:
-                                manageViewIfAdapter(l,views,adapters.get(History),0).add(0,manga);
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
-                                    entry.getValue().update(manga);
-                                }
-                                break;
-                            case Constants.load:
-                                manageViewIfAdapter(l,views,adapters.get(Saved),-1).add(0,manga);
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
-                                    entry.getValue().update(manga);
-                                }
-                                break;
-                            case Constants.favorites:
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
-                                    String key=entry.getKey();
-                                    if(History.equals(key) || Saved.equals(key)){
-                                        entry.getValue().update(manga);
-                                    }else if(key.equals(manga.getCategoryFavorite())){
-                                        entry.getValue().add(0,manga);
-                                    }else{
-                                        entry.getValue().remove(manga);
-                                    }
-                                    manageViewIfAdapter(l,views,entry.getValue(),getOrDefault(sequence,key,-1));
-                                }
-                                String key=manga.getCategoryFavorite();
-                                if(key!=null && !adapters.containsKey(key)){
-                                    createView(createAdapter(MangaService.Type.Favorites,key),new GridLayoutManager(getContext(),3),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),LayoutInflater.from(getContext()),l);
-                                    manageViewIfAdapter(l,views, adapters.get(key),getOrDefault(sequence,key,-1));
-                                }
-                                break;
-                            default:
-                                if(manga.getHistory()!=null){
-                                    adapters.get(History).update(manga);
-                                }else{
-                                    manageViewIfAdapter(l,views,adapters.get(History),-1).remove(manga);
-                                }
-                                if(manga.countSaved()>0){
-                                    adapters.get(Saved).update(manga);
-                                }else{
-                                    manageViewIfAdapter(l,views,adapters.get(Saved),-1).remove(manga);
-                                }
-                                for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
-                                    entry.getValue().update(manga);
-                                }
-                            break;
-                        }
-                    }
-                }
-                if(Constants.action_Update_Shelf.equals(intent.getAction())){
-                    if(getActivity()!=null){
-                        update(getLayoutInflater());
-                    }else{tasks.add(()->update(getLayoutInflater()));}
-                }
+                adapter.update(createWrappers(!Constants.action_Update.equals(intent.getAction())));
             }
         },filter);
         return root;
-    }
-
-    private <K,V> V getOrDefault(HashMap<K,V> map,K key,V def){
-        V value=map.get(key);
-        return value!=null?value:def;
-    }
-    private void update(LayoutInflater inflater){
-        l.removeAllViews();
-        views=new Hashtable<>();
-        adapters=new Hashtable<>();
-        sequence=new LinkedHashMap<>();
-        shelf_sequence=SettingsShelf.getShelfSequence(prefs);
-        int i=0;
-        for(Map.Entry<String,SettingsShelf.Container> entry:shelf_sequence.entrySet()){
-            String key=entry.getKey();
-            SettingsShelf.Container value=entry.getValue();
-            sequence.put(key,value.count>0? i++ : -1);
-            switch (key){
-                case History->{
-                    createView(createAdapter(MangaService.Type.History,key),MangaAdapter.create(getContext(), 4, value.first?position->position==0 ? 4:1:null),getString(R.string.History), v -> startActivity(new Intent(getContext(), HistoryActivity.class)),inflater, l);
-                    manageViewIfAdapter(l,views,adapters.get(key),-1);
-                }
-                case Saved->{
-                    createView(createAdapter(MangaService.Type.Saved,key),MangaAdapter.create(getContext(),4, value.first?position->position==0 ? 4:1:null),getString(R.string.Saved), v -> startActivity(new Intent(getContext(), SavedActivity.class)),inflater, l);
-                    manageViewIfAdapter(l,views,adapters.get(key),-1);
-                }
-                default -> {
-                    createView(createAdapter(MangaService.Type.Favorites,key),MangaAdapter.create(getContext(),3, value.first?position->position==0 ? 3:1:null),key, v -> startActivity(new Intent(getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),inflater,l);
-                    manageViewIfAdapter(l,views, adapters.get(key),-1);
-                }
-            }
-        }
     }
 
     @Override
@@ -167,7 +78,7 @@ public class Shelf extends Fragment implements MenuProvider {
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem menuItem) {
         switch(menuItem.getItemId()){
-            case R.id.check_for_updates: check_for_updates(); return true;
+            case (R.id.check_for_updates): check_for_updates(); return true;
         }
         return false;
     }
@@ -195,9 +106,7 @@ public class Shelf extends Fragment implements MenuProvider {
                 if(!manga.isUpdated()){
                     manga.update(progress.getContext(), ()->{
                         MangaService.setCacheDirIfNull(manga.getSimilar());
-                        for(Map.Entry<String,LimitedMangaAdapter> entry: adapters.entrySet()){
-                            entry.getValue().update(manga);
-                        }
+                        adapter.update(manga);
                         if(manga.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash,manga.hashCode()));}
                         if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
                         //pr.setProgress(p).setOnView(progress);
@@ -223,53 +132,239 @@ public class Shelf extends Fragment implements MenuProvider {
             check_for_updates();
         }
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-    }
-
-    public LimitedMangaAdapter createAdapter(MangaService.Type type,String key){
-        switch (type){
-            default:
-            case History:
-                adapters.put(History,new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.History), MangaAdapter.Mode.MIXED, getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
-                        manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
-                        manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true)
-                        )));
-                return adapters.get(History);
-            case Saved:
-                adapters.put(Saved,new LimitedMangaAdapter(MangaService.getSorted(MangaService.Type.Saved),MangaAdapter.Mode.GRID,getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
-                        manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())
-                        )));
-                return adapters.get(Saved);
-            case Favorites:
-                adapters.put(key,new LimitedMangaAdapter(MangaService.getFavorites(key),MangaAdapter.Mode.GRID,getOrDefault(shelf_sequence,key,new SettingsShelf.Container(key,4,false)).count,
-                        manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()))
-                ));
-                return adapters.get(key);
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
         }
     }
 
-    public View createView(LimitedMangaAdapter adapter, GridLayoutManager layoutManager, String title, View.OnClickListener listener, LayoutInflater inflater, ViewGroup container){
-        View root=inflater.inflate(R.layout.fragment_shelf, container, false);
-        ((TextView)root.findViewById(R.id.title)).setText(title);
-        root.findViewById(R.id.more).setOnClickListener(listener);
-        adapter.initRV(root.findViewById(R.id.rv_list),layoutManager, adapter.getMaxCount());
-        views.put(adapter,root);
-    return root;}
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
+    }
 
-    public static boolean checkViewInChildren(ViewGroup viewGroup, View view){
-        for(int i=0;i<viewGroup.getChildCount();i++){
-            if(view==viewGroup.getChildAt(i)){return true;}
-        }
-        return false;
+    public Wrapper createWrapper(String key, SettingsShelf.Container value){
+        return switch (key){
+            case History-> new Wrapper(
+                    key,
+                    v->v.getContext().startActivity(new Intent(v.getContext(), HistoryActivity.class)),
+                    MangaService.getSorted(MangaService.Type.History),4,value.count,value.first
+            ).init(
+                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
+                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+            );
+            case Saved  -> new Wrapper(
+                    key,
+                    v->v.getContext().startActivity(new Intent(v.getContext(), SavedActivity.class)),
+                    MangaService.getSorted(MangaService.Type.Saved),4,value.count,value.first
+            ).init(
+                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
+                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+            );
+            default     -> new Wrapper(
+                    key,
+                    v->v.getContext().startActivity(new Intent(v.getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),
+                    MangaService.getFavorites(key),3,value.count,value.first
+            ).init(
+                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
+                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+            );
+        };
     }
-    public LimitedMangaAdapter manageViewIfAdapter(ViewGroup l,Hashtable<MangaAdapter, View> views,LimitedMangaAdapter adapter, int index){
-        return manageViewIfAdapter(l,views.get(adapter),adapter,index);
+
+    public List<Wrapper> createWrappers(boolean changed_sequence){
+        shelf_sequence=shelf_sequence==null || changed_sequence ? SettingsShelf.getShelfSequence(prefs) : shelf_sequence;
+        return createWrappers(shelf_sequence);
     }
-    public LimitedMangaAdapter manageViewIfAdapter(ViewGroup l,View view,LimitedMangaAdapter adapter, int index){
-        if(adapter.getItemCount()==0){
-            l.removeView(view);
-        }else if(!checkViewInChildren(l,view)){
-            l.addView(view,index);
+    public List<Wrapper> createWrappers(LinkedHashMap<String, SettingsShelf.Container> shelf_sequence){
+        List<Wrapper> list=new LinkedList<>();
+        for(Map.Entry<String,SettingsShelf.Container> entry:shelf_sequence.entrySet()){
+            list.add(createWrapper(entry.getKey(),entry.getValue()));
         }
-        return adapter;
+        return list;
+    }
+
+    static class Adapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>{
+        List<Wrapper> all;
+        List<Object> objects=new ArrayList<>(100);
+        List<Integer> spans=new ArrayList<>(100);
+        GridLayoutManager grid;
+        private boolean enableUpdate=true;
+        private List<Object> old;
+        public Adapter(Context context,List<Wrapper> wrappers){
+            grid=new GridLayoutManager(context,12);
+            grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+                @Override
+                public int getSpanSize(int position) {
+                    return spans.get(position);
+                }
+            });
+            update(all=wrappers);
+        }
+        public void setEnableUpdate(boolean enableUpdate){
+            if(this.enableUpdate!=enableUpdate){
+                this.enableUpdate=enableUpdate;
+                update(old,all);
+                old=enableUpdate?null:objects;
+            }
+        }
+        public boolean isEnableUpdate(){
+            return enableUpdate;
+        }
+        public Adapter initRV(RecyclerView rv){
+            rv.setAdapter(this);
+            rv.setHasFixedSize(true);
+            rv.setLayoutManager(getLayoutManager());
+            return this;
+        }
+        public GridLayoutManager getLayoutManager(){return grid;}
+        public void update(){
+            update(all);
+        }
+        public void update(List<Wrapper> wrappers){
+            if(enableUpdate){
+                update(objects,wrappers);
+            }else{
+                update(null,wrappers);
+            }
+        }
+        public void update(List<Object> old,List<Wrapper> wrappers){
+            all=wrappers;
+            objects=wrappers!=null?convert(wrappers):new ArrayList<>();
+            calculateSpans();
+            if(old!=null){
+                new DiffCallback<>(old,objects).notifyUpdate(this,true);
+            }
+        }
+
+        private void calculateSpans(){
+            spans.clear();
+            Wrapper wrap=null; Object last=null;
+            for(Object obj:objects){
+                if(obj instanceof Wrapper w){
+                    wrap=w; spans.add(grid.getSpanCount());
+                }else{
+                    boolean all_width=wrap==null || wrap.mixed && last==wrap;
+                    spans.add(grid.getSpanCount()/(all_width?1:wrap.columns));
+                }
+                last=obj;
+            }
+        }
+        public List<Object> convert(List<Wrapper> wrappers){
+            return wrappers.stream().flatMap(
+                    w-> Math.min(w.list.size(),w.max)==0 ?
+                            Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max))
+            ).collect(Collectors.toList());
+        }
+        public List<Manga> getList(String key){
+            return all.stream().filter(wrap->wrap.title.equals(key)).map(wrap->wrap.list).findFirst().orElse(null);
+        }
+        public void update(String key, Callback<List<Manga>> callback){
+            List<Manga> list=getList(key);
+            if(list!=null){
+                callback.call(list);
+                update();
+            }
+        }
+        public void update(Manga manga){
+            if(manga!=null){
+                for(int i=0;i<objects.size();i++){
+                    if(objects.get(i).equals(manga)){
+                        notifyItemChanged(i);
+                    }
+                }
+            }
+        }
+        private Wrapper getWrapper(int position){
+            int save_pos=position;
+            while (position>=0){
+                if(objects.get(position--) instanceof Wrapper wrap){
+                    return wrap;
+                }
+            }
+            throw new IllegalArgumentException("Cannot find Wrapper before position:"+save_pos);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            Object obj=objects.get(position);
+            boolean full=obj instanceof Manga && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
+            return obj instanceof Wrapper ? 0 : (full?1:2);
+        }
+
+        @NonNull
+        @NotNull
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+            return switch (viewType){
+                case 0->new TitleHolder(parent);
+                case 2->new MangaHolder(parent,null,null,false,false);
+                case 1->new MangaHolder(parent,null,null,true,false);
+                default -> throw new IllegalArgumentException("ViewHolder can not be null");
+            };
+        }
+        @Override
+        public void onBindViewHolder(@NonNull @NotNull RecyclerView.ViewHolder holder, int position) {
+            Object obj=objects.get(position);
+            if(holder instanceof TitleHolder th && obj instanceof Wrapper wrap){
+                th.bind(wrap);
+            }else if(holder instanceof MangaHolder mh && obj instanceof Manga manga){
+                Wrapper wrap=getWrapper(position);
+                mh.setOnClickListeners(
+                        wrap.item!=null? (v, p) -> wrap.item.call(manga):null,
+                        wrap.button!=null? (v, p)-> wrap.button.call(manga):null
+                );
+                mh.bind(manga,false,true,0);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return objects.size();
+        }
+
+        static class TitleHolder extends RecyclerView.ViewHolder{
+            TextView title;
+            Button more;
+            public TitleHolder(ViewGroup parent) {
+                super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_shelf_title, parent, false));
+                title=itemView.findViewById(R.id.title);
+                more=itemView.findViewById(R.id.more);
+            }
+            public void bind(Wrapper wrap){
+                title.setText(wrap.title);
+                more.setOnClickListener(wrap.more);
+            }
+        }
+    }
+    static class Wrapper{
+        String title;
+        View.OnClickListener more;
+        List<Manga> list;
+        int max;
+        int columns;
+        boolean mixed;
+        Callback<Manga> item;
+        Callback<Manga> button;
+
+        public Wrapper(String title, View.OnClickListener more, List<Manga> list, int columns, int max_rows, boolean first_full){
+            this.title=title;
+            this.more = more;
+            this.list=list;
+            this.mixed=first_full;
+            this.columns=columns;
+            max=mixed ? columns*(max_rows-1)+1 : columns*max_rows;
+        }
+        public Wrapper init(Callback<Manga> item,Callback<Manga> item_button){
+            this.item=item;
+            this.button=item_button;
+            return this;
+        }
+        @Override
+        public boolean equals(@Nullable @org.jetbrains.annotations.Nullable Object obj) {
+            return obj instanceof Wrapper wrap && Objects.equals(this.title,wrap.title);
+        }
     }
 }

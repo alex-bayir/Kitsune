@@ -86,7 +86,7 @@
 
 
     <!-- Reader -->
-    <string name="page">Page</string>
+    <string name="page">Page %1$d/%2$d</string>
     <string name="loading_pages_list">Loading pages list…</string>
     <string name="chapters_list">Chapters list</string>
     <string name="create_bookmark">Create bookmark</string>
@@ -100,6 +100,7 @@
     <string name="RETRY" translatable="false">RETRY</string>
     <string name="RESET" translatable="false">RESET</string>
     <string name="CLOSE" translatable="false">CLOSE</string>
+    <string name="change_url" translatable="false">Change URL</string>
 
 
     <!-- Preference Titles -->
@@ -196,6 +197,10 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
+        Version 1.8.0:\n
+        \t-The first English source has been added.\n
+        \t-Added image translation directly into the app.\n
+        \t-Optimization and error correction.\n\n
         Version 1.7.8:\n
         \t-Optimization and error correction.\n\n
         Version 1.7.7:\n

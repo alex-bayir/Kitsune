@@ -42,9 +42,7 @@ import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider {
@@ -64,8 +62,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             if(query!=null){
                 int start=query.lastIndexOf("http"),end=query.indexOf('?',start+1);
                 if(start>=0){
-                    query=query.substring(start,end!=-1?end:query.length());
-                    try{query=URLDecoder.decode(query, StandardCharsets.UTF_8.name());}catch(UnsupportedEncodingException e){Logs.saveLog(e);}
+                    query=URLDecoder.decode(query.substring(start,end!=-1?end:query.length()));
                     Manga manga=MangaService.getOrPutNewWithDir(Manga_Scripted.determinate(query.trim()));
                     if(manga!=null){
                         startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()));
@@ -97,11 +94,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         setSupportActionBar(toolbar);
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
         getWindow().setNavigationBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
-        /*
-        if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED || ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)!=PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE,Manifest.permission.WRITE_EXTERNAL_STORAGE},PERMISSION_REQUEST_CODE);
-        }
-        */
         Updater.init(this);
 
         PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Constants.saved_path, MangaService.init(this)).apply();
@@ -170,9 +162,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         switch (item.getItemId()){
-            case R.id.action_add_source: startActivity(new Intent(this, ScriptsActivity.class)); return true;
+            case (R.id.action_add_source)->{startActivity(new Intent(this, ScriptsActivity.class)); return true;}
+            default -> {return false;}
         }
-        return false;
     }
 
     @Override
@@ -202,9 +194,18 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch(requestCode){
-            case PERMISSION_READ_REQUEST_CODE: if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){Utils.Activity.callFilesStore(this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE);} break;
-            case PERMISSION_REQUEST_CODE: if(ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED){finish(); startActivity(new Intent(this,MainActivity.class));} break;
+        switch (requestCode) {
+            case PERMISSION_READ_REQUEST_CODE -> {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Utils.Activity.callFilesStore(this, CALL_FILE_STORE, "image/*", PERMISSION_REQUEST_CODE);
+                }
+            }
+            case PERMISSION_REQUEST_CODE -> {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    finish();
+                    startActivity(new Intent(this, MainActivity.class));
+                }
+            }
         }
     }
 
@@ -212,36 +213,35 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode,resultCode,data);
         switch(requestCode){
-            case PERMISSION_REQUEST_CODE: break;
-            case CALL_FILE_STORE:
-                    if(resultCode==RESULT_OK){
-                        Crop.of(data.getData(),Uri.fromFile(new File(headerImagePath))).withAspect(navigationView.getHeaderView(0).getWidth(),navigationView.getHeaderView(0).getHeight()).start(this);
-                    }
-                break;
-            case Crop.REQUEST_CROP:
+            case PERMISSION_REQUEST_CODE->{}
+            case CALL_FILE_STORE->{
+                if(resultCode==RESULT_OK){
+                    Crop.of(data.getData(),Uri.fromFile(new File(headerImagePath))).withAspect(navigationView.getHeaderView(0).getWidth(),navigationView.getHeaderView(0).getHeight()).start(this);
+                }
+            }
+            case Crop.REQUEST_CROP->{
                 if(resultCode==RESULT_OK){
                     try{
                         Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(headerImagePath));
                     }catch(Exception e){e.printStackTrace();}
                     updateMenu();
                 }
-                break;
-            //case 100: if(resultCode==RESULT_OK){startService(new Intent(this,TranslateService.class).putExtra("data",data));} return true;
+            }
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull @NotNull MenuItem item) {
-        switch (item.getItemId()){
-            default: return false;
-            case R.id.nav_shelf: adapter.setCurrentItem(0); break;
-            case R.id.nav_new: adapter.setCurrentItem(1); break;
-            case R.id.nav_catalogs: adapter.setCurrentItem(2); break;
-            case R.id.nav_statistics: adapter.setCurrentItem(3); break;
-            case R.id.nav_recommendations: startActivity(new Intent(this, RecommendationsActivity.class)); return true;
-            case R.id.nav_settings: startActivity(new Intent(this,SettingsActivity.class)); return true;
-            case R.id.nav_about: startActivity(new Intent(this,ActivityAbout.class)); return true;
-            case R.id.nav_version: Updater.showWhatisNew(this,false); return true;
+        switch (item.getItemId()) {
+            default -> {return false;}
+            case (R.id.nav_shelf) -> adapter.setCurrentItem(0);
+            case (R.id.nav_new) -> adapter.setCurrentItem(1);
+            case (R.id.nav_catalogs) -> adapter.setCurrentItem(2);
+            case (R.id.nav_statistics) -> adapter.setCurrentItem(3);
+            case (R.id.nav_recommendations) -> {startActivity(new Intent(this, RecommendationsActivity.class));return true;}
+            case (R.id.nav_settings) -> {startActivity(new Intent(this, SettingsActivity.class));return true;}
+            case (R.id.nav_about) -> {startActivity(new Intent(this, ActivityAbout.class));return true;}
+            case (R.id.nav_version) -> {Updater.showWhatisNew(this, false);return true;}
         }
         item.setChecked(true);
         toolbar.setTitle(item.getTitle());

@@ -11,7 +11,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.tabs.TabLayoutMediator;
-import org.alex.kitsune.commons.DiffCallBack;
+import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.main.Constants;
@@ -77,12 +77,11 @@ public class FavoritesActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.latest: item.setChecked(true); adapter.sort(Manga.FavoriteTimeComparator); break;
-            case R.id.alphabetical: item.setChecked(true); adapter.sort(Manga.AlphabeticalComparator); break;
-            case R.id.status:
-            case R.id.source: item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source); break;
+        switch (item.getItemId()) {
+            case (android.R.id.home) -> finish();
+            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Manga.FavoriteTimeComparator);}
+            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Manga.AlphabeticalComparator);}
+            case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }
@@ -96,7 +95,7 @@ public class FavoritesActivity extends AppCompatActivity {
             setCategories(categories);
         }
         public void setCategories(List<String> categories){
-            new DiffCallBack(this.categories,categories).updateAfter(()->this.categories=categories,this);
+            new DiffCallback<>(this.categories,categories).updateAfter(()->this.categories=categories,this);
         }
         public void setShowSource(boolean showSource){
             this.showSource=showSource;

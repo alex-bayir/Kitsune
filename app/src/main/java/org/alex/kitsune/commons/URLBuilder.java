@@ -3,11 +3,13 @@ package org.alex.kitsune.commons;
 import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
-import java.util.Collection;
+import java.net.URLEncoder;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class URLBuilder {
     private final String url;
-    private final StringBuilder params=new StringBuilder();
+    private final LinkedHashMap<String,String> params=new LinkedHashMap<>();
     public URLBuilder(String url){
         this.url=url;
     }
@@ -22,7 +24,7 @@ public class URLBuilder {
                     add(key,val);
                 }
             }else{
-                params.append(params.length()==0 ? '?' : '&').append(key).append('=').append(value);
+                params.put(key,String.valueOf(value));
             }
         }
         return this;
@@ -46,34 +48,25 @@ public class URLBuilder {
         return this;
     }
     public URLBuilder add(String param){
-        if(param!=null){params.append(param);}
+        if(param!=null){params.put(param,null);}
         return this;
     }
 
     public URLBuilder clearParams(){
-        params.delete(0,params.length());
+        params.clear();
         return this;
     }
 
     public String build(){
-        return toString()
-                .replace(" ","%20")
-                .replace("[","%5B")
-                .replace("]","%5D");
+        return url+params.entrySet().stream().map(entry->entry.getValue()!=null?entry.getKey()+"="+URLEncoder.encode(entry.getValue()):URLEncoder.encode(entry.getKey())).collect(Collectors.joining("&","?",""));
     }
     @NonNull
     @NotNull
     @Override
     public String toString() {
-        return url+params;
+        return url+params.entrySet().stream().map(entry->entry.getValue()!=null?entry.getKey()+"="+entry.getValue():entry.getKey()).collect(Collectors.joining("&","?",""));
     }
     private String join(String delimiter,Object[] tokens){
-        if (tokens.length==0){return "";}
-        final StringBuilder sb = new StringBuilder();
-        sb.append(tokens[0]);
-        for (int i=1; i<tokens.length; i++) {
-            sb.append(delimiter).append(tokens[i]);
-        }
-        return sb.toString();
+        return Arrays.stream(tokens).map(String::valueOf).collect(Collectors.joining(delimiter));
     }
 }

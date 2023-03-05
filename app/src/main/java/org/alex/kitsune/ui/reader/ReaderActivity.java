@@ -47,7 +47,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     View bottomBar;
     SeekBar seekBar;
     TextView progress_text;
-    TextView showProgress;
     RecyclerView reader;
     Dialog Chapters, FailedLoadPagesInfo;
     ReaderPageAdapter adapter;
@@ -103,14 +102,14 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         manga=MangaService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
         translate.setOnTouchListener((v, event) -> {
-            switch(event.getAction()){
-                case MotionEvent.ACTION_DOWN: v.animate().scaleY(1.5f).scaleX(1.5f).setDuration(200).setInterpolator(new LinearInterpolator()).setListener(null).start(); break;
-                case MotionEvent.ACTION_UP: v.animate().scaleY(1).scaleX(1).setDuration(200).setInterpolator(new LinearInterpolator()).setListener(null).start(); break;
-                case MotionEvent.ACTION_MOVE: v.setPressed(false); break;
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN -> v.animate().scaleY(1.5f).scaleX(1.5f).setDuration(200).setInterpolator(new LinearInterpolator()).setListener(null).start();
+                case MotionEvent.ACTION_UP -> v.animate().scaleY(1).scaleX(1).setDuration(200).setInterpolator(new LinearInterpolator()).setListener(null).start();
+                case MotionEvent.ACTION_MOVE -> v.setPressed(false);
             }
             return false;
         });
-        translate.setOnClickListener(v ->{
+        translate.setOnLongClickListener(v ->{
             Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
             if(table.size()>1){
                 PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
@@ -124,11 +123,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             }else {
                 new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), table)).start();
             }
-        });
-        translate.setOnLongClickListener(v -> {
-            adapter.invertShowTranslate();
             return true;
         });
+        translate.setOnClickListener(v -> adapter.invertShowTranslate());
         reader=findViewById(R.id.reader);
         adapter=new ReaderPageAdapter(manga,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});
         reader.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -164,15 +161,16 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         statusBar.setIsActive(true);
         toolBar=findViewById(R.id.toolbar);
         setSupportActionBar(toolBar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if(getSupportActionBar()!=null){
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
         bottomBar=findViewById(R.id.bottomBar);
         seekBar=findViewById(R.id.progress);
         seekBar.setOnSeekBarChangeListener(this);
         seekBar.setOnTouchListener((v, event) -> {if(event.getAction()==MotionEvent.ACTION_UP){page=Math.max(0,Math.min(seekBar.getMax(),seekBar.getProgress()));}return false;});
         progress_text=findViewById(R.id.progress_text);
-        showProgress=findViewById(R.id.SHOW_PROGRESS);
         root=findViewById(R.id.root);
         frame=findViewById(R.id.frame);
         menu_button=findViewById(R.id.action_menu);
@@ -183,45 +181,50 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             popupMenu.setForceShowIcon(true);
             popupMenu.show();
         });
-        View view=getLayoutInflater().inflate(R.layout.dialog_reader_error,null);
-        view.findViewById(R.id.close).setOnClickListener(v -> {
-            FailedLoadPagesInfo.dismiss();
-            finish();
-        });
-        view.findViewById(R.id.retry).setOnClickListener(v -> {
-            if(NetworkUtils.isNetworkAvailable(this)){
+        {
+            View view=getLayoutInflater().inflate(R.layout.dialog_reader_error,null);
+            view.findViewById(R.id.close).setOnClickListener(v -> {
                 FailedLoadPagesInfo.dismiss();
-                initChapter(num_chapter,page);
-            }else{
-                Toast.makeText(this,R.string.no_internet,Toast.LENGTH_SHORT).show();
-            }
-        });
-        view.findViewById(R.id.error).setOnClickListener(v-> Logs.createDialog(v.getContext(),lastThrowable).show());
+                finish();
+            });
+            view.findViewById(R.id.retry).setOnClickListener(v -> {
+                if(NetworkUtils.isNetworkAvailable(this)){
+                    FailedLoadPagesInfo.dismiss();
+                    initChapter(num_chapter,page);
+                }else{
+                    Toast.makeText(this,R.string.no_internet,Toast.LENGTH_SHORT).show();
+                }
+            });
+            view.findViewById(R.id.error).setOnClickListener(v-> Logs.createDialog(v.getContext(),lastThrowable).show());
 
-        FailedLoadPagesInfo=new AlertDialog.Builder(this).setView(view).create();
-        FailedLoadPagesInfo.setOnShowListener(dialogInterface -> FailedLoadPagesInfo.findViewById(R.id.error).setVisibility(lastThrowable!=null ? View.VISIBLE : View.INVISIBLE));
-        FailedLoadPagesInfo.setCancelable(false);
-        view=getLayoutInflater().inflate(R.layout.dialog_chapters,null);
-        rv=view.findViewById(R.id.rv_list);
-        rv.setLayoutManager(new LinearLayoutManager(this));
-        rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
-        chaptersAdapter=new CustomAdapter<>(this, manga, manga.getChapters(), R.layout.item_chapter, new HolderListener() {
-            @Override
-            public void onItemClick(View v, int index){
-                initChapter(index,0);
+            FailedLoadPagesInfo=new AlertDialog.Builder(this).setView(view).create();
+            FailedLoadPagesInfo.setOnShowListener(dialogInterface -> FailedLoadPagesInfo.findViewById(R.id.error).setVisibility(lastThrowable!=null ? View.VISIBLE : View.INVISIBLE));
+            FailedLoadPagesInfo.setCancelable(false);
+        }
+        {
+            View view=getLayoutInflater().inflate(R.layout.dialog_chapters,null);
+            rv=view.findViewById(R.id.rv_list);
+            rv.setLayoutManager(new LinearLayoutManager(this));
+            rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
+            chaptersAdapter=new CustomAdapter<>(this, manga, manga.getChapters(), R.layout.item_chapter, new HolderListener() {
+                @Override
+                public void onItemClick(View v, int index){
+                    initChapter(index,0);
+                    Chapters.cancel();
+                }
+                @Override public boolean onItemLongClick(View v, int index){return false;}
+            },null,rv,null);
+            view.findViewById(R.id.close).setOnClickListener(v1 -> Chapters.cancel());
+            btn_next=view.findViewById(R.id.next);
+            btn_next.setOnClickListener(v2 -> {
+                initChapter(num_chapter+1,0);
                 Chapters.cancel();
-            }
-            @Override public boolean onItemLongClick(View v, int index){return false;}
-        },null,rv,null);
-        view.findViewById(R.id.close).setOnClickListener(v1 -> Chapters.cancel());
-        btn_next=view.findViewById(R.id.next);
-        btn_next.setOnClickListener(v2 -> {
-            initChapter(num_chapter+1,0);
-            Chapters.cancel();
-        });
-        Chapters=new AlertDialog.Builder(this).setView(view).create();
+            });
+            Chapters=new AlertDialog.Builder(this).setView(view).create();
+        }
         initChapter(num_chapter,page);
     }
+
 
     public void next(){
         if(page+1<chapter.getPages().size()){
@@ -250,17 +253,11 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             }else{
                 if(NetworkUtils.isNetworkAvailable(this)){
                     lastThrowable=null;
-                    new LoadTask<Manga,Void,Integer>(){
-                        @Override
-                        public Integer doInBackground(Manga manga) {
-                            try{return manga.getPages(num_chapter).size();}catch(Exception e){Logs.saveLog(lastThrowable=e); return -1;}
-                        }
-                        @Override
-                        public void onFinished(Integer integer) {
-                            if(integer>0){setData(num_chapter);}
-                            else{FailedLoadPagesInfo.show();}
-                        }
-                    }.start(manga);
+                    new Thread(()->{
+                        int pages=-1;
+                        try{pages=manga.getPages(num_chapter).size();}catch(Exception e){Logs.saveLog(lastThrowable=e);}
+                        NetworkUtils.getMainHandler().post(pages>0? ()-> setData(num_chapter) : ()-> FailedLoadPagesInfo.show());
+                    }).start();
                 }else{
                     FailedLoadPagesInfo.show();
                     setData(num_chapter);
@@ -300,9 +297,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if(useVolumeKeys){
             switch (keyCode){
-                case KeyEvent.KEYCODE_VOLUME_UP: if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();} break;
-                case KeyEvent.KEYCODE_VOLUME_DOWN: if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();} break;
-                default: super.onKeyDown(keyCode,event);
+                case KeyEvent.KEYCODE_VOLUME_UP->{if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}
+                case KeyEvent.KEYCODE_VOLUME_DOWN->{if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}}
+                default-> super.onKeyDown(keyCode,event);
             }
         }
         return useVolumeKeys;
@@ -324,22 +321,23 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         getMenuInflater().inflate(R.menu.options_chapters,menu);
         return true;
     }
+    @SuppressLint("NotifyDataSetChanged")
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.action_chapters: btn_next.setEnabled(num_chapter!=manga.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show(); break;
-            case R.id.create_bookmark: manga.addBookMark(chapter,page); break;
-            case R.id.change_reader_mode: new AlertDialog.Builder(this).setTitle(R.string.reader_mode)
+        switch (item.getItemId()) {
+            case android.R.id.home -> finish();
+            case (R.id.action_chapters) -> {btn_next.setEnabled(num_chapter!=manga.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show();}
+            case (R.id.create_bookmark) -> manga.addBookMark(chapter,page);
+            case (R.id.change_reader_mode) -> new AlertDialog.Builder(this).setTitle(R.string.reader_mode)
                     .setSingleChoiceItems(R.array.reader_mode_entries, adapter.getReaderMode(), (dialog, i) -> {setModes(i, adapter.getScaleMode()); dialog.dismiss();})
-                    .setNegativeButton(android.R.string.cancel, null).create().show(); break;
-            case R.id.change_scale_mode: new AlertDialog.Builder(this).setTitle(R.string.scale_mode)
+                    .setNegativeButton(android.R.string.cancel, null).create().show();
+            case (R.id.change_scale_mode) -> new AlertDialog.Builder(this).setTitle(R.string.scale_mode)
                     .setSingleChoiceItems(R.array.scale_mode_entries, adapter.getScaleMode(), (dialog, i) -> {setModes(adapter.getReaderMode(),i); dialog.dismiss();})
-                    .setNegativeButton(android.R.string.cancel, null).create().show(); break;
-            case R.id.share_page: Utils.Bitmap.shareBitmap(this,chapter.getName(),((BitmapDrawable)((ImageView)reader.getChildAt(reader.getChildCount()-1).findViewById(R.id.image)).getDrawable()).getBitmap());break;
-            case R.id.share_screen: Utils.Bitmap.shareBitmap(this,chapter.getName(),Utils.Bitmap.screenView(reader));break;
-            case R.id.settings: startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_READER)); break;
-            default: break;
+                    .setNegativeButton(android.R.string.cancel, null).create().show();
+            case (R.id.share_page) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),((BitmapDrawable)((ImageView)reader.getChildAt(reader.getChildCount()-1).findViewById(R.id.image)).getDrawable()).getBitmap());
+            case (R.id.share_screen) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),Utils.Bitmap.screenView(reader));
+            case (R.id.settings) -> startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_READER));
+            default -> {}
         }
         return true;
     }
@@ -347,7 +345,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         if(seekBar.getMax()>=0){
-            progress_text.setText(getString(R.string.page)+" "+(progress+1)+"/"+(seekBar.getMax()+1));
+            progress_text.setText(getString(R.string.page,progress+1,seekBar.getMax()+1));
         }else{
             progress_text.setText(R.string.loading_pages_list);
         }

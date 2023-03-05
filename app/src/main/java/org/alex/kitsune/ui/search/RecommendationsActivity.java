@@ -21,7 +21,6 @@ import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.shelf.Catalogs;
-import org.alex.kitsune.utils.LoadTask;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -48,9 +47,11 @@ public class RecommendationsActivity extends AppCompatActivity {
         pager.setAdapter(adapter);
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
         toolbar.setTitle(R.string.recommendations);
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(stringIds[position])).attach();
     }
@@ -71,14 +72,13 @@ public class RecommendationsActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.list: item.setChecked(true); adapter.setSpanCount(1); break;
-            case R.id.largeGrid: item.setChecked(true); adapter.setSpanCount(2); break;
-            case R.id.mediumGrid: item.setChecked(true); adapter.setSpanCount(3); break;
-            case R.id.smallGrid: item.setChecked(true); adapter.setSpanCount(4); break;
-            case R.id.status:
-            case R.id.source: item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source); break;
+        switch (item.getItemId()) {
+            case android.R.id.home -> finish();
+            case (R.id.list) -> {item.setChecked(true);adapter.setSpanCount(1);}
+            case (R.id.largeGrid) -> {item.setChecked(true);adapter.setSpanCount(2);}
+            case (R.id.mediumGrid) -> {item.setChecked(true);adapter.setSpanCount(3);}
+            case (R.id.smallGrid) -> {item.setChecked(true);adapter.setSpanCount(4);}
+            case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }
@@ -131,7 +131,7 @@ public class RecommendationsActivity extends AppCompatActivity {
                 adapter.initRV(itemView.findViewById(R.id.rv_list),spanCount);
                 if(NetworkUtils.isNetworkAvailable(itemView.getContext())){
                     progressBar.setVisibility(View.VISIBLE); int i=0;
-                    for(Catalogs.Container container:catalogs){if(container.enable){i++; LoadTask.searchManga(container.source, null, order, this::add, nothingFound);}}
+                    for(Catalogs.Container container:catalogs){if(container.enable){i++; SearchActivity.searchManga(container.source, null, order, this::add, nothingFound);}}
                     if(i==0){
                         nothingFound.setText(R.string.no_catalogs_selected);
                         nothingFound.setVisibility(View.VISIBLE);
@@ -162,5 +162,4 @@ public class RecommendationsActivity extends AppCompatActivity {
         }
 
     }
-
 }

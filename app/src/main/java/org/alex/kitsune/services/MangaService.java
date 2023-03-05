@@ -33,7 +33,7 @@ public class MangaService {
     public static String init(Context context){
         clearCache(cacheDir=context.getExternalCacheDir().getAbsolutePath());
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
-        Catalogs.containers=Catalogs.getCatalogs(prefs);
+        Catalogs.init(prefs);
         dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
         copyScriptsFromAssets(context);
         Manga_Scripted.setScripts(Catalogs.getMangaScripts(context.getExternalFilesDir(Constants.manga_scripts)));
@@ -63,14 +63,12 @@ public class MangaService {
     public static void setDir(List<Manga> mangas){setDir(mangas,dir);}
     public static void setDir(List<Manga> mangas,String dir){for(Manga manga:mangas){manga.setDir(dir);}}
     public static Map<Integer,Manga> getMap(Type type){
-        switch (type!=null ? type : Type.All){
-            default:
-            case All: return map;
-            case History: return mapHistory;
-            case Size:
-            case Saved: return mapSaved;
-            case Favorites: return mapFavorites;
-        }
+        return switch (type != null ? type : Type.All) {
+            default -> map;
+            case History -> mapHistory;
+            case Size, Saved -> mapSaved;
+            case Favorites -> mapFavorites;
+        };
     }
     public static Map<Integer,Manga> getAll(){return getMap(Type.All);}
     public static Manga get(int hash,Type type){return getMap(type).get(hash);}

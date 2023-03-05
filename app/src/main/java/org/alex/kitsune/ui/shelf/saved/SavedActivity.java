@@ -7,14 +7,12 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.TypedValue;
 import android.view.*;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -28,7 +26,7 @@ import org.alex.kitsune.commons.AppBarStateChangeListener;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.commons.PhotoCollageDrawable;
 import org.alex.kitsune.ui.preview.PreviewActivity;
-import org.alex.kitsune.utils.LoadTask;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.util.Comparator;
 import java.util.Random;
@@ -90,10 +88,10 @@ public class SavedActivity extends AppCompatActivity {
                     Manga manga=MangaService.get(intent.getIntExtra(Constants.hash,-1));
                     if(Constants.load.equals(intent.getStringExtra(Constants.option)) || Constants.delete.equals(intent.getStringExtra(Constants.option))){
                         if(manga.countSaved()>0){
-                            switch (currentSort){
-                                case R.id.latest: adapter.add(0,manga); break;
-                                case R.id.images_size: adapter.addBySize(manga); break;
-                                case R.id.alphabetical: adapter.add(manga,Manga.AlphabeticalComparator); break;
+                            switch (currentSort) {
+                                case (R.id.latest) -> adapter.add(0,manga);
+                                case (R.id.images_size) -> adapter.addBySize(manga);
+                                case (R.id.alphabetical) -> adapter.add(manga,Manga.AlphabeticalComparator);
                             }
                             adapter.update(manga);
                         }else{
@@ -108,7 +106,7 @@ public class SavedActivity extends AppCompatActivity {
         },new IntentFilter(Constants.action_Update));
     }
     private Drawable createBackDrop(MangaAdapter adapter){
-        return new PhotoCollageDrawable(getDrawable(R.drawable.ic_caution), 10, v->adapter.getItemCount(), i->adapter.get(i).loadThumbnail());
+        return new PhotoCollageDrawable(AppCompatResources.getDrawable(this,R.drawable.ic_caution), 10, v->adapter.getItemCount(), i->adapter.get(i).loadThumbnail());
     }
     private boolean sharePhotoCollage(PhotoCollageDrawable drawable){
         return drawable!=null && Utils.Bitmap.shareBitmap(this,getString(R.string.Saved_manga).toUpperCase(),drawable.getBitmap());
@@ -121,22 +119,19 @@ public class SavedActivity extends AppCompatActivity {
     }
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.latest:       currentSort=item.getItemId(); item.setChecked(true); start(Manga.SavingTimeComparator); break;
-            case R.id.alphabetical: currentSort=item.getItemId(); item.setChecked(true); start(Manga.AlphabeticalComparator); break;
-            case R.id.images_size:  currentSort=item.getItemId(); item.setChecked(true); start(Manga.ImagesSizesComparator); break;
+        switch (item.getItemId()) {
+            case (android.R.id.home) -> finish();
+            case (R.id.latest) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.SavingTimeComparator);}
+            case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.AlphabeticalComparator);}
+            case (R.id.images_size) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.ImagesSizesComparator);}
         }
         return super.onOptionsItemSelected(item);
     }
     private void start(Comparator<Manga> comparator){
         adapter.sort(comparator, comparator==Manga.ImagesSizesComparator ? 1:3);
-        new Thread(()->
-            new Handler(Looper.getMainLooper()){
-                @Override public void handleMessage(@NonNull Message msg) {
-                    backdrop.setImageDrawable((Drawable) msg.obj);
-                }
-            }.sendMessage(LoadTask.message(createBackDrop(adapter)))
-        ).start();
+        new Thread(()->{
+            Drawable drawable=createBackDrop(adapter);
+            NetworkUtils.getMainHandler().post(()->backdrop.setImageDrawable(drawable));
+        }).start();
     }
 }

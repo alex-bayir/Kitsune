@@ -155,7 +155,7 @@
                         <com.google.android.material.button.MaterialButton
                                 android:id="@+id/button_continue"
                                 android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
+                                android:layout_height="48sp"
                                 android:text="@string/CONTINUE"
                                 android:layout_alignParentEnd="true"
                                 android:layout_alignParentBottom="true"

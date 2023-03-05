@@ -8,7 +8,7 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.selection.*;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
-import org.alex.kitsune.commons.DiffCallBack;
+import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.commons.HolderMenuItemClickListener;
 import org.alex.kitsune.manga.BookMark;
@@ -57,7 +57,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         this.manga=manga;
     }
     public void setList(List<T> list){
-        new DiffCallBack(items, list).updateAfter(()->items=list,this);
+        new DiffCallback<>(items, list).updateAfter(()->items=list,this);
     }
 
     public List<T> getList(){return items;}
@@ -70,11 +70,11 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     @NonNull
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
-        switch (viewType){
-            case R.layout.item_chapter: return new ChapterHolder(parent,viewType,listener,manga,menuListener);
-            case R.layout.item_bookmark: return new BookMarkHolder(parent,viewType,listener,manga,menuListener);
-            default: return null;
-        }
+        return switch (viewType) {
+            case (R.layout.item_chapter) -> new ChapterHolder(parent, viewType, listener, manga, menuListener);
+            case (R.layout.item_bookmark) -> new BookMarkHolder(parent, viewType, listener, manga, menuListener);
+            default -> throw new IllegalArgumentException("View holder cannot be null");
+        };
     }
 
     @Override
@@ -113,7 +113,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         @Nullable
         @org.jetbrains.annotations.Nullable
         @Override
-        public Long getKey(int position){return rv.getAdapter().getItemId(position);}
+        public Long getKey(int position){return rv.getAdapter()!=null?rv.getAdapter().getItemId(position):-1;}
 
         @Override
         public int getPosition(@NonNull @NotNull Long key) {

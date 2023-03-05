@@ -1,6 +1,8 @@
 package org.alex.kitsune.ui.search;
 
 import android.content.Intent;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -15,6 +17,9 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
+import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.HttpStatusException;
+import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
@@ -22,9 +27,10 @@ import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.shelf.Catalogs;
-import org.alex.kitsune.utils.LoadTask;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
+import javax.net.ssl.SSLException;
+import java.net.SocketTimeoutException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -87,21 +93,20 @@ public class SearchActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.list: item.setChecked(true); adapter.setSpanCount(1); break;
-            case R.id.largeGrid: item.setChecked(true); adapter.setSpanCount(2); break;
-            case R.id.mediumGrid: item.setChecked(true); adapter.setSpanCount(3); break;
-            case R.id.smallGrid: item.setChecked(true); adapter.setSpanCount(4); break;
-            case R.id.status:
-            case R.id.source: item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source); break;
+        switch (item.getItemId()) {
+            case android.R.id.home -> finish();
+            case (R.id.list) -> {item.setChecked(true); adapter.setSpanCount(1);}
+            case (R.id.largeGrid) -> {item.setChecked(true); adapter.setSpanCount(2);}
+            case (R.id.mediumGrid) -> {item.setChecked(true); adapter.setSpanCount(3);}
+            case (R.id.smallGrid) -> {item.setChecked(true); adapter.setSpanCount(4);}
+            case (R.id.status), (R.id.source) -> {item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }
     public void search(String query){
         if(NetworkUtils.isNetworkAvailable(this)){
             int i=0;
-            for(Catalogs.Container container:catalogs){if(container.enable){i++; LoadTask.searchManga(container.source, query,0, this::add, nothingFound);}}
+            for(Catalogs.Container container:catalogs){if(container.enable){i++; searchManga(container.source, query,0, this::add, nothingFound);}}
             if(i==0){
                 nothingFound.setText(R.string.no_catalogs_selected);
                 nothingFound.setVisibility(View.VISIBLE);
@@ -113,6 +118,23 @@ public class SearchActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
         }
 
+    }
+    public static void searchManga(String source, String query, int order, Callback<Collection<Manga>> callback, TextView out_error){
+        if(callback!=null){
+            new Thread(()->{
+                try{
+                    ArrayList<Manga> list= Manga_Scripted.query(source,query,0,order);
+                    new Handler(Looper.getMainLooper()).post(()->{
+                        callback.call(list);
+                    });
+                }catch(Exception e){
+                    new Handler(Looper.getMainLooper()).post(()->{
+                        out_error_info(e,out_error);
+                        callback.call(null);
+                    });
+                }
+            }).start();
+        }
     }
 
     private synchronized void add(Collection<Manga> mangas){
@@ -129,5 +151,17 @@ public class SearchActivity extends AppCompatActivity {
             progressBar.setVisibility(View.GONE);
         }
     }
-
+    public static void out_error_info(Throwable e, TextView out_error){
+        if(out_error!=null){
+            if(e instanceof SocketTimeoutException){
+                out_error.setText(R.string.time_out);
+            }else if(e instanceof HttpStatusException) {
+                out_error.setText(((HttpStatusException) e).message());
+            }else if(e instanceof SSLException){
+                out_error.setText(e.getClass().getSimpleName());
+            }else{
+                out_error.setText(R.string.nothing_found);
+            }
+        }
+    }
 }

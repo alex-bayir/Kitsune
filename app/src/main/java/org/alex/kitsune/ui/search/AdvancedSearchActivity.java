@@ -10,6 +10,8 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -18,6 +20,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDialogFragment;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.OrientationHelper;
@@ -36,7 +39,6 @@ import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
-import org.alex.kitsune.utils.LoadTask;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -128,39 +130,28 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             nothingFound.setText(R.string.nothing_found);
             progressBar.setVisibility(View.VISIBLE);
             progressBar.startNestedScroll(0);
-            new LoadTask<String, Void, ArrayList<Manga>>() {
-                @Override
-                protected ArrayList<Manga> doInBackground(String query) {
-                    try{
-                        return sortAdapter!=null ? Manga_Scripted.query(sortAdapter.getScript(),query,page, (Object[]) sortAdapter.getOptions()) : null;
-                    }catch(Exception e){
-                        onBreak(e);
-                        return null;
-                    }
-                }
-                @Override
-                protected void onFinished(ArrayList<Manga> mangas) {
-                    if(mangas!=null){
-                        MangaService.setCacheDirIfNull(mangas);
-                        if(adapter.addAll(mangas)){
-                            nothingFound.setVisibility(View.GONE);
-                            page++;
-                            enableLoadMore=true;
-                        }else{
-                            enableLoadMore=false;
+            new Thread(()->{
+                try {
+                    ArrayList<Manga> mangas=sortAdapter!=null ? Manga_Scripted.query(sortAdapter.getScript(), query, page, (Object[]) sortAdapter.getOptions()) : null;
+                    NetworkUtils.getMainHandler().post(()->{
+                        if(mangas!=null){
+                            MangaService.setCacheDirIfNull(mangas);
+                            if(adapter.addAll(mangas)){
+                                nothingFound.setVisibility(View.GONE);
+                                page++;
+                                enableLoadMore=true;
+                            }else{
+                                enableLoadMore=false;
+                            }
                         }
-                    }
-                    if(adapter.getItemCount()==0){nothingFound.setVisibility(View.VISIBLE);}
-                    progressBar.progressiveStop();
-                    progressBar.setVisibility(View.GONE);
+                        if(adapter.getItemCount()==0){nothingFound.setVisibility(View.VISIBLE);}
+                        progressBar.progressiveStop();
+                        progressBar.setVisibility(View.GONE);
+                    });
+                }catch (Exception e){
+                    new Handler(Looper.getMainLooper()).post(()-> SearchActivity.out_error_info(e,nothingFound));
                 }
-
-                @Override
-                protected void onBraked(Throwable e) {
-                    super.onBraked(e);
-                    out_error_info(e,nothingFound);
-                }
-            }.start(query);
+            }).start();
         }else{
             nothingFound.setText(R.string.internet_is_loss);
             nothingFound.setVisibility(View.VISIBLE);
@@ -198,21 +189,20 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.list: item.setChecked(true); adapter.setSpanCount(1); break;
-            case R.id.largeGrid: item.setChecked(true); adapter.setSpanCount(2); break;
-            case R.id.mediumGrid: item.setChecked(true); adapter.setSpanCount(3); break;
-            case R.id.smallGrid: item.setChecked(true); adapter.setSpanCount(4); break;
-            case R.id.status:
-            case R.id.source: item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source); break;
+        switch (item.getItemId()) {
+            case android.R.id.home -> finish();
+            case (R.id.list) -> {item.setChecked(true);adapter.setSpanCount(1);}
+            case (R.id.largeGrid) -> {item.setChecked(true);adapter.setSpanCount(2);}
+            case (R.id.mediumGrid) -> {item.setChecked(true);adapter.setSpanCount(3);}
+            case (R.id.smallGrid) -> {item.setChecked(true);adapter.setSpanCount(4);}
+            case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }
     public static int getItemCount(RecyclerView recyclerView){return recyclerView.getLayoutManager()!=null ? recyclerView.getLayoutManager().getItemCount() : 0;}
     public static int findLastVisibleItemPosition(RecyclerView recyclerView) {
-        RecyclerView.LayoutManager layoutManager = recyclerView.getLayoutManager();
-        View findOneVisibleChild = findOneVisibleChild(layoutManager, layoutManager.getChildCount() - 1, -1, false, true);
+        RecyclerView.LayoutManager lm=recyclerView.getLayoutManager();
+        View findOneVisibleChild=lm!=null? findOneVisibleChild(lm, lm.getChildCount() - 1, -1, false, true) : null;
         return findOneVisibleChild!=null ? recyclerView.getChildAdapterPosition(findOneVisibleChild) : -1;
     }
     private static View findOneVisibleChild(RecyclerView.LayoutManager layoutManager, int i, int i2, boolean z, boolean z2) {
@@ -282,8 +272,8 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
 
         public void onClick(View view) {
             switch (view.getId()){
-                case R.id.apply: callBack.call(null); dismiss(); break;
-                case R.id.reset: if(adapter!=null){adapter.reset();} break;
+                case (R.id.apply): callBack.call(null); dismiss(); break;
+                case (R.id.reset): if(adapter!=null){adapter.reset();} break;
             }
         }
 
@@ -291,10 +281,10 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             private final Rect bounds=new Rect();
             private final Drawable divider;
 
-            public HeaderDividerItemDecoration(Context context){this.divider=context.getDrawable(R.color.colorLine);}
+            public HeaderDividerItemDecoration(Context context){this.divider= AppCompatResources.getDrawable(context,R.color.colorLine);}
 
             @Override
-            public void onDraw(Canvas canvas, RecyclerView recyclerView, RecyclerView.State state) {
+            public void onDraw(@NotNull Canvas canvas, RecyclerView recyclerView, @NotNull RecyclerView.State state) {
                 if (!(recyclerView.getLayoutManager() == null || this.divider == null)) {
                     int childCount = recyclerView.getChildCount();
                     for (int i = 0; i < childCount-1; i++) {

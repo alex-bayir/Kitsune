@@ -20,7 +20,7 @@ import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.utils.LoadTask;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.alex.kitsune.R;
 import java.io.*;
@@ -58,9 +58,11 @@ public class CompilerActivity extends AppCompatActivity {
             fab.setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);
             progressBar.startNestedScroll(0);
-            new LoadTask<Void,Void,Throwable>(){
+            new Thread(new Runnable() {
                 final ByteArrayOutputStream out=new ByteArrayOutputStream();
-                @Override protected Throwable doInBackground(Void unused) {
+                @Override
+                public void run() {
+
                     try {
                         Utils.File.writeFile(file,editor.getText().toString(),false);
                         Script script=Script.getInstance(file);
@@ -71,20 +73,22 @@ public class CompilerActivity extends AppCompatActivity {
                             default: f1(script); break;
                             case R.id.advanced_search_functions: f2(script); break;
                         }
-                    }catch(Throwable e){return e;}
-                    return null;
+                        onFinished(null);
+                    }catch(Throwable e){onFinished(e);}
                 }
-                @Override protected void onFinished(Throwable throwable) {
-                    String str=out.toString();
-                    if(throwable!=null){str+=Logs.getStackTrace(throwable);}
-                    logcat.setText(str);
-                    b.setPeekHeight(Math.min(logcat.getHeight(),editor.getHeight()));
-                    b.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    progressBar.progressiveStop();
-                    progressBar.setVisibility(View.GONE);
-                    fab.setEnabled(true);
+                private void onFinished(Throwable throwable){
+                    NetworkUtils.getMainHandler().post(()->{
+                        String str=out.toString();
+                        if(throwable!=null){str+=Logs.getStackTrace(throwable);}
+                        logcat.setText(str);
+                        b.setPeekHeight(Math.min(logcat.getHeight(),editor.getHeight()));
+                        b.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        progressBar.progressiveStop();
+                        progressBar.setVisibility(View.GONE);
+                        fab.setEnabled(true);
+                    });
                 }
-            }.start(null);
+            }).start();
         });
     }
 
@@ -108,10 +112,9 @@ public class CompilerActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home: finish(); break;
-            case R.id.action_open_api: startActivity(new Intent(this,ApiActivity.class)); break;
-            case R.id.base_functions:
-            case R.id.advanced_search_functions: item.setChecked(true); mode=item.getItemId();break;
+            case (android.R.id.home) -> finish();
+            case (R.id.action_open_api) -> startActivity(new Intent(this, ApiActivity.class));
+            case (R.id.base_functions), (R.id.advanced_search_functions) -> {item.setChecked(true);mode = item.getItemId();}
         }
         return super.onOptionsItemSelected(item);
     }

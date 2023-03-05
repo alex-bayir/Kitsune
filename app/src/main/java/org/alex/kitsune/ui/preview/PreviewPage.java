@@ -107,9 +107,11 @@ public class PreviewPage extends PreviewHolder {
 
         setGroups(context, MangaService.getCategories(),group,manga!=null ? manga.getCategoryFavorite() : null);
         group.setOnCheckedChangeListener((group1, checkedId) -> {
-            manga.setCategoryFavorite(checkedId>=0 ? MangaService.getCategories().toArray(new String[0])[checkedId] : null);
-            MangaService.allocate(manga,false);
-            context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.favorites));
+            if(manga!=null){
+                manga.setCategoryFavorite(checkedId>=0 ? MangaService.getCategories().toArray(new String[0])[checkedId] : null);
+                MangaService.allocate(manga,false);
+                context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.favorites));
+            }
             chooseCategory.cancel();
         });
 
@@ -117,7 +119,7 @@ public class PreviewPage extends PreviewHolder {
         EditText input=v2.findViewById(R.id.input);
         v2.findViewById(R.id.close).setOnClickListener(v -> inputNewCategory.cancel());
         v2.findViewById(R.id.create).setOnClickListener(v -> {
-            if(input.getText()!=null && input.getText().length()>0){
+            if(manga!=null && input.getText()!=null && input.getText().length()>0){
                 String category=input.getText().toString();
                 HashSet<String> categories=new HashSet<>(MangaService.getCategories());
                 categories.add(Shelf.History);
@@ -179,8 +181,7 @@ public class PreviewPage extends PreviewHolder {
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
-                    String cookie=CookieManager.getInstance().getCookie(url);
-                    Catalogs.updateCookies(web.getContext(),source,cookie);
+                    Catalogs.updateCookies(web.getContext(),source,CookieManager.getInstance().getCookie(url));
                 }
             });
             web.loadUrl(url_web);

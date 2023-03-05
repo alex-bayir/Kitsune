@@ -19,6 +19,8 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import okhttp3.Cookie;
+import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.scripts.Script;
@@ -28,7 +30,7 @@ import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
-import org.alex.kitsune.ui.settings.AuthorizationActivity;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -36,8 +38,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.File;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,16 +47,15 @@ public class Catalogs extends Fragment implements MenuProvider {
     ItemTouchHelper helper;
     SharedPreferences prefs;
     private static boolean updatingScrips=false;
-    public static ArrayList<Container> containers=new ArrayList<>();
+    public static List<Container> containers=null;
     FragmentActivity activity;
-
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         View root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
         rv=root.findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
-        adapter=new CatalogsAdapter(containers=getCatalogs(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
+        adapter=new CatalogsAdapter(init(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
@@ -66,6 +65,12 @@ public class Catalogs extends Fragment implements MenuProvider {
         return root;
     }
 
+    public static List<Container> init(SharedPreferences prefs,boolean update){
+        return update || containers==null ? containers=getCatalogs(prefs) : containers;
+    }
+    public static List<Container> init(SharedPreferences prefs){
+        return init(prefs,false);
+    }
     @Override
     public void onPause() {
         super.onPause();
@@ -76,7 +81,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-        if(adapter!=null){adapter.update(containers=getCatalogs(prefs));}
+        if(adapter!=null){adapter.update(init(prefs));}
     }
 
 
@@ -94,14 +99,17 @@ public class Catalogs extends Fragment implements MenuProvider {
 
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
-        switch (item.getItemId()){
-            case R.id.action_add_source: startActivity(new Intent(getContext(), ScriptsActivity.class)); return true;
-            case R.id.action_update_sctips:  Updater.checkAndUpdateScripts(activity, obj -> {updatingScrips=obj; activity.invalidateOptionsMenu();}); return true;
-        }
-        return false;
+        return switch (item.getItemId()) {
+            case (R.id.action_add_source) -> {startActivity(new Intent(getContext(), ScriptsActivity.class)); yield true;}
+            case (R.id.action_update_sctips) -> {Updater.checkAndUpdateScripts(activity, updating -> {updatingScrips=updating; activity.invalidateOptionsMenu();}); yield  true;}
+            default -> false;
+        };
     }
 
-    public void save(SharedPreferences prefs){prefs.edit().putString(Constants.source_order,adapter.getSave()).apply();}
+    public static void save(SharedPreferences prefs,List<Container> list){
+        prefs.edit().putString(Constants.source_order,Container.toJSON(list).toString()).apply();
+    }
+    public void save(SharedPreferences prefs){save(prefs,adapter.getItems());}
 
     public static ArrayList<Container> getCatalogs(SharedPreferences prefs){
         LinkedHashMap<String,Container> map=new LinkedHashMap<>();
@@ -118,25 +126,13 @@ public class Catalogs extends Fragment implements MenuProvider {
         return new ArrayList<>(exist?map.values():map.values().stream().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
     public static List<String> default_order=Arrays.asList("Desu","MangaLib","Remanga","ReadManga","MintManga","SelfManga","MangaChan","HentaiChan");
-    public static ArrayList<Script> getScripts(File dir, boolean recur){
-        File[] files=dir.listFiles();
-        if(files==null){return new ArrayList<>();}
-        ArrayList<Script> scripts=new ArrayList<>(files.length);
-        for(File file:files){
-            if(file.isDirectory() && recur){
-                scripts.addAll(getScripts(file,true));
-            }else if(file.isFile()){
-                try{scripts.add(Script.getInstance(file));}catch (Throwable e){e.printStackTrace();}
-            }
-        }
-        return scripts;
-    }
     public static Hashtable<String,Script> getMangaScripts(File dir){
         Hashtable<String,Script> table=new Hashtable<>(); File[] files;
         if(dir!=null && dir.isDirectory() && (files=dir.listFiles(File::isFile))!=null){
             for(File file:files){
                 try{
-                    Script script=Script.getInstance(file); String source=script.get(Constants.providerName,String.class);
+                    Script script=Script.getInstance(file);
+                    String source=script.get(Constants.providerName,String.class);
                     if(source!=null){table.put(source,script);}
                 }catch (Throwable e){
                     e.printStackTrace();
@@ -153,13 +149,23 @@ public class Catalogs extends Fragment implements MenuProvider {
         public Script script;
         public String cookies;
         public String icon_url;
+        public LinkedList<Cookie> cookies_converted;
         public Container(Script script,Boolean enable,String cookies){
             this.script=script;
             this.source=script.getString(Constants.providerName,null);
             this.domain=script.getString(Constants.provider,null);
             this.enable=enable;
-            this.cookies=cookies;
+            setCookies(cookies);
             this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
+        }
+
+        @Override
+        public boolean equals(@Nullable @org.jetbrains.annotations.Nullable Object obj) {
+            return obj instanceof Container cont && Objects.equals(this.domain,cont.domain) && Objects.equals(this.source,cont.source);
+        }
+
+        public LinkedList<Cookie> setCookies(String cookies){
+            return cookies_converted=convert(domain, this.cookies=cookies);
         }
         public JSONObject toJSON(){
             try{return script==null ? null : new JSONObject().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);}catch(JSONException e){return null;}
@@ -194,65 +200,69 @@ public class Catalogs extends Fragment implements MenuProvider {
             return list;
         }
         public static int countEnabled(List<Container> containers){
-            int enabled=0;for(Container container:containers){if(container.enable){enabled++;}}return enabled;
+            return containers.stream().mapToInt(c->c.enable?1:0).sum();
         }
-        public static ArrayList<String> sources(List<Container> containers){
-            ArrayList<String> list=new ArrayList<>(containers.size());
-            for(Container container: containers){list.add(container.source);}
-            return list;
-        }
-        public static String getCookies(Container container, String def){
-            return container!=null ? container.cookies : def;
-        }
-        public static Container getContainerByUrl(Collection<Container> containers,String url){
-            return url!=null?containers.stream().filter(c->url.contains(c.domain)).findFirst().orElse(null):null;
-        }
-        public static String getCookieByUrl(Collection<Container> containers,String url,String def){
-            return url!=null?getCookies(getContainerByUrl(containers,url), def):def;
+        public static List<String> sources(List<Container> containers){
+            return containers.stream().map(container->container.source).collect(Collectors.toList());
         }
     }
-    public static String getCookieByUrl(String url,String def){return Container.getCookieByUrl(containers,url,def);}
-    public static String[] updateCookies(Context context, String source, String cookies){
-        SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
-        ArrayList<Container> containers=getCatalogs(prefs);
+    public static void updateCookies(Context context, String source, String cookies){
+        updateCookies(PreferenceManager.getDefaultSharedPreferences(context),source,cookies);
+    }
+    public static void updateCookies(SharedPreferences prefs, String source, String cookies){
         for(Container c:containers){
             if(c.source.equals(source)){
-                String[] original_decoded=filterCookies(source,cookies);
-                c.cookies=original_decoded[0];
-                prefs.edit().putString(Constants.source_order,Container.toJSON(containers).toString()).apply();
-                return original_decoded;
+                NetworkUtils.updateCookies(c.domain,c.setCookies(filterCookies(source,cookies))); break;
             }
         }
-        return new String[2];
+        save(prefs,containers);
     }
-    public static String[] filterCookies(String source,String cookies_original){
-        if(cookies_original==null){return new String[2];}
-        String[] cookies=cookies_original.split("; ");
-        String[] decoded=(android.os.Build.VERSION.SDK_INT >= 33? URLDecoder.decode(cookies_original, StandardCharsets.UTF_8) : URLDecoder.decode(cookies_original)).split("; ");
-        StringBuilder text=new StringBuilder(),save=new StringBuilder();
-        String[] tokens=Manga_Scripted.getScript(source).get("auth_tokens",String[].class);
-        for(int i=0;i<cookies.length;i++){
-            String[] nvd=decoded[i].split("=",2);
-            try{decoded[i]=nvd[0]+"="+new JSONObject(nvd[1]).toString(2);}catch(JSONException ignored){}
-            String tmp=nvd[0].toLowerCase();
-            for(String token:tokens){
-                if(tmp.contains(token.toLowerCase())){
-                    text.append("\n\n").append(decoded[i]);
-                    save.append("; ").append(cookies[i]);
+    public static LinkedList<Cookie> getCookies(String domain){
+        if(containers!=null){
+            for(Container c:containers){
+                if(domain.equalsIgnoreCase(c.domain)){
+                    return c.cookies_converted;
                 }
             }
         }
-        return new String[]{save.length()==0?null:save.substring(2),text.length()==0?null:text.substring(2)};
+        return null;
+    }
+    public static String filterCookies(String source,String cookies_original){
+        if(cookies_original==null){return null;}
+        String[] cookies=cookies_original.split("; ");
+        StringBuilder save=new StringBuilder();
+        String[] tokens=Manga_Scripted.getScript(source).get("auth_tokens",String[].class);
+        for (String cookie : cookies) {
+            String[] nv = cookie.split("=", 2);
+            for (String token : tokens) {
+                if (nv[0].equalsIgnoreCase(token)) {
+                    save.append("; ").append(cookie);
+                }
+            }
+        }
+        return save.length()==0?null:save.substring(2);
+    }
+    public static LinkedList<Cookie> convert(String domain,String cookies_original){
+        if(cookies_original==null){return null;}
+        String[] cookies=cookies_original.split("; ");
+        if(cookies.length==0){return null;}
+        LinkedList<Cookie> list=new LinkedList<>();
+        for(String cookie : cookies) {
+            String[] nvd = cookie.split("=", 2);
+            list.add(new Cookie.Builder().domain(domain).name(nvd[0]).value(nvd[1]).build());
+        }
+        return list;
     }
 
     public class CatalogsAdapter extends RecyclerView.Adapter<CatalogsAdapter.CatalogHolder>{
-        ArrayList<Container> list;
+        List<Container> list;
         final HolderClickListener listener;
-        public CatalogsAdapter(ArrayList<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
-        public String getSave(){return Container.toJSON(list).toString();}
-        public void update(ArrayList<Container> list){
-            this.list=list;
-            notifyDataSetChanged();
+        public CatalogsAdapter(List<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
+        public void update(List<Container> list){
+            new DiffCallback<>(this.list,list).updateAfter(()->this.list=list,this);
+        }
+        public List<Container> getItems(){
+            return list;
         }
         @NonNull
         @NotNull
@@ -296,11 +306,6 @@ public class Catalogs extends Fragment implements MenuProvider {
                         case MotionEvent.ACTION_DOWN: helper.startDrag(CatalogsAdapter.CatalogHolder.this); break;
                     }
                     return false;
-                });
-                login.setOnClickListener(v -> {
-                    if(container!=null && container.source!=null){
-                        v.getContext().startActivity(new Intent(v.getContext(), AuthorizationActivity.class).putExtra("source",container.source));
-                    }
                 });
             }
             public void bind(Container catalog){

@@ -146,4 +146,15 @@ public class MangaHolder extends RecyclerView.ViewHolder{
     public final void setProgress(long max,long progress,int[] colors){
         progress_drawable.setColors(colors).setMax(max).setProgress(progress).invalidateSelf();
     }
+    public final void setOnClickListeners(HolderClickListener onItem, HolderClickListener onItemButton){
+        if(onItem!=null){
+            root.setOnClickListener(v->onItem.onItemClick(v,getBindingAdapterPosition()));
+        }
+        if(onItemButton!=null){
+            button.setOnClickListener(v->onItemButton.onItemClick(v,getBindingAdapterPosition()));
+        }else{
+            button.setClickable(false);
+            button.setFocusable(false);
+        }
+    }
 }

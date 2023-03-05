@@ -16,7 +16,6 @@ import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.services.LoadService;
-import org.alex.kitsune.utils.LoadTask;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.json.JSONException;
@@ -104,19 +103,19 @@ public abstract class Manga {
     public abstract String getProviderName();
     public final String getStatus(){return getStatus(this.status);}
     public static String getStatus(int status){
-        switch(status){
-            case Status_Ongoing: return "Ongoing";
-            case Status_Released: return "Completed";
-            default: return "None";
-        }
+        return switch (status) {
+            case Status_Ongoing -> "Ongoing";
+            case Status_Released -> "Completed";
+            default -> "None";
+        };
     }
     public final String getStatus(Context context){return getStatus(this.status,context);}
     public static String getStatus(int status,Context context){
-        switch(status){
-            case Status_Ongoing: return context.getString(R.string.Ongoing);
-            case Status_Released: return context.getString(R.string.Completed);
-            default: return context.getString(R.string.None);
-        }
+        return switch (status) {
+            case Status_Ongoing -> context.getString(R.string.Ongoing);
+            case Status_Released -> context.getString(R.string.Completed);
+            default -> context.getString(R.string.None);
+        };
     }
     public static int getStatus(String status){
         switch (status!=null ? status.toLowerCase() : "none"){
@@ -205,14 +204,12 @@ public abstract class Manga {
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
     public static void loadThumbnail(String path,String url,Callback<Drawable> callback){
         new Thread(() -> {
-            Message message=new Message();
-            message.obj=Drawable.createFromPath(path);
-            if(message.obj==null){
-                if(LoadTask.loadInBackground(url,null,new File(path),null,null,false)){
-                    message.obj=Drawable.createFromPath(path);
-                }
+            Drawable loaded=Drawable.createFromPath(path);
+            if(loaded==null && NetworkUtils.load(url,null,new File(path))){
+                loaded=Drawable.createFromPath(path);
             }
-            new Handler(Looper.getMainLooper()){@Override public void handleMessage(Message msg){callback.call((Drawable)msg.obj);}}.sendMessage(message);
+            Drawable drawable=loaded;
+            NetworkUtils.getMainHandler().post(()->callback.call(drawable));
         }).start();
     }
     public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),thumbnail,callback);}
@@ -477,5 +474,5 @@ public abstract class Manga {
     public static final Comparator<Manga> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
     public static final Comparator<Manga> ImagesSizesComparator=(o1,o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
     public static final Comparator<Manga> RatingComparator=(o1,o2)->Double.compare(o1.rating,o2.rating);
-    public static final Comparator<Manga> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getProviderName()));}
+    public static Comparator<Manga> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getProviderName()));}
 }

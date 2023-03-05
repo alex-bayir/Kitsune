@@ -27,6 +27,7 @@ import org.alex.kitsune.utils.Utils;
 import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 
 public class ActivityAbout extends AppCompatActivity implements View.OnClickListener{
@@ -74,7 +75,7 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
         version=findViewById(R.id.version);
         version.setText(getString(R.string.version,BuildConfig.VERSION_NAME,BuildConfig.VERSION_CODE));
         buildTime=findViewById(R.id.time);
-        buildTime.setText(getString(R.string.build_time,new SimpleDateFormat("HH:mm dd.MM.yyyy").format(new Date(BuildConfig.TIMESTAMP)),BuildConfig.BUILD_TYPE));
+        buildTime.setText(getString(R.string.build_time,new SimpleDateFormat("HH:mm dd.MM.yyyy", Locale.getDefault()).format(new Date(BuildConfig.TIMESTAMP)),BuildConfig.BUILD_TYPE));
         launcher=findViewById(R.id.launcher_icon);
         launcher.setOnClickListener(this);
         init(shimmer,findViewById(R.id.profile_in_vk));
@@ -96,27 +97,27 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
+            case android.R.id.home->finish();
         }
         return super.onOptionsItemSelected(item);
     }
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()){
-            case R.id.launcher_icon: new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),launcher.getScaleType(),launcher.getDrawable())).create().show(); break;
-            case R.id.profile_in_vk: startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://vk.com/org.alex.kitsune"))); break;
-            case R.id.source_code: startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/alex-bayir/Kitsune"))); break;
-            case R.id.play_market: Utils.App.callPlayMarkerToInstall(this,getPackageName()); break;
-            case R.id.card: Utils.setClipboard(this,card); Toast.makeText(v.getContext(),card,Toast.LENGTH_SHORT).show(); break;
-            case R.id.update:
-                if(NetworkUtils.isNetworkAvailable(this)){
+        switch (v.getId()) {
+            case (R.id.launcher_icon) -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(), launcher.getScaleType(), launcher.getDrawable())).create().show();
+            case (R.id.profile_in_vk) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://vk.com/org.alex.kitsune")));
+            case (R.id.source_code) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/alex-bayir/Kitsune")));
+            case (R.id.play_market) -> Utils.App.callPlayMarkerToInstall(this, getPackageName());
+            case (R.id.card) -> {Utils.setClipboard(this, card);Toast.makeText(v.getContext(), card, Toast.LENGTH_SHORT).show();}
+            case (R.id.update) -> {
+                if (NetworkUtils.isNetworkAvailable(this)) {
                     update.setEnabled(false);
-                    Updater.getUpdate(this,Updater.getUrl()==null ? ucs : ucl);
-                }else{
-                    Toast.makeText(this,R.string.no_internet,Toast.LENGTH_SHORT).show();
+                    Updater.getUpdate(this, Updater.getUrl() == null ? ucs : ucl);
+                } else {
+                    Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
                 }
-                break;
+            }
         }
     }
 }
