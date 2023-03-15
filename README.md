@@ -3,7 +3,7 @@
 		<img src="https://user-images.githubusercontent.com/103780136/192371190-ccd56058-4a5b-4052-8fd8-a3b5f66e5291.png">
 		<br/>
 		<img src="https://img.shields.io/badge/install_size-4.2MB-brightgreen">
-        <img src="https://img.shields.io/badge/version-1.7.8-blueviolet">
+        <img src="https://img.shields.io/badge/version-1.8.0-blueviolet">
         <img src="https://img.shields.io/badge/android-7.0+-yellow">
 	</p>
     <h1>Kitsune</h1>
