@@ -2,7 +2,7 @@
     <p align="center">
 		<img src="https://user-images.githubusercontent.com/103780136/192371190-ccd56058-4a5b-4052-8fd8-a3b5f66e5291.png">
 		<br/>
-		<img src="https://img.shields.io/badge/install_size-3.4MB-brightgreen">
+		<img src="https://img.shields.io/badge/install_size-4.2MB-brightgreen">
         <img src="https://img.shields.io/badge/version-1.7.8-blueviolet">
         <img src="https://img.shields.io/badge/android-7.0+-yellow">
 	</p>
@@ -14,7 +14,18 @@
         - No advertising<br/>
         - Beautiful design<br/>
         - Downloading chapters and reading them without the Internet<br/>
-        - Works with the <a href="https://readmanga.live">Readmanga</a>, <a href="https://mintmanga.live">Mintmanga</a>, <a href="https://selfmanga.live">Selfmanga</a>, <a href="https://desu.me">Desu</a>, <a href="https://mangalib.me">MangaLib</a>, <a href="https://remanga.org">Remanga</a>, <a href="https://manga-chan.me">MangaChan</a>, <a href="https://x.hentaichan.live">HentaiChan</a> directories (and others if there are scripts that you can write yourself in lua, look for the api in the application or look at the examples of scripts of the
+        - Works with the
+        <a href="https://readmanga.live">Readmanga</a>,
+        <a href="https://mintmanga.live">Mintmanga</a>,
+        <a href="https://selfmanga.live">Selfmanga</a>,
+        <a href="https://desu.me">Desu</a>,
+        <a href="https://mangalib.me">MangaLib</a>,
+        <a href="https://v1.hentailib.org/?section=home-updates">HentaiLib</a>,
+        <a href="https://remanga.org">Remanga</a>,
+        <a href="https://manga-chan.me">MangaChan</a>,
+        <a href="https://xxxxx.hentaichan.live">HentaiChan</a>,
+        <a href="https://www.mangaread.org">MangaRead</a>
+        directories (and others if there are scripts that you can write yourself in lua, look for the api in the application or look at the examples of scripts of the
         above directories)<br/>
         - Quick translator call<br/>
         - Check manga for new chapters and more

@@ -2,86 +2,74 @@ package org.alex.kitsune.manga;
 
 import android.content.Context;
 import org.alex.kitsune.R;
+import org.alex.json.JSON;
+import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import static org.alex.json.JSON.filter;
 
-public class Chapter {
-    int id;
-    int vol;
-    float num;
-    String name;
-    long date;
-    JSONObject info;
-    ArrayList<Page> pages;
-    private static final String[] FN={"id","vol","num","name","date","pages","info"};
-    public Chapter(int id,int vol,float num,String name,long date,ArrayList<Page> pages,JSONObject additional){
-        this.id=id;
-        this.vol=vol;
-        this.num=num;
-        this.name=(name==null || "null".equals(name)) ? "" : name;
-        this.date=date;
-        this.pages=pages;
-        this.info=additional;
+public class Chapter{
+    JSON.Object info;
+    private static final String[] FN={"vol","num","name","date","pages"};
+    public Chapter(JSON.Object info,List<Page> pages){
+        this.info=info;
+        this.info.put("pages",pages);
     }
-    public Chapter(int id, int vol, float num, String name, long date){
-        this(id, vol, num, name, date, null, null);
+    public Chapter(int vol,float num,String name,long date,List<Page> pages,JSON.Object additional){
+        info=new JSON.Object();
+        if(additional!=null){info.putAll(additional);}
+        info.put("vol",vol);
+        info.put("num",num);
+        info.put("name",Utils.unescape_unicodes((name==null || "null".equals(name)) ? "" : name));
+        info.put("date",date);
+        info.put("pages",pages);
     }
-    public Chapter(JSONObject json,String id,String vol,String num,String name,String date,String format){
-        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),parse(json.optString(date),format));
+    public Chapter(int vol,float num,String name,long date,JSON.Object additional){
+        this(vol,num,name,date,null,additional);
     }
-    public Chapter(JSONObject json,String id,String vol,String num,String name,String date){
-        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date));
+    public Chapter(int vol,float num,String name,long date,Map<String,Object> additional){
+        this(vol,num,name,date,new JSON.Object(additional));
     }
-    public Chapter(JSONObject json,String id,String vol,String num,String name,String date,int scale){
-        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date)*scale);
+    public Page getPage(int page){
+        return getPage(page,getPages());
     }
-    public Chapter(int id, int vol, float num, String name, long date, Map<String,Object> map){
-        this(id, vol, num, name, date, null, map.size()>0?new JSONObject(map):null);
+    public static Page getPage(int page,List<Page> pages){
+        return (pages!=null && page>=0 && page<pages.size()) ? pages.get(page) : null;
     }
-    public Chapter(JSONObject json,String id,String vol,String num,String name,String date,String format,Map<String,Object> map){
-        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),parse(json.optString(date),format),map);
+    public int getVol(){return info.get("vol",-1);}
+    public float getNum(){return info.get("num",-1f);}
+    public String getName(){return info.get("name","");}
+    public long getDate(){return info.get("date",0L);}
+    public List<Page> getPages(){return info.get("pages") instanceof List<?> pages ? filter(pages, Page.class):null;}
+    public List<Page> setPages(List<Page> pages){
+        info.put("pages",pages);
+        return pages;
     }
-    public Chapter(JSONObject json,String id,String vol,String num,String name,String date,Map<String,Object> map){
-        this(json.optInt(id),json.optInt(vol),(float)json.optDouble(num),json.optString(name),json.optLong(date),map);
-    }
-    public Page getPage(int page){return (pages!=null && page<pages.size()) ? pages.get(page) : null;}
-    public int getId(){return id;}
-    public int getVol(){return vol;}
-    public float getNum(){return num;}
-    public String getName(){return name;}
-    public long getDate(){return date;}
-    public ArrayList<Page> getPages(){return pages;}
-    public JSONObject getInfo(){return info;}
-    public String getTranslater(){return info!=null?info.optString("translater"):null;}
+    public JSON.Object getInfo(){return info;}
+    public String getTranslator(){return info.getString("translator");}
 
-    public JSONObject toJSON() throws JSONException {
-        return new JSONObject().put(FN[0],id).put(FN[1],vol).put(FN[2],num).put(FN[3],name).put(FN[4],date).put(FN[5],Page.toJSON(pages)).put(FN[6],info);
+    public JSON.Object toJSON(){
+        return new JSON.Object(info).put("pages",Page.toJSON(getPages()));
     }
-    public static Chapter fromJSON(JSONObject json) throws JSONException{
-        return json==null?null:new Chapter(json.getInt(FN[0]),json.getInt(FN[1]),(float)json.getDouble(FN[2]), json.getString(FN[3]), json.getLong(FN[4]), Page.fromJSON(json.getJSONArray(FN[5])), json.optJSONObject(FN[6]));
+    public static Chapter fromJSON(JSON.Object json){
+        return json==null ? null : new Chapter(json, Page.fromJSON(filter(json.getArray("pages"),JSON.Object.class)));
     }
-    public static JSONArray toJSON(List<Chapter> chapters) throws JSONException{
-        JSONArray json=new JSONArray(); if(chapters!=null){for(Chapter chapter : chapters){json.put(chapter.toJSON());}}
-    return json;}
-    public static ArrayList<Chapter> fromJSON(JSONArray json) throws JSONException{
-        ArrayList<Chapter> chapters=new ArrayList<>(json!=null?json.length():0); for(int i=0;i<(json!=null?json.length():0);i++){chapters.add(Chapter.fromJSON(json.getJSONObject(i)));}
-    return chapters;}
+    public static JSON.Array<JSON.Object> toJSON(List<Chapter> chapters){
+        return chapters==null ? null : new JSON.Array<>(chapters.stream().map(Chapter::toJSON).collect(Collectors.toList()));
+    }
+    public static List<Chapter> fromJSON(List<JSON.Object> json){
+        return json==null ? null : json.stream().map(Chapter::fromJSON).collect(Collectors.toList());
+    }
 
-    public boolean equals(Object obj){return obj instanceof Chapter && equals((Chapter) obj);}
+    public boolean equals(Object obj){return obj instanceof Chapter chapter && equals(chapter);}
     public boolean equals(Chapter chapter){
-        return this==chapter || (chapter!=null && (this.id==chapter.id && this.num==chapter.num && this.vol==chapter.vol));
+        return this==chapter || (chapter!=null && (this.getNum()==chapter.getNum() && this.getVol()==chapter.getVol()));
     }
     @NotNull
-    public String toString(){try{return toJSON().toString();}catch(JSONException e){e.printStackTrace(); return "null";}}
+    public String toString(){return toJSON().toString();}
     private static final java.text.DecimalFormat f=new java.text.DecimalFormat("#.##");
-    public String text(Context context){return context.getString(R.string.Volume)+" "+vol+" "+context.getString(R.string.Chapter)+" "+f.format(num).replace(',','.')+(name.length()>0 ? " - "+name : "");}
-    public int countPages(){return pages!=null ? pages.size() : 0;}
-    private static long parse(String date,String format){
-        try{return java.util.Objects.requireNonNull(new java.text.SimpleDateFormat(format,java.util.Locale.US).parse(date)).getTime();}catch (Exception e){return System.currentTimeMillis();}
-    }
+    public String text(Context context){return context.getString(R.string.Volume)+" "+getVol()+" "+context.getString(R.string.Chapter)+" "+f.format(getNum()).replace(',','.')+(getName().length()>0 ? " - "+getName() : "");}
+    public int countPages(){return getPages()==null ? 0: getPages().size();}
 }

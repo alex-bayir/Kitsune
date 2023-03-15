@@ -1,5 +1,6 @@
 package org.alex.kitsune.commons;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -7,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import androidx.annotation.NonNull;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 import org.alex.kitsune.R;
 import org.jetbrains.annotations.NotNull;
@@ -55,5 +57,15 @@ public class WebViewBottomSheetDialog extends BottomSheetDialogFragment {
         web.getSettings().setDisplayZoomControls(false);
         web.setBackgroundColor(0);
         if(callback!=null){callback.call(web);}
+    }
+
+    private Runnable close_listener;
+    public void setOnCloseListener(Runnable close_listener){
+        this.close_listener=close_listener;
+    }
+    @Override
+    public void onDismiss(@NonNull @NotNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if(close_listener!=null){close_listener.run();}
     }
 }

@@ -22,6 +22,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
@@ -63,6 +64,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     float lastBrightness;
     Throwable lastThrowable;
     long start_read_time;
+    TextView error_info;
 
     private void setData(int num_chapter){
         chapter=manga.getChapters().get(num_chapter);
@@ -144,12 +146,14 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             final BookMark bookMark=manga.getBookMarks().get(num_bookMark);
             num_chapter=manga.getNumChapter(bookMark);
             page=bookMark.getPage();
-            if(num_chapter<0){
-                manga.update(this, () -> {
-                    manga.updateDetails();
-                    num_chapter=manga.getNumChapter(bookMark.getChapter());
-                    page=bookMark.getPage();
-                    initChapter(num_chapter,page);
+            if(num_chapter<0 && NetworkUtils.isNetworkAvailable(this)){
+                manga.update((updated) -> {
+                    if(updated){
+                        manga.updateDetails();
+                        num_chapter=manga.getNumChapter(bookMark.getChapter());
+                        page=bookMark.getPage();
+                        initChapter(num_chapter,page);
+                    }
                 },null);
             }
         }
@@ -196,7 +200,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                 }
             });
             view.findViewById(R.id.error).setOnClickListener(v-> Logs.createDialog(v.getContext(),lastThrowable).show());
-
+            error_info=view.findViewById(R.id.info);
             FailedLoadPagesInfo=new AlertDialog.Builder(this).setView(view).create();
             FailedLoadPagesInfo.setOnShowListener(dialogInterface -> FailedLoadPagesInfo.findViewById(R.id.error).setVisibility(lastThrowable!=null ? View.VISIBLE : View.INVISIBLE));
             FailedLoadPagesInfo.setCancelable(false);
@@ -206,7 +210,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             rv=view.findViewById(R.id.rv_list);
             rv.setLayoutManager(new LinearLayoutManager(this));
             rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
-            chaptersAdapter=new CustomAdapter<>(this, manga, manga.getChapters(), R.layout.item_chapter, new HolderListener() {
+            chaptersAdapter=new CustomAdapter<>(manga,R.layout.item_chapter, new HolderListener() {
                 @Override
                 public void onItemClick(View v, int index){
                     initChapter(index,0);
@@ -256,16 +260,24 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                     new Thread(()->{
                         int pages=-1;
                         try{pages=manga.getPages(num_chapter).size();}catch(Exception e){Logs.saveLog(lastThrowable=e);}
-                        NetworkUtils.getMainHandler().post(pages>0? ()-> setData(num_chapter) : ()-> FailedLoadPagesInfo.show());
+                        NetworkUtils.getMainHandler().post(pages>0? ()-> setData(num_chapter) : this::showErrorInfo);
                     }).start();
                 }else{
-                    FailedLoadPagesInfo.show();
+                    showErrorInfo();
                     setData(num_chapter);
                 }
             }
         }
     }
 
+    private void showErrorInfo(){
+        if(Utils.getRootCause(lastThrowable,3) instanceof HttpStatusException){
+            error_info.setText("Page not found or not authorized");
+        }else{
+            error_info.setText("An a error has occurred");
+        }
+        FailedLoadPagesInfo.show();
+    }
     public void setModes(int modeR, int modeS){
         prefs.edit().putInt(Constants.ReaderMode,modeR).putInt(Constants.ScaleMode,modeS).apply();
         adapter.setModes(modeR,modeS);

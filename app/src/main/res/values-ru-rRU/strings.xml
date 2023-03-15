@@ -145,6 +145,6 @@
     <string name="donate">Пожертвования:\n%1$s\n\n</string>
     <string name="all_scripts_updated">Все скрипты обновлены</string>
     <string name="access_denial">Отказ доступа</string>
-    <string name="auth_help_info">Для авторизации необходимо войти в аккаунт и перезагрузить страницу.\nДля некоторых источников ещё необходимо перезагрузить приложение.</string>
+    <string name="auth_help_info">Для некоторых тайтлов требуется авторизация, попробуйте авторизоваться через WebView.</string>
     <string name="average_reading_time_per_day">Среднее время чтения в день</string>
 </resources>

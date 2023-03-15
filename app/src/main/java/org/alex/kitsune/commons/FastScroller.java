@@ -23,7 +23,6 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Class responsible to animate and provide a fast scroller.
  */
-@VisibleForTesting
 public class FastScroller extends RecyclerView.ItemDecoration implements RecyclerView.OnItemTouchListener {
     public interface OnStateChangeListener{
         void onStateChanged(int state);
@@ -121,8 +120,8 @@ public class FastScroller extends RecyclerView.ItemDecoration implements Recycle
         }
     };
     public static FastScroller createDefault(RecyclerView recyclerView){
+        recyclerView.setVerticalScrollBarEnabled(false);
         Resources res=recyclerView.getContext().getResources();
-
         return new FastScroller(recyclerView,
                 (StateListDrawable)res.getDrawable(R.drawable.thumb,recyclerView.getContext().getTheme()),
                 res.getDrawable(R.drawable.track,recyclerView.getContext().getTheme()),

@@ -81,6 +81,7 @@ public class SavedActivity extends AppCompatActivity {
         adapter.recalculateFullSize();
         backdrop.setImageDrawable(createBackDrop(adapter));
         backdrop.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
+        toolbar.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {

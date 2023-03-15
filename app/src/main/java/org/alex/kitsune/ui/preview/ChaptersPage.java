@@ -27,27 +27,23 @@ import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 
 public class ChaptersPage extends PreviewHolder implements HolderListener {
-    final RecyclerView rv;
-    final CustomAdapter<Chapter> adapter;
-    final TextView noItems;
-    final Manga manga;
+    RecyclerView rv;
+    CustomAdapter<Chapter> adapter;
+    TextView noItems;
     public static final int RA=R.string.remove_all_chapters,RS=R.string.remove_selected_chapters,SA=R.string.save_all_chapters,SS=R.string.save_selected_chapters;
-    public ChaptersPage(ViewGroup parent,Manga manga){
+    public ChaptersPage(ViewGroup parent){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
-        this.manga=manga;
         noItems=itemView.findViewById(R.id.text);
         rv=itemView.findViewById(R.id.rv_list);
-        adapter=new CustomAdapter<>(itemView.getContext(),manga,manga.getChapters(),R.layout.item_chapter,this,null,rv,"ChapterSelector");
+        adapter=new CustomAdapter<>(R.layout.item_chapter,this,null,rv,"ChapterSelector");
         rv.getLayoutParams().height=ViewGroup.LayoutParams.WRAP_CONTENT;
         rv.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
         setReversed(PreferenceManager.getDefaultSharedPreferences(itemView.getContext()).getBoolean(Constants.reversed,false));
         rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
-        rv.setVerticalScrollBarEnabled(false);
         FastScroller.createDefault(rv).setPadding(30,0,30,0).setOnStateChangeListener(state -> adapter.setSelectable(state!=FastScroller.STATE_DRAGGING));
         noItems.setText(R.string.No_chapters);
-        noItems.setVisibility(View.GONE);
-        if(manga.getHistory()!=null){rv.scrollToPosition(adapter.getPosition(manga.getHistory().getChapter())-5);}
-        Utils.registerOnEmptyAdapterRunnable(adapter,()->noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
+        noItems.setVisibility(View.VISIBLE);
+        Utils.registerAdapterDataChangeRunnable(adapter,()-> noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
         adapter.getTracker().addObserver(new SelectionTracker.SelectionObserver<>() {
             @Override
             public void onSelectionChanged() {
@@ -57,8 +53,8 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     }
 
     @Override
-    public void bind(Object obj) {
-        adapter.notifyDataSetChanged();
+    public void bind(Manga manga) {
+        adapter.setManga(manga);
     }
 
     @Override
@@ -66,7 +62,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         if(adapter.getTracker().hasSelection()){
             select_deselect(adapter.getTracker(),Integer.toUnsignedLong(index));
         }else{
-            itemView.getContext().startActivity(new Intent(itemView.getContext(),ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.chapter, index));
+            itemView.getContext().startActivity(new Intent(itemView.getContext(),ReaderActivity.class).putExtra(Constants.hash,adapter.manga.hashCode()).putExtra(Constants.chapter, index));
         }
     }
 
@@ -80,40 +76,49 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     private boolean select_deselect(SelectionTracker<Long> tracker,long key){
         return tracker.isSelected(key)?tracker.deselect(key):tracker.select(key);
     }
-    public boolean setReversed(boolean reversed){((LinearLayoutManager)rv.getLayoutManager()).setReverseLayout(reversed); return reversed;}
+    public boolean setReversed(boolean reversed){
+        if(rv.getLayoutManager() instanceof LinearLayoutManager llm){llm.setReverseLayout(reversed);} return reversed;
+    }
 
-    public void search(String query){
-        int index=(query!=null && query.length()>0) ? adapter.search(query) : -1;
+    public void search(Context context, String query){
+        int index=(query!=null && query.length()>0) ? adapter.search(context,query) : -1;
         if(index>=0){rv.scrollToPosition(index);}
     }
 
-    public void action(int action){action(itemView.getContext(),manga,action,adapter);}
+    public void scrollToHistory(){
+        if(adapter.manga!=null && adapter.manga.getHistory()!=null){rv.scrollToPosition(Math.min(adapter.getPosition(adapter.manga.getHistory().getChapter())+5,adapter.getItemCount()-1));}
+    }
+    public void action(int action){action(itemView.getContext(),adapter.manga,action,adapter);}
     public static void action(Context context, Manga manga, int action, CustomAdapter<Chapter> adapter){
+        if(manga==null){return;}
         new Thread(()->{
             Handler handler=new Handler(Looper.getMainLooper());
             boolean deleted=false;
-            switch (action){
-                case RA:
-                    for(int i=0;i<manga.getChapters().size();i++){
-                        manga.clearChapter(i); int f=i; handler.post(()->adapter.notifyItemChanged(f));
+            switch (action) {
+                case RA -> {
+                    for (int i = 0; i < manga.getChapters().size(); i++) {
+                        manga.clearChapter(i); int f=i; handler.post(() -> adapter.notifyItemChanged(f));
                     }
-                    manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged,100);
-                    manga.save(); deleted=true; adapter.getTracker().clearSelection(); break;
-                case RS:
-                    for(int i:Utils.convert(adapter.getTracker().getSelection())){
-                        manga.clearChapter(i); handler.post(()->adapter.notifyItemChanged(i));
+                    manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
+                    manga.save(); deleted=true; adapter.getTracker().clearSelection();
+                }
+                case RS -> {
+                    for (int i : Utils.convert(adapter.getTracker().getSelection())) {
+                        manga.clearChapter(i); handler.post(() -> adapter.notifyItemChanged(i));
                     }
-                    if(adapter.getTracker().getSelection().size()==manga.getChapters().size()){
-                        manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged,100);
+                    if (adapter.getTracker().getSelection().size() == manga.getChapters().size()) {
+                        manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
                     }
-                    manga.save(); deleted=true; adapter.getTracker().clearSelection(); break;
-                case SA:
-                    manga.loadChapters(context,new LoadService.Task(manga,0,manga.getChapters().size()-1));
-                    adapter.getTracker().clearSelection(); break;
-                case SS:
-                    manga.loadChapters(context,new LoadService.Task(manga,adapter.getTracker().getSelection()));
-                    adapter.getTracker().clearSelection(); break;
-                default: break;
+                    manga.save(); deleted = true; adapter.getTracker().clearSelection();
+                }
+                case SA -> {
+                    manga.loadChapters(context, new LoadService.Task(manga, 0, manga.getChapters().size() - 1));
+                    adapter.getTracker().clearSelection();
+                }
+                case SS -> {
+                    manga.loadChapters(context, new LoadService.Task(manga, adapter.getTracker().getSelection()));
+                    adapter.getTracker().clearSelection();
+                }
             }
             MangaService.allocate(manga,false);
             if(deleted){

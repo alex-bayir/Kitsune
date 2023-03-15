@@ -99,7 +99,7 @@ public class ScriptsActivity extends AppCompatActivity {
         });
         rv.setAdapter(adapter);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        Utils.registerOnEmptyAdapterRunnable(adapter,()->noScripts.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
+        Utils.registerAdapterDataChangeRunnable(adapter,()->noScripts.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
         fab=findViewById(R.id.fab);
         fab.setOnClickListener(v -> Utils.Activity.callFilesStore(ScriptsActivity.this,1,"text/plain",0));
         CustomSnackbar.makeSnackbar((ViewGroup) fab.getParent(), Snackbar.LENGTH_LONG).setText(R.string.scripts_updates).setIcon(R.drawable.ic_caution_yellow).setGravity(Gravity.CENTER).show();

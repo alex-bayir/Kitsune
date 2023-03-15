@@ -10,8 +10,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
@@ -42,7 +40,7 @@ import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import java.util.ArrayList;
+import java.util.List;
 
 
 public class AdvancedSearchActivity extends AppCompatActivity implements Callback<Object> {
@@ -132,7 +130,13 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             progressBar.startNestedScroll(0);
             new Thread(()->{
                 try {
-                    ArrayList<Manga> mangas=sortAdapter!=null ? Manga_Scripted.query(sortAdapter.getScript(), query, page, (Object[]) sortAdapter.getOptions()) : null;
+                    List<Manga> mangas=sortAdapter!=null ?
+                            Utils.isUrl(query)?
+                                    Manga_Scripted.query(sortAdapter.getScript(), query, page)
+                                    :
+                                    Manga_Scripted.query(sortAdapter.getScript(), query, page, (Object[]) sortAdapter.getOptions())
+                            :
+                            null;
                     NetworkUtils.getMainHandler().post(()->{
                         if(mangas!=null){
                             MangaService.setCacheDirIfNull(mangas);
@@ -148,8 +152,13 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
                         progressBar.progressiveStop();
                         progressBar.setVisibility(View.GONE);
                     });
-                }catch (Exception e){
-                    new Handler(Looper.getMainLooper()).post(()-> SearchActivity.out_error_info(e,nothingFound));
+                }catch (Throwable e){
+                    e.printStackTrace();
+                    NetworkUtils.getMainHandler().post(()-> {
+                        SearchActivity.out_error_info(e,nothingFound);
+                        progressBar.progressiveStop();
+                        progressBar.setVisibility(View.GONE);
+                    });
                 }
             }).start();
         }else{
@@ -307,7 +316,5 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
                 }
             }
         }
-
     }
-
 }

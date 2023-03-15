@@ -99,7 +99,7 @@ public class SettingsActivity extends AppCompatActivity {
     public static class SettingsFragment extends PreferenceFragmentCompat {
         public enum Type{
             List(-1),
-            Shelf(R.xml.pregerences_shelf),
+            Shelf(-1),
             Reader(R.xml.preferences_reader),
             General(R.xml.preferences_general);
             private final int xml_id;

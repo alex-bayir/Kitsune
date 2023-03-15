@@ -1,37 +1,34 @@
 package org.alex.kitsune.manga;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.util.ArrayList;
+import org.alex.json.JSON;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Page {
-    int id;
     float num;
     String url;
-    private static final String[] FN={"id","num","url"};
+    private static final String[] FN={"num","url"};
 
-    public Page(int id,float num,String url){
-        this.id=id;
+    public Page(float num,String url){
         this.num=num;
         this.url=url;
     }
-    public int getId(){return id;}
     public float getNum(){return num;}
     public String getUrl(){return url;}
 
-    public JSONObject toJSON() throws JSONException {
-        return new JSONObject().put(FN[0],id).put(FN[1],num).put(FN[2],url);
+    public JSON.Object toJSON(){
+        return new JSON.Object().put(FN[0],num).put(FN[1],url);
     }
-    public static Page fromJSON(JSONObject json) throws JSONException{
-        return new Page(json.getInt(FN[0]), (float)json.getDouble(FN[1]), json.getString(FN[2]));
+    public static Page fromJSON(JSON.Object json){
+        return json==null ? null : new Page(json.getFloat(FN[0]), json.getString(FN[1]));
     }
-    public static JSONArray toJSON(List<Page> pages) throws JSONException{
-        JSONArray json=new JSONArray(); if(pages!=null){for(Page page : pages){json.put(page.toJSON());}}
-    return json;}
-    public static ArrayList<Page> fromJSON(JSONArray json) throws JSONException{
-        ArrayList<Page> pages=new ArrayList<>();
-        if(json!=null){for(int i=0;i<json.length();i++){pages.add(Page.fromJSON(json.getJSONObject(i)));}}
-    return pages;}
+    public static JSON.Array<JSON.Object> toJSON(List<Page> pages){
+        return pages==null ? null : new JSON.Array<>(pages.stream().map(Page::toJSON).collect(Collectors.toList()));}
+    public static List<Page> fromJSON(List<JSON.Object> json){
+        return json==null ? null : json.stream().map(Page::fromJSON).collect(Collectors.toList());
+    }
+    @Override
+    public String toString() {
+        return toJSON().toString();
+    }
 }

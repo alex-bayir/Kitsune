@@ -79,13 +79,15 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
 
         imageView.setOnViewTapListener((view, x, y) -> {
             int width=view.getWidth(),length=width/3;
-            if(x<length){
-                leftClick.onClick(view);
-            }else{
-                if(x>width-length){
-                    rightClick.onClick(view);
+            if(!imageView.showDialogTranslateIfTextExists(x,y)){
+                if(x<length){
+                    leftClick.onClick(view);
                 }else{
-                    centerClick.onClick(view);
+                    if(x>width-length){
+                        rightClick.onClick(view);
+                    }else{
+                        centerClick.onClick(view);
+                    }
                 }
             }
         });
@@ -162,7 +164,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             retry_layout.setVisibility(View.GONE);
             progress.setText(R.string.loading);
             new Thread(()->{
-                boolean loaded=NetworkUtils.load(url,manga.getProvider(),file,null,(read, length)->{
+                boolean loaded=NetworkUtils.load(url,manga.getDomain(),file,null,(read, length)->{
                     float p = read / (float)length;
                     NetworkUtils.getMainHandler().post(()->{
                         if(0<p && p<=1){

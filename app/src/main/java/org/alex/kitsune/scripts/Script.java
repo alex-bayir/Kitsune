@@ -2,32 +2,24 @@ package org.alex.kitsune.scripts;
 
 import com.alex.edittextcode.EditTextCode;
 import org.alex.kitsune.utils.Utils;
-
 import java.io.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class Script {
-    public Charset charset;
     private final String name;
     private final String language;
     private final String text;
     private final String path;
-    public Script(InputStream in,String name,String path,String language,Charset charset){
+    public Script(InputStream in,String name,String path,String language){
         this.name=name;
         this.text=Utils.File.readStream(in);
         this.path=path;
         this.language=language;
-        this.charset=charset;
     }
-    public Script(File script,String language,Charset charset) throws FileNotFoundException {
-        this(new FileInputStream(script), script.getName(), script.getPath(), language,charset);
-    }
-    public Script(File script,String language) throws Throwable {
-        this(script,language,StandardCharsets.UTF_8);
+    public Script(File script,String language) throws FileNotFoundException {
+        this(new FileInputStream(script), script.getName(), script.getPath(), language);
     }
     public static Script getInstance(String script_path)throws Throwable{return getInstance(new File(script_path));}
     public static Script getInstance(File script) throws Throwable{

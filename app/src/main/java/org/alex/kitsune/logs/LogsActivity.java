@@ -129,7 +129,7 @@ public class LogsActivity extends AppCompatActivity{
             rv.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
             adapter=new Logs.LogsAdapter(new ArrayList<>(), (v,position) -> ViewLog(adapter.getLog(position)), count -> nologs.setVisibility(count==0 ? View.VISIBLE : View.GONE),logRemoveListener);
             rv.setAdapter(adapter);
-            Utils.registerOnEmptyAdapterRunnable(adapter,()->nologs.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
+            Utils.registerAdapterDataChangeRunnable(adapter,()->nologs.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
         }
         public void bind(List<Logs.Log> logs){
             adapter.setLogs(logs);

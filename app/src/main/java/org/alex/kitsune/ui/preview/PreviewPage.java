@@ -14,9 +14,7 @@ import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
 import android.text.style.StyleSpan;
 import android.view.*;
-import android.webkit.CookieManager;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
 import android.widget.*;
 import android.widget.RadioGroup;
 import androidx.annotation.NonNull;
@@ -41,6 +39,9 @@ import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import static org.alex.kitsune.ui.preview.PreviewActivity.CALL_FILE_STORE;
 import static org.alex.kitsune.ui.preview.PreviewActivity.PERMISSION_REQUEST_CODE;
 
@@ -72,7 +73,7 @@ public class PreviewPage extends PreviewHolder {
         favorite=itemView.findViewById(R.id.button_favourite);
         web=itemView.findViewById(R.id.button_web);
         web.setOnClickListener(v-> web_dialog.show(((FragmentActivity)web.getContext()).getSupportFragmentManager(),""));
-        web.setOnLongClickListener(v -> {Utils.showToolTip(web); return true;});
+        web.setOnLongClickListener(v -> {Utils.showToolTip(web,R.string.auth_help_info); return true;});
         read=itemView.findViewById(R.id.button_read);
         ratingBar=itemView.findViewById(R.id.ratingBar);
         genres=itemView.findViewById(R.id.genres);
@@ -141,20 +142,12 @@ public class PreviewPage extends PreviewHolder {
         });
         return chooseCategory;
     }
-
     @Override
-    public void bind(Object obj) {
-        if(obj instanceof Manga manga){
-            bind(manga,manga.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
-        }else if(obj instanceof Throwable th){
-            notifyError(th.getCause()!=null ? th.getCause() : th);
-        }else if(obj instanceof Object[] a){
-            if(a[0] instanceof Manga){
-                bind((Manga)a[0], (boolean)a[1]);
-            }else if(a[0] instanceof Throwable th) {
-                notifyError(th.getCause()!=null ? th.getCause() : th);
-            }
-        }
+    public void bind(Manga manga){
+        bind(manga,manga.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
+    }
+    public void bind(Throwable th){
+        notifyError(th.getCause()!=null ? th.getCause() : th);
     }
 
     public void bind(Manga manga, boolean full){
@@ -166,7 +159,7 @@ public class PreviewPage extends PreviewHolder {
         });
         info.setText(createText(info.getContext(),manga,full));
         ratingBar.setRating(manga.getRating(),true);
-        genres.setSubtitle(manga.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getProviderName()).putExtra(Constants.option,text!=null ? text.toString() : null))));
+        genres.setSubtitle(manga.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null))));
 
         averageTime.setSubtitle(full ? calculateTime(itemView.getResources(), manga.getChapters().size()) : averageTime.getResources().getString(R.string.calculating));
         description.setSubtitle(full ? (manga.isUpdated() || manga.getDescription()!=null ? manga.getDescription(Html.FROM_HTML_MODE_COMPACT,description.getResources().getString(R.string.no_description)) : description.getResources().getString(R.string.error_has_occurred)) : description.getResources().getString(R.string.loading));
@@ -175,13 +168,20 @@ public class PreviewPage extends PreviewHolder {
         read.setEnabled(manga.getChapters().size()>0);
         favorite.setOnClickListener(v -> createDialog(v.getContext(),manga).show());
         similar.replace(MangaService.replaceIfExists(manga.getSimilar(),MangaService.getAll()));
-        final String source=manga.getProviderName(),url_web=manga.getUrl_WEB();
+        final String source=manga.getSource(),url_web=manga.getUrl_WEB();
         web_dialog.setCallback(web->{
             web.setWebViewClient(new WebViewClient(){
                 @Override
                 public void onPageFinished(WebView view, String url) {
                     super.onPageFinished(view, url);
-                    Catalogs.updateCookies(web.getContext(),source,CookieManager.getInstance().getCookie(url));
+                    web_dialog.setOnCloseListener(()->{
+                        Catalogs.updateCookies(view.getContext(),source,CookieManager.getInstance().getCookie(url));
+                        manga.update(update->{
+                            if(((View)itemView.getParent()).getContext() instanceof PreviewActivity pa){
+                                pa.updateContent();
+                            }
+                        },null,true);
+                    });
                 }
             });
             web.loadUrl(url_web);
@@ -212,18 +212,22 @@ public class PreviewPage extends PreviewHolder {
         SpannableStringBuilder builder=new SpannableStringBuilder();
         builder.append(context.getString(R.string.Chapters), new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         builder.append(count_known ? manga.getChapters().size()+"" : "?");
-        if(manga.getAuthor()!=null && manga.getAuthor().length()>0){
+        if(manga.getAuthor() instanceof Map<?,?> map){
             builder.append("\n");
-            builder.append(context.getString(R.string.Author), new StyleSpan(Typeface.BOLD), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            if(manga.getAuthorUrl()!=null && manga.getAuthorUrl().length()>0){
-                builder.append(manga.getAuthor(), new ClickSpan(manga.getAuthorUrl(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getProviderName()).putExtra(Constants.author,manga.getAuthor()).putExtra(Constants.author_url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            }else{
-                builder.append(manga.getAuthor());
-            }
+            AtomicInteger count=new AtomicInteger();
+            map.entrySet().stream().filter(entry-> entry.getKey() instanceof String && entry.getValue() instanceof String).forEach(entry->{
+                if(count.getAndIncrement()>0){
+                    builder.append(", ");
+                }
+                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getSource()).putExtra(Constants.author,(String)entry.getKey()).putExtra(Constants.author_url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+            });
+        }else if(manga.getAuthor() instanceof String str){
+            builder.append("\n");
+            builder.append(str);
         }
         builder.append("\n");
         builder.append(context.getString(R.string.Source_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        builder.append(manga.getProviderName());
+        builder.append(manga.getSource());
         builder.append("\n");
         builder.append(context.getString(R.string.Status_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         builder.append(manga.getStatus(context));

@@ -66,7 +66,7 @@ public class Shelf extends Fragment implements MenuProvider {
         getContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                adapter.update(createWrappers(!Constants.action_Update.equals(intent.getAction())));
+                adapter.update(createWrappers(true));
             }
         },filter);
         return root;
@@ -104,12 +104,14 @@ public class Shelf extends Fragment implements MenuProvider {
             MangaService.isUpdating=true;
             for(Manga manga : MangaService.getMap(MangaService.Type.All).values()){
                 if(!manga.isUpdated()){
-                    manga.update(progress.getContext(), ()->{
-                        MangaService.setCacheDirIfNull(manga.getSimilar());
-                        adapter.update(manga);
-                        if(manga.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash,manga.hashCode()));}
-                        if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
-                        //pr.setProgress(p).setOnView(progress);
+                    manga.update((updated)->{
+                        if(updated){
+                            MangaService.setCacheDirIfNull(manga.getSimilar());
+                            adapter.update(manga);
+                            if(manga.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash,manga.hashCode()));}
+                            if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
+                            //pr.setProgress(p).setOnView(progress);
+                        }
                     },throwable->{
                         if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
                         //pr.setProgress(p).setOnView(progress);

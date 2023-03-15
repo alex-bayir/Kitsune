@@ -1,7 +1,7 @@
+import org.alex.json.JSON;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
-import org.alex.kitsune.manga.Wrapper;
 import org.alex.kitsune.scripts.Script;
 import java.io.File;
 import java.util.*;
@@ -18,6 +18,8 @@ import org.junit.Test;
 public class ScriptsTests {
     public void print(String str){System.out.print(str);}
     public void println(String str){System.out.println(str);}
+    public void print(Object obj){print(obj!=null?obj.toString():"null");}
+    public void println(Object obj){println(obj!=null?obj.toString():"null");}
     @Test
     public void tmp() throws Throwable {
         //println(Wrapper.loadDocument("https://vk.com/org.alex.kitsune").select("a.page_doc_title").toString());
@@ -31,7 +33,7 @@ public class ScriptsTests {
         //array.getJSONObject()
         tmp="<div class=\"selectize-dropdown-content\" tabindex=\"-1\"><div class=\"option\" data-selectable=\"\" data-value=\"6612\">Спортивное тело</div><div class=\"option\" data-selectable=\"\" data-value=\"6611\">Спасение мира</div><div class=\"option\" data-selectable=\"\" data-value=\"6594\">Офисные Работники</div><div class=\"option\" data-selectable=\"\" data-value=\"6616\">Традиционные игры</div><div class=\"option\" data-selectable=\"\" data-value=\"6604\">Ранги силы</div><div class=\"option\" data-selectable=\"\" data-value=\"6551\">ГГ женщина</div><div class=\"option\" data-selectable=\"\" data-value=\"6639\">Остров</div><div class=\"option\" data-selectable=\"\" data-value=\"6603\">Разумные расы</div><div class=\"option\" data-selectable=\"\" data-value=\"6574\">Культивация</div><div class=\"option\" data-selectable=\"\" data-value=\"6529\">Ангелы</div><div class=\"option\" data-selectable=\"\" data-value=\"6560\">Демоны</div><div class=\"option\" data-selectable=\"\" data-value=\"6567\">Злые духи</div><div class=\"option\" data-selectable=\"\" data-value=\"6553\">ГГ мужчина</div><div class=\"option\" data-selectable=\"\" data-value=\"6552\">ГГ имба</div><div class=\"option\" data-selectable=\"\" data-value=\"6547\">Волшебники</div><div class=\"option\" data-selectable=\"\" data-value=\"6569\">Игровые элементы</div><div class=\"option\" data-selectable=\"\" data-value=\"6609\">Система</div><div class=\"option\" data-selectable=\"\" data-value=\"6624\">Якудза</div><div class=\"option\" data-selectable=\"\" data-value=\"6538\">Брат и сестра</div><div class=\"option\" data-selectable=\"\" data-value=\"6570\">Империи</div><div class=\"option\" data-selectable=\"\" data-value=\"6582\">Месть</div><div class=\"option\" data-selectable=\"\" data-value=\"6581\">Медицина</div><div class=\"option\" data-selectable=\"\" data-value=\"6580\">Мафия</div><div class=\"option\" data-selectable=\"\" data-value=\"6587\">Насилие</div><div class=\"option\" data-selectable=\"\" data-value=\"6602\">Путешествие во времени</div><div class=\"option\" data-selectable=\"\" data-value=\"6528\">Амнезия</div><div class=\"option\" data-selectable=\"\" data-value=\"6613\">Средневековье</div><div class=\"option\" data-selectable=\"\" data-value=\"6555\">Гильдии</div><div class=\"option\" data-selectable=\"\" data-value=\"6579\">Магия</div></div>";
 
-        Elements elements=Wrapper.loadDocument("https://manga-chan.me/catalog").select("li.sidetag");
+        Elements elements=null;//Wrapper.loadDocument("https://manga-chan.me/catalog").select("li.sidetag");
         //Elements elements= Jsoup.parse(tmp).select("li");
         println("");
         println(""+elements.size());
@@ -47,7 +49,7 @@ public class ScriptsTests {
     @Test
     public void f1() throws Throwable {
         Script script=Script.getInstance(new File("C:\\Games\\Kitsune\\app\\src\\main\\assets\\scripts\\ReadManga.lua"));
-        ArrayList<Manga> list=Manga_Scripted.query(script,"ванпанчмен",0);
+        List<Manga> list=Manga_Scripted.query(script,"ванпанчмен",0);
         Manga manga=list.get(0);
         manga.update();
         manga.loadSimilar(obj -> {},obj -> {});
@@ -59,7 +61,7 @@ public class ScriptsTests {
     public void f2() throws Throwable {
         Script script=Script.getInstance(new File("C:\\Games\\Kitsune\\app\\src\\main\\assets\\scripts\\HentaiChan.lua"));
         FilterSortAdapter adapter=Manga_Scripted.createAdvancedSearchAdapter(script);
-        ArrayList<Manga> list=Manga_Scripted.query(script,"hello",0,(Object[])adapter.getOptions());
+        List<Manga> list=Manga_Scripted.query(script,"hello",0,(Object[])adapter.getOptions());
         Manga manga=list.get(1);
         manga.update();
         println("end");
@@ -77,5 +79,21 @@ public class ScriptsTests {
             println(text.substring(matcher.start(), matcher.end()));
         }
     }
-
+    @Test
+    public void json() throws Throwable {
+        println(Utils.unescape_unicodes("uu0027u\\0027\\\\0027\\\"\\t\\n\\tstring\\\"\n\t u0423 \u043d\\0435u0451 \\u043du0435 u0432u0441u0451 u0432 u043fu043eu0440u044fu0434u043au0435 u0441 u0433u043eu043bu043eu0432u043eu0439 - u0440u0435u0436u0438u0441u0441u0451u0440u0441u043au0430u044f u0432u0435u0440u0441u0438u044f"));
+        JSON.Object obj=new JSON.Object()
+                .put("tmp",null)
+                .put("string","\"\t\n\tstring\"")
+                .put("url","https://www.manga.org")
+                .put("arr",new int[]{1,2,3})
+                .put("arr2",new Object[]{"1","2",3.1,"4sdfds",null,new int[]{5,6,7}});
+        String json=obj.json(1);//"{\"msg\":\"\",\"content\":{\"id\":2912,\"img\":{\"high\":\"/media/titles/crawling-dreams/high_cover.jpg\",\"mid\":\"/media/titles/crawling-dreams/mid_cover.jpg\",\"low\":\"/media/titles/crawling-dreams/low_cover.jpg\"},\"en_name\":\"Crawling Dreams\",\"rus_name\":\"Ползущие сны\",\"another_name\":\"\",\"dir\":\"crawling-dreams\",\"description\":\"<p>Нярла и Гаст &mdash; друзья, живущие в огромном модном городе, расположенном у моря. Однако, похоже, переулки этого города скрывают совсем неожиданные секреты и тайны.</p>\",\"issue_year\":2017,\"avg_rating\":\"8.4\",\"admin_rating\":\"0.0\",\"count_rating\":22,\"age_limit\":0,\"status\":{\"id\":1,\"name\":\"Продолжается\"},\"count_bookmarks\":438,\"total_votes\":3826,\"total_views\":21786,\"type\":{\"id\":0,\"name\":\"Манга\"},\"genres\":[{\"id\":16,\"name\":\"Элементы юмора\"},{\"id\":21,\"name\":\"Повседневность\"},{\"id\":27,\"name\":\"Сверхъестественное\"},{\"id\":36,\"name\":\"Ужасы\"}],\"categories\":[{\"id\":5,\"name\":\"Веб\"},{\"id\":6,\"name\":\"В цвете\"}],\"bookmark_type\":null,\"rated\":null,\"branches\":[{\"id\":2760,\"img\":\"/static/images/publishers/no-image.jpg\",\"subscribed\":false,\"total_votes\":3826,\"count_chapters\":63,\"publishers\":[{\"id\":766,\"name\":\"Stacey Nicks\",\"img\":\"/static/images/publishers/no-image.jpg\",\"dir\":\"stacey_nicks\",\"tagline\":\"\",\"type\":\"Переводчик\"}]}],\"count_chapters\":63,\"first_chapter\":{\"id\":146985,\"tome\":1,\"chapter\":\"0\"},\"continue_reading\":null,\"is_licensed\":false,\"newlate_id\":null,\"newlate_title\":null,\"related\":null,\"uploaded\":1,\"can_post_comments\":true,\"adaptation\":null,\"publishers\":[{\"id\":766,\"name\":\"Stacey Nicks\",\"img\":\"/static/images/publishers/no-image.jpg\",\"dir\":\"stacey_nicks\",\"tagline\":\"\",\"type\":\"Переводчик\"}],\"is_yaoi\":false,\"is_erotic\":false},\"props\":{\"age_limit\":[{\"id\":0,\"name\":\"Для всех\"},{\"id\":1,\"name\":\"16+\"},{\"id\":2,\"name\":\"18+\"}],\"can_upload_chapters\":false,\"can_update\":true,\"can_pin_comment\":false,\"promo_offer\":null,\"admin_link\":null,\"panel_link\":null}}\n";
+        //json="[\"{\"count\":4,\"first\":false,\"name\":\"Saved\"}\",\"{\"count\":3,\"first\":true,\"name\":\"History\"}\",\"{\"count\":4,\"first\":false,\"name\":\"Favorite\"}\",\"{\"count\":4,\"first\":false,\"name\":\"Maybe\"}\",\"{\"count\":4,\"first\":false,\"name\":\"KonoSuba\"}\"]";
+        println(json);
+        JSON.Object tmp=JSON.Object.create(json);
+        println(tmp.json(1));
+        //tmp=((JSON.Object)tmp).get("content");
+        //println(tmp.toString());
+    }
 }

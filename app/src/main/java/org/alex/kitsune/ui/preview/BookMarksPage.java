@@ -20,27 +20,26 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
     RecyclerView rv;
     CustomAdapter<BookMark> adapter;
     TextView noItems;
-    Manga manga;
-    public BookMarksPage(ViewGroup parent,Manga manga){
+    public BookMarksPage(ViewGroup parent){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
-        this.manga=manga;
         noItems=itemView.findViewById(R.id.text);
         rv=itemView.findViewById(R.id.rv_list);
-        adapter=new CustomAdapter<>(itemView.getContext(),manga,manga.getBookMarks(),R.layout.item_bookmark,this,this::onMenuItemClick,rv,null);
+        adapter=new CustomAdapter<>(R.layout.item_bookmark,this,this::onMenuItemClick,rv,null);
         //rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
         rv.setLayoutManager(new GridLayoutManager(itemView.getContext(),2));
         noItems.setText(R.string.No_bookmarks);
-        Utils.registerOnEmptyAdapterRunnable(adapter,()->noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
+        noItems.setVisibility(View.VISIBLE);
+        Utils.registerAdapterDataChangeRunnable(adapter,()->noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
     }
 
     @Override
-    public void bind(Object obj) {
-        adapter.notifyDataSetChanged();
+    public void bind(Manga manga) {
+        adapter.setManga(manga);
     }
 
     @Override
     public void onItemClick(View v, int index) {
-        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.bookmark, index));
+        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,adapter.manga.hashCode()).putExtra(Constants.bookmark, index));
     }
 
     @Override
@@ -49,7 +48,7 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
     @Override
     public boolean onMenuItemClick(int position, MenuItem item) {
         switch (item.getItemId()){
-            case BookMarkHolder.REMOVE: manga.removeBookMark(adapter.getList().get(position)); adapter.notifyItemRemoved(position); break;
+            case BookMarkHolder.REMOVE: adapter.manga.removeBookMark(adapter.getList().remove(position)); adapter.notifyItemRemoved(position); break;
         }
         return false;
     }

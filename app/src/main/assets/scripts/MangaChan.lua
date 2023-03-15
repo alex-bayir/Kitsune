@@ -3,21 +3,17 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 21:22
 ---
-Wrapper=luajava.bindClass("org.alex.kitsune.manga.Wrapper")
 Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
 Page=luajava.bindClass("org.alex.kitsune.manga.Page")
 Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-UrlBuilder=luajava.bindClass("org.alex.kitsune.commons.URLBuilder")
-JSONObject=luajava.bindClass("org.json.JSONObject")
-JSONArray=luajava.bindClass("org.json.JSONArray")
-ArrayList=luajava.bindClass("java.util.ArrayList")
-Map_class=luajava.bindClass("java.util.TreeMap")
+JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
+JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
-version="1.3"
-provider="manga-chan.me"
-providerName="MangaChan"
-sourceDescription="Тоже хороший источник манги. Но часто падает, из-за чего бывает недоступен от нескольких часов до пары дней."
-host="https://"..provider
+version="1.4"
+domain="manga-chan.me"
+source="MangaChan"
+description="Тоже хороший источник манги. Но часто падает, из-за чего бывает недоступен от нескольких часов до пары дней."
+host="https://"..domain
 auth_tokens={"PHPSESSID"}
 
 Genres={["18 плюс"]="18_плюс",["bdsm"]="bdsm",["арт"]="арт",["боевик"]="боевик",["боевые искусства"]="боевые_искусства",["вампиры"]="вампиры",["веб"]="веб",["гарем"]="гарем",["гендерная интрига"]="гендерная_интрига",["героическое фэнтези"]="героическое_фэнтези",["детектив"]="детектив",["дзёсэй"]="дзёсэй",["додзинси"]="додзинси",["драма"]="драма",["игра"]="игра",["инцест"]="инцест",["искусство"]="искусство",["история"]="история",["киберпанк"]="киберпанк",["кодомо"]="кодомо",["комедия"]="комедия",["литРПГ"]="литРПГ",["махо-сёдзё"]="махо-сёдзё",["меха"]="меха",["мистика"]="мистика",["музыка"]="музыка",["научная фантастика"]="научная_фантастика",["омегаверс"]="омегаверс",["повседневность"]="повседневность",["постапокалиптика"]="постапокалиптика",["приключения"]="приключения",["психология"]="психология",["романтика"]="романтика",["самурайский боевик"]="самурайский_боевик",["сборник"]="сборник",["сверхъестественное"]="сверхъестественное",["сказка"]="сказка",["спорт"]="спорт",["супергерои"]="супергерои",["сэйнэн"]="сэйнэн",["сёдзё"]="сёдзё",["сёдзё-ай"]="сёдзё-ай",["сёнэн"]="сёнэн",["сёнэн-ай"]="сёнэн-ай",["танцы"]="танцы",["трагедия"]="трагедия",["триллер"]="триллер",["ужасы"]="ужасы",["фантастика"]="фантастика",["фурри"]="фурри",["фэнтези"]="фэнтези",["школа"]="школа",["эротика"]="эротика",["юри"]="юри",["ёнкома"]="ёнкома"}
@@ -25,38 +21,39 @@ Sorts={["Популярность"]="fav",["Дата"]="date",["Алфавит"]
 sorts={[1]="fav",[2]="date",[3]=nil}
 Order={["По убыванию"]="desc",["По возрастанию"]="asc"}
 
-function update(url) -- Wrapper
-    local e=Wrapper:loadDocument(url):body()
+function update(url)
+    local e=network:load_as_Document(url):body():selectFirst("div.main_fon")
     local list=e:select("table.table_cha"):select("tr")
-    local chapters=ArrayList.new(list:size())
+    local chapters={}; local n=0
     for i=list:size()-1,0,-1 do
-        local tmp=list:get(i)
-        if(tmp:className():len()>0) then
-            href=Wrapper:attr(tmp:selectFirst("a"),"href","")
-            chapters:add(Chapter.new(num(href:match("%d+")),num(href:match("v%D?(%d+)")),num(href:match("ch%D?(%d+)")),Wrapper:text(tmp:selectFirst("a"),""):match("%s%s%s+(.*)"),Wrapper:parseDate(Wrapper:text(tmp:selectFirst("div.date")),"yyyy-MM-dd")))
+        local el=list:get(i)
+        if(el:className():len()>0) then
+            local href=utils:attr(el:selectFirst("a"),"href","")
+            chapters[n]=(Chapter.new(num(href:match("v%D?(%d+)")),num(href:match("ch%D?(%d+)")),utils:text(el:selectFirst("a"),""):match("%s%s%s+(.*)"),utils:parseDate(utils:text(el:selectFirst("div.date")),"yyyy-MM-dd"),utils:to_map({id=num(href:match("%d+"))})))
+            n=n+1
         end
     end
-
-    return Wrapper.new(
-            url,
-            num(Wrapper:attr(e:selectFirst("a.title_top_a"),"href"):match("%d+")),
-            Wrapper:text(e:selectFirst("a.title_top_a"),""):match("[a-zA-Z].*[a-zA-Z]"),
-            Wrapper:text(e:selectFirst("a.title_top_a"),""):match("[а-яА-Я].*[а-яА-Я]"),
-            Wrapper:text(e:select("tr"):get(2):selectFirst("a")),
-            Wrapper:attr(e:select("tr"):get(2):selectFirst("a"),"abs:href"),
-            Wrapper:text(e:select("li.sidetag"),""):gsub("%s?%+%s%-%s",", "):sub(3),
-            0,
-            (select(1,Wrapper:text(e:select("table.mangatitle"):select("tr"):select("h2"):get(2),""):gsub(".*, выпуск ",""))),
-            Wrapper:text(e:selectFirst("div#description")),
-            Wrapper:attr(e:selectFirst("img#cover"),"src"),
-            url,
-            chapters
-    )
+    local author={}; local authors=e:select("a[href~=/mangaka/\\d+]")
+    for j=0,authors:size()-1,1 do
+        local a=authors:get(j); author[a:attr("title")]=a:attr("abs:href")
+    end
+    return {
+        ["url"]=url,
+        ["url_web"]=url,
+        ["name"]=utils:text(e:selectFirst("a.title_top_a"),""):match("[a-zA-Z].*[a-zA-Z]"),
+        ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):match("[а-яА-Я].*[а-яА-Я]"),
+        ["author"]=author,
+        ["genres"]=utils:text(e:select("li.sidetag"),""):gsub("%s?%+%s%-%s",", "):sub(3),
+        ["description"]=utils:text(e:selectFirst("div#description")),
+        ["thumbnail"]=utils:attr(e:selectFirst("img#cover"),"src"),
+        ["chapters"]=chapters
+    }
 end
-function query(name,page,params) -- java.util.ArrayList<Wrapper>
+
+function query(name,page,params)
     local url;
     if(name~=nil and name:len()>0) then
-        url=UrlBuilder.new(host.."/"):add("do","search"):add("subaction","search"):add("story",name):add("offset",page>0 and (page+1)*10 or nil):build();
+        url=network:url_builder(host.."/"):add("do","search"):add("subaction","search"):add("story",name):add("offset",page>0 and (page+1)*10 or nil):build();
     else
         if(params~=nil and #params>0 and type(params[1])=="userdata" and Options:equals(params[1]:getClass()))then
             if(params~=nil and #params>0) then
@@ -80,70 +77,69 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
         url=url~=nil and url..(page>0 and ("?offset="..((page+1)*10)) or "")
     end
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
+    return query_url(url)
+end
+
+function query_url(url,page)
+    if page then url=url:find("page") and url:gsub("offset=%d+","offset="..tostring((page+1)*10)) or url.."&offset="..tostring((page+1)*10) end
     print(url)
-    local selects=Wrapper:loadDocument(url):select("div.content_row")
-    local list=ArrayList.new(selects:size())
+    local selects=network:load_as_Document(url):select("div.content_row")
+    local list={}; local n=0
     for i=0,selects:size()-1,1 do
         local e=selects:get(i)
-        list:add(Wrapper.new(
-                Wrapper:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
-                0,
-                Wrapper:text(e:selectFirst("h2"),""):match("[a-zA-Z].*[a-zA-Z]"),
-                Wrapper:text(e:selectFirst("h2"),""):match("[а-яА-Я].*[а-яА-Я]"),
-                Wrapper:text(e:selectFirst("div.manga_row2"):selectFirst("a")),
-                Wrapper:attr(e:selectFirst("div.manga_row2"):selectFirst("a"),"abs:href"),
-                Wrapper:text(e:select("div.genre"),""):gsub("_"," "),
-                0,
-                0,
-                Wrapper:text(e:selectFirst("div.tags")),
-                Wrapper:attr(e:selectFirst("img"),"src")
-        ))
+        if(utils:attr(e:selectFirst("h2"):selectFirst("a"),"href"):match("/manga.*")) then
+            local author={}; local authors=e:select("a[href~=/mangaka/\\d+]")
+            for j=0,authors:size()-1,1 do
+                local a=authors:get(j); author[a:attr("title")]=a:attr("abs:href")
+            end
+            list[n]={
+                ["url"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
+                ["url_web"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
+                ["name"]=utils:text(e:selectFirst("h2"),""):match("[a-zA-Z].*[a-zA-Z]"),
+                ["name_alt"]=utils:text(e:selectFirst("h2"),""):match("[а-яА-Я].*[а-яА-Я]"),
+                ["author"]=author,
+                ["genres"]=utils:text(e:select("div.genre"),""):gsub("_"," "),
+                ["description"]=utils:text(e:select("div.tags")),
+                ["thumbnail"]=select(1, utils:attr(e:selectFirst("img"),"src"):gsub("_blur",""))
+            }
+            n=n+1
+        end
     end
     return list
 end
-function getPages(url,chapter) -- ArrayList<Page>
-    local array=JSONArray.new(Wrapper:loadDocument(host.."/online/"..chapter.id..url:match("%d+(-.*)%.")):select("script"):toString():match("\"fullimg\":(.-),]").."]")
-    local pages=ArrayList.new(array:length())
-    for i=0,array:length()-1,1 do
-        pages:add(Page.new(0,i+1,array:getString(i)))
+
+function getPages(url,chapter) -- table <Page>
+    local array=JSONArray:create(network:load_as_Document(host.."/online/"..chapter["id"]..url:match("%d+(.*)%d*%.")..chapter["num"]..".html"):select("script"):toString():match("\"fullimg\":%s*(%[.-%])"):gsub("'","\""))
+    local pages={}
+    for i=0,array:size()-1,1 do
+        pages[i]=Page.new(i+1,array:getString(i))
     end
     return pages
 end
-function createAdvancedSearchOptions() --ArrayList<Options>
-    local options=ArrayList.new()
-    options:add(Options.new("Сортировка","desc","asc",convert(Sorts),0))
-    options:add(Options.new("Жанры",convert(Genres),2))
-    return options
+
+function createAdvancedSearchOptions() -- table <Options>
+    return {
+        Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
+        Options.new("Жанры",utils:to_map(Genres),2)
+    }
 end
 
-function num(n) return n==nil and 0 or tonumber(n:match("[0-9]*%.?[0-9]+")) end
-
-function convert(luaTable)
-    local javaTable=Map_class.new()
-    for key,value in pairs(luaTable) do javaTable:put(key,value) end
-    return javaTable
-end
-
-function loadSimilar(wrapper)
-    local elements=Wrapper:loadDocument(wrapper.url:match("(.*)manga/").."related"..wrapper.url:match("/[^/]*$")):select("div.related")
-    local similar=ArrayList.new()
+function loadSimilar(manga)
+    local elements=network:load_as_Document((manga["url"]:gsub("manga/","related/"))):select("div.related")
+    local similar={}; local n=0
     for i=0,(elements~=nil and elements:size() or 0)-1,1 do
         local e=elements:get(i)
-        if(e~=nil) then
-            similar:add(Wrapper.new(
-                    e:selectFirst("a"):attr("abs:href"),
-                    0,
-                    e:selectFirst("h2"):selectFirst("a"):attr("title"),
-                    e:selectFirst("h2"):text(),
-                    e:selectFirst("h3"):text(),
-                    Wrapper:attr(e:selectFirst("h3"):selectFirst("a"),"abs:href"),
-                    e:selectFirst("div.genre"):text(),
-                    0,
-                    0,
-                    e:selectFirst("div.related_tag_list"):text(),
-                    e:selectFirst("img"):attr("src")
-            ))
-        end
+        similar[n]=e and {
+            ["url"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
+            ["url_web"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
+            ["name"]=utils:text(e:selectFirst("h2"),""):match("[a-zA-Z].*[a-zA-Z]"),
+            ["name_alt"]=utils:text(e:selectFirst("h2"),""):match("[а-яА-Я].*[а-яА-Я]"),
+            ["author"]=JSONObject.new():put(utils:text(e:select("div.related_row"):get(1):selectFirst("a")),utils:attr(e:select("div.related_row"):get(1):selectFirst("a"),"abs:href")),
+            ["genres"]=utils:text(e:select("div.genre")),
+            ["description"]=utils:text(e:select("div.tags")),
+            ["thumbnail"]="https://"..utils:attr(e:selectFirst("img"),"src"):match("/manga.*"):gsub("_blur","")
+        }
+        n=n+(e and 1 or 0)
     end
     return similar
 end

@@ -92,7 +92,7 @@ public class LoadService extends Service {
                             publicProgress(bundle);
                             int pages = 0;
                             for (Page page : chapter.getPages()) {
-                                while (!load(page.getUrl(), task.manga.getProvider(), task.manga.getPage(chapter, page), task)) {
+                                while (!load(page.getUrl(), task.manga.getDomain(), task.manga.getPage(chapter, page), task)) {
                                     if (task.isCanceled()) {
                                         task.clearCancel();
                                         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.manga.hashCode()).putExtra(Constants.option, Constants.load));
@@ -113,6 +113,7 @@ public class LoadService extends Service {
                             }
                             task.manga.setLastTimeSave();
                             task.manga.save();
+                            MangaService.allocate(task.manga,false);
                             sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.manga.hashCode()).putExtra(Constants.option, Constants.load));
                             download++;
                         }
@@ -194,7 +195,7 @@ public class LoadService extends Service {
     private Bundle createBundle(Task task){
         Bundle bundle=new Bundle();
         bundle.putString(name,task.manga.getName());
-        bundle.putInt(id,task.manga.getId());
+        bundle.putInt(id,task.manga.hashCode());
         bundle.putString(cover,task.manga.getCoverPath());
     return bundle;}
 

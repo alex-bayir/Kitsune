@@ -15,25 +15,30 @@ import org.alex.kitsune.manga.BookMark;
 import org.alex.kitsune.manga.Chapter;
 import org.alex.kitsune.manga.Manga;
 import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    Context context;
     final int ResourceId;
-    List<T> items;
+    List<T> items=new LinkedList<>();
     HolderListener listener;
     HolderMenuItemClickListener menuListener;
     Manga manga;
     SelectionTracker<Long> tracker;
     private boolean selectable=true;
+    Function<Manga,List<T>> getItems;
 
-    public CustomAdapter(Context context, Manga manga, List<T> list, int ResourceId, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
-        this.context=context;
-        this.items=list;
-        this.ResourceId=ResourceId;
+    public CustomAdapter(int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
+        this.ResourceId=holder_layout_id;
+        this.getItems=switch (holder_layout_id) {
+            case (R.layout.item_chapter) -> (manga->(List<T>)manga.getChapters());
+            case (R.layout.item_bookmark) -> (manga->(List<T>)manga.getBookMarks());
+            default -> throw new IllegalArgumentException("Wrong layout");
+        };
         this.listener=listener;
         this.menuListener=menuListener;
-        this.manga=manga;
         setHasStableIds(true);
         rv.setAdapter(this);
         if(selectionId!=null){
@@ -45,6 +50,10 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
                     }).build();
         }
     }
+    public CustomAdapter(Manga manga,int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
+        this(holder_layout_id, listener, menuListener, rv, selectionId);
+        setManga(manga);
+    }
 
     public void setSelectable(boolean selectable){
         this.selectable=selectable;
@@ -54,10 +63,10 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     public void setManga(Manga manga){
-        this.manga=manga;
+        setList(getItems.apply(this.manga=manga));
     }
-    public void setList(List<T> list){
-        new DiffCallback<>(items, list).updateAfter(()->items=list,this);
+    private void setList(List<T> list){
+        new DiffCallback<>(items, list).updateAfter(()->items=new ArrayList<>(list),this);
     }
 
     public List<T> getList(){return items;}
@@ -79,13 +88,16 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     @Override
     public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position){
-        boolean selected=tracker!=null&&tracker.isSelected(Integer.toUnsignedLong(position));
-        if(holder instanceof ChapterHolder){((ChapterHolder)holder).bind((Chapter)items.get(position),selected);}
-        if(holder instanceof BookMarkHolder){((BookMarkHolder)holder).bind((BookMark)items.get(position));}
+        if(holder instanceof ChapterHolder h){h.bind((Chapter)items.get(position),isSelected(position));}
+        if(holder instanceof BookMarkHolder h){h.bind((BookMark)items.get(position));}
     }
 
     @Override
     public int getItemCount(){return items.size();}
+
+    public boolean isSelected(int position){
+        return tracker!=null&&tracker.isSelected(Integer.toUnsignedLong(position));
+    }
 
     public int getPosition(T item){
         if(item!=null && items!=null){
@@ -96,9 +108,10 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         return -1;
     }
 
-    public int search(String query){
+    public int search(Context context,String query){
+        query=query.toLowerCase();
         for (Chapter chapter: manga.getChapters()) {
-            if(chapter.text(context).contains(query)){return manga.getChapters().indexOf(chapter);}
+            if(chapter.text(context).toLowerCase().contains(query)){return manga.getChapters().indexOf(chapter);}
         }
         return -1;
     }

@@ -1,11 +1,9 @@
 package org.alex.kitsune.manga;
 
+import org.alex.json.JSON;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class BookMark{
     Chapter chapter;
@@ -21,21 +19,20 @@ public class BookMark{
     public Chapter getChapter(){return chapter;}
     public int getPage(){return page;}
     public long getDate(){return date;}
-    public JSONObject toJSON() throws JSONException{
-        return new JSONObject().put(FN[0],chapter!=null ? chapter.toJSON() : null).put(FN[1],page).put(FN[2],date);
+    public JSON.Object toJSON(){
+        return chapter==null? null : new JSON.Object().put(FN[0],chapter.toJSON()).put(FN[1],page).put(FN[2],date);
     }
-    public static BookMark fromJSON(JSONObject json) throws JSONException{
-        return json==null?null:new BookMark(Chapter.fromJSON(json.optJSONObject(FN[0])), json.getInt(FN[1]),json.getLong(FN[2]));
+    public static BookMark fromJSON(JSON.Object json){
+        return json==null ? null : new BookMark(Chapter.fromJSON(json.getObject(FN[0])), json.getInt(FN[1]),json.getLong(FN[2]));
     }
-    public static JSONArray toJSON(List<BookMark> bookMarks) throws JSONException{
-        JSONArray json=new JSONArray(); if(bookMarks!=null){for(BookMark bookMark : bookMarks){json.put(bookMark.toJSON());}}
-    return json;}
-    public static ArrayList<BookMark> fromJSON(JSONArray json) throws JSONException{
-        ArrayList<BookMark> bookMarks=new ArrayList<>(json!=null?json.length():0); for(int i=0;i<(json!=null?json.length():0);i++){bookMarks.add(BookMark.fromJSON(json.optJSONObject(i)));}
-    return bookMarks;}
+    public static JSON.Array<JSON.Object> toJSON(List<BookMark> list){
+        return list==null? null : new JSON.Array<>(list.stream().map(BookMark::toJSON).collect(Collectors.toList()));}
+    public static List<BookMark> fromJSON(List<JSON.Object> json){
+        return json==null ? null : json.stream().map(BookMark::fromJSON).collect(Collectors.toList());
+    }
     public boolean equals(BookMark bookMark){
         return (bookMark!=null && (chapter.equals(bookMark.chapter) && page==bookMark.page));
     }
     @NotNull
-    public String toString(){try{return toJSON().toString();}catch (JSONException e){e.printStackTrace();} return "null";}
+    public String toString(){return toJSON().toString();}
 }

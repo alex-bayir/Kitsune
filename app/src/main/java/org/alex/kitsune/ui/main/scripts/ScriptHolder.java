@@ -62,7 +62,7 @@ public class ScriptHolder extends RecyclerView.ViewHolder{
         try{
             Script script=Script.getInstance(file);
             name.setText(script.getName());
-            domain.setText("Domain: "+script.getString(Constants.providerName,"?"));
+            domain.setText("Domain: "+script.getString(Constants.source,"?"));
             status.setText("Status: work");
             img.setImageDrawable(img.getContext().getDrawable(script.getLanguageIconId()));
             version.setText("Version: "+script.getString(Constants.version,"?"));

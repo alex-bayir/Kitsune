@@ -82,23 +82,25 @@ public class Text {
         }
         public static List<Group> createGroups(List<com.google.mlkit.vision.text.Text.TextBlock> blocks){
             List<Group> groups=new LinkedList<>();
-            com.google.mlkit.vision.text.Text.TextBlock last=blocks.get(0);
-            List<com.google.mlkit.vision.text.Text.TextBlock> group=new LinkedList<>();
-            for(com.google.mlkit.vision.text.Text.TextBlock block:blocks){
-                Rect l=last.getBoundingBox();
-                Rect n=block.getBoundingBox();
-                assert l != null && n != null;
-                if (hypot((n.centerX()-l.centerX()),n.centerY()-l.centerY())>hypot(l.width()/2d,l.height())) {
-                    if(group.size()>0){
-                        groups.add(new Group(group));
+            if(blocks.size()>0){
+                com.google.mlkit.vision.text.Text.TextBlock last=blocks.get(0);
+                List<com.google.mlkit.vision.text.Text.TextBlock> group=new LinkedList<>();
+                for(com.google.mlkit.vision.text.Text.TextBlock block:blocks){
+                    Rect l=last.getBoundingBox();
+                    Rect n=block.getBoundingBox();
+                    assert l != null && n != null;
+                    if (hypot((n.centerX()-l.centerX()),n.centerY()-l.centerY())>hypot(l.width()/2d,l.height())) {
+                        if(group.size()>0){
+                            groups.add(new Group(group));
+                        }
+                        group = new LinkedList<>();
                     }
-                    group = new LinkedList<>();
+                    group.add(block);
+                    last=block;
                 }
-                group.add(block);
-                last=block;
-            }
-            if(group.size()>0){
-                groups.add(new Group(group));
+                if(group.size()>0){
+                    groups.add(new Group(group));
+                }
             }
             return groups;
         }

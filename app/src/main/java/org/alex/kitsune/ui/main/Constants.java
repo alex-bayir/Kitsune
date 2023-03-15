@@ -36,11 +36,12 @@ public class Constants {
     public static final String adjust_brightness_value="adjust_brightness_value";
     public static final String file="file";
     public static final String manga_scripts="manga_scripts";
-    public static final String provider="provider";
-    public static final String providerName="providerName";
-    public static final String sourceDescription="sourceDescription";
+    public static final String domain="domain";
+    public static final String source="source";
+    public static final String description="description";
     public static final String methodUpdate="update";
     public static final String methodQuery="query";
+    public static final String methodQueryURL="query_url";
     public static final String methodGetPages="getPages";
     public static final String methodCreateAdvancedSearchOptions="createAdvancedSearchOptions";
     public static final String methodLoadSimilar="loadSimilar";

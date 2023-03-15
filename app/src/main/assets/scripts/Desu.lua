@@ -3,56 +3,51 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 11:22
 ---
-Wrapper=luajava.bindClass("org.alex.kitsune.manga.Wrapper")
 Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
 Page=luajava.bindClass("org.alex.kitsune.manga.Page")
 Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-UrlBuilder=luajava.bindClass("org.alex.kitsune.commons.URLBuilder")
-JSONObject=luajava.bindClass("org.json.JSONObject")
-JSONArray=luajava.bindClass("org.json.JSONArray")
-ArrayList=luajava.bindClass("java.util.ArrayList")
-Map_class=luajava.bindClass("java.util.TreeMap")
+JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
+JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
-version="1.3"
-provider="desu.me"
-providerName="Desu"
-sourceDescription="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
-host="https://"..provider
+version="1.4"
+domain="desu.me"
+source="Desu"
+description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
+host="https://"..domain
 auth_tokens={"xf_user","xf_session"}
 
 Sorts={["По популярности"]="popular", ["По добавлению"]="id",["По алфавиту"]="name", ["По обновлениям"]="updated"}
 sorts={[1]="popular",[2]="id",[3]="updated"}
 Genres={["Безумие"]="dementia",["Боевые искусства"]="martial arts",["В цвете"]="color",["Вампиры"]="vampire",["Веб"]="web",["Гарем"]="harem",["Героическое фэнтези"]="heroic fantasy",["Демоны"]="demons",["Детектив"]="mystery",["Дзёсей"]="josei",["Драма"]="drama",["Ёнкома"]="yonkoma",["Игры"]="game",["Исекай"]="isekai",["Исторический"]="historical",["Комедия"]="comedy",["Космос"]="space",["ЛитRPG"]="litrpg",["Магия"]="magic",["Меха"]="mecha",["Мистика"]="mystic",["Музыка"]="music",["Научная фантастика"]="sci-fi",["Пародия"]="parody",["Повседневность"]="slice of life",["Постапокалиптика"]="post apocalyptic",["Приключения"]="adventure",["Психологическое"]="psychological",["Романтика"]="romance",["Самураи"]="samurai",["Сверхъестественное"]="supernatural",["Сёдзе"]="shoujo",["Сёдзе Ай"]="shoujo ai",["Сейнен"]="seinen",["Сёнен"]="shounen",["Сёнен Ай"]="shounen ai",["Смена пола"]="gender bender",["Спорт"]="sports",["Супер сила"]="super power",["Трагедия"]="tragedy",["Триллер"]="thriller",["Ужасы"]="horror",["Фантастика"]="fiction",["Фэнтези"]="fantasy",["Хентай"]="hentai",["Школа"]="school",["Экшен"]="action",["Этти"]="ecchi",["Юри"]="yuri",["Яой"]="yaoi"}
 
-function update(url) -- Wrapper
-    local jo=JSONObject.new(Wrapper:loadPage(url)):getJSONObject("response")
-    local list=jo:getJSONObject("chapters"):getJSONArray("list")
-    local chapters=ArrayList.new(list:length())
-    for i=list:length()-1,0,-1 do
-        chapters:add(Chapter.new(list:getJSONObject(i),"id","vol","ch","title","date",1000))
+function update(url)
+    local jo=JSONObject:create(network:load(url)):getObject("response")
+    local list=jo:getObject("chapters"):getArray("list")
+    local chapters={}; local last=list:size()-1;
+    for i=last,0,-1 do
+        local o=list:getObject(i)
+        chapters[last-i]=Chapter.new(o:get("vol"), o:get("ch"), o:get("title"), o:get("date")*1000,utils:to_map({id=o:get("id")}))
     end
-    local genres=jo:getJSONArray("genres") local str="" for i=0,genres:length()-1,1 do str=str..", "..genres:getJSONObject(i):getString("russian") end genres=str:sub(3)
-    return Wrapper.new(
-            url,
-            jo:getInt("id"),
-            jo:getString("name"),
-            jo:getString("russian"),
-            nil,
-            nil,
-            genres,
-            jo:getDouble("score")/2,
-            jo:getString("status"),
-            jo:getString("description"),
-            jo:getJSONObject("image"):getString("x225"),
-            jo:getString("url"),
-            chapters
-    )
+    return {
+        ["url"]=url,
+        ["id"]=jo:getInt("id"),
+        ["url_web"]=jo:getString("url"),
+        ["name"]=jo:getString("name"),
+        ["name_alt"]=jo:getString("russian"),
+        ["genres"]=jo:getArray("genres"):join(", ",{"russian"}),
+        ["rating"]=jo:getDouble("score")/2,
+        ["status"]=jo:getString("status"),
+        ["description"]=jo:getString("description"),
+        ["thumbnail"]=jo:getObject("image"):getString("x225"),
+        ["chapters"]=chapters
+    }
 end
-function query(name,page,params) -- java.util.ArrayList<Wrapper>
-    local url=UrlBuilder.new(host.."/manga/api/")
-    url:add("limit",100)
-    url:add("search",name)
-    url:add("page",page+1)
+
+function query(name,page,params)
+    local url=network:url_builder(host.."/manga/api/")
+    :add("limit",100)
+    :add("search",name)
+    :add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
             url:add("order",params[1]:getSelected()[1])
@@ -62,71 +57,61 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
         end
     end
     url=url:build()
+    return query_url(url)
+end
+
+function query_url(url,page)
+    if page then url=url:find("page=") and url:gsub("page=%d+","page="..tostring(page+1)) or url.."&page="..tostring(page+1) end
     print(url)
-    local array=JSONObject.new(Wrapper:loadPage(url)):getJSONArray("response")
-    local list=ArrayList.new(array:length())
-    for i=0,array:length()-1,1 do
+    local array=JSONObject:create(network:load(url)):getArray("response")
+    local list={}
+    for i=0,array:size()-1,1 do
         local jo=array:get(i)
-        list:add(Wrapper.new(
-                host.."/manga/api/"..jo:getInt("id"),
-                jo:getInt("id"),
-                jo:getString("name"),
-                jo:getString("russian"),
-                nil,
-                nil,
-                jo:getString("genres"),
-                jo:getDouble("score")/2,
-                jo:getString("status"),
-                jo:getString("description"),
-                jo:getJSONObject("image"):getString("x225")
-        ))
+        list[i]={
+            ["url"]=host.."/manga/api/"..jo:getInt("id"),
+            ["id"]=jo:getInt("id"),
+            ["name"]=jo:getString("name"),
+            ["name_alt"]=jo:getString("russian"),
+            ["genres"]=jo:getString("genres"),
+            ["rating"]=jo:getDouble("score")/2,
+            ["status"]=jo:getString("status"),
+            ["description"]=jo:getString("description"),
+            ["thumbnail"]=jo:getObject("image"):getString("x225")
+        }
     end
     return list
 end
-function getPages(url,chapter) -- ArrayList<Page>
-    local array=JSONObject.new(Wrapper:loadPage(url.."/chapter/"..chapter.id)):getJSONObject("response"):getJSONObject("pages"):getJSONArray("list")
-    local pages=ArrayList.new(array:length())
-    for i=0,array:length()-1,1 do
-        local jo=array:getJSONObject(i)
-        pages:add(Page.new(jo:getInt("id"),jo:getInt("page"),jo:getString("img")))
+
+function getPages(url,chapter) -- table <Page>
+    local array=JSONObject:create(network:load(url.."/chapter/"..chapter["id"])):getObject("response"):getObject("pages"):getArray("list")
+    local pages={}
+    for i=0,array:size()-1,1 do
+        local jo=array:getObject(i)
+        pages[i]=Page.new(jo:getInt("page"),jo:getString("img"))
     end
     return pages
 end
-function createAdvancedSearchOptions() -- ArrayList<Options>
-    local options=ArrayList.new()
-    options:add(Options.new("Сортировка",convert(Sorts),0))
-    options:add(Options.new("Жанры",convert(Genres),1))
-    return options
+
+function createAdvancedSearchOptions() -- table <Options>
+    return {
+        Options.new("Сортировка",utils:to_map(Sorts),0),
+        Options.new("Жанры",utils:to_map(Genres),1)
+    }
 end
 
-function convert(luaTable)
-    local javaTable=Map_class.new()
-    for key,value in pairs(luaTable) do javaTable:put(key,value) end
-    return javaTable
-end
-
-function num(n) return n==nil and 0 or tonumber(n:match("[0-9]*%.?[0-9]+")) end
-
-function loadSimilar(wrapper)
-    local elements=Wrapper:loadDocument(host.."/manga/"..wrapper.id):select("article.c-anime")
-    local similar=ArrayList.new()
-    for i=0,(elements~=nil and elements:size() or 0)-1,1 do
+function loadSimilar(manga)
+    local elements=network:load_as_Document(host.."/manga/"..manga["id"]):select("article.c-anime")
+    local similar={}; local n=0;
+    for i=0,(elements and elements:size() or 0)-1,1 do
         local e=elements:get(i):selectFirst("img")
-        if(e~=nil) then
-            similar:add(Wrapper.new(
-                    host.."/manga/api/"..e:attr("src"):match("%d+"),
-                    num(e:attr("src"):match("%d+")),
-                    e:attr("title"),
-                    e:attr("title"),
-                    nil,
-                    nil,
-                    nil,
-                    0,
-                    nil,
-                    nil,
-                    host..e:attr("src")
-            ))
-        end
+        similar[n]=e and {
+            ["url"]=host.."/manga/api/"..e:attr("src"):match("%d+"),
+            ["id"]=num(e:attr("src"):match("%d+")),
+            ["name"]=e:attr("title"),
+            ["name_alt"]=e:attr("title"),
+            ["thumbnail"]=host..e:attr("src")
+        }
+        n=n+(e and 1 or 0)
     end
     return similar
 end

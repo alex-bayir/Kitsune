@@ -14,6 +14,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
+import org.alex.json.JSON;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
@@ -22,9 +23,6 @@ import org.alex.kitsune.manga.Manga_Scripted;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -34,7 +32,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.alex.kitsune.BuildConfig;
 
 public class Updater {
-    private static JSONObject updateInfo=null;
+    private static JSON.Object updateInfo=null;
     private static File f;
     public static void init(Context context){
         f=new File(context.getExternalCacheDir().getAbsolutePath()+File.separator+"update.apk"); f.delete();
@@ -43,21 +41,21 @@ public class Updater {
             Logs.clearAll();
         }
     }
-    private static JSONObject getUpdate(Context context){
+    private static JSON.Object getUpdate(Context context){
         if(NetworkUtils.isNetworkAvailable(context)){
             try{
-                JSONArray json=new JSONArray(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/releases"));
-                for(int i=0;i<json.length();i++){
-                    JSONObject jo=json.getJSONObject(i);
+                JSON.Array<?> json=JSON.Array.create(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/releases"));
+                for(int i=0;i<json.size();i++){
+                    JSON.Object jo=json.getObject(i);
                     String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
-                    JSONArray assets=jo.optJSONArray("assets");
-                    for(int j=0;j<(assets!=null?assets.length():0) && (url==null || !url.contains(".apk"));j++){
-                        url=assets.getJSONObject(j).optString("browser_download_url");
+                    JSON.Array<?> assets=jo.getArray("assets");
+                    for(int j=0;j<(assets!=null?assets.size():0) && (url==null || !url.contains(".apk"));j++){
+                        url=assets.getObject(j).getString("browser_download_url");
                     }
                     if(url!=null && url.contains(".apk")){
                         switch (compareVersions(BuildConfig.VERSION_NAME,version)){
                             case 0: if(!BuildConfig.BUILD_TYPE.equals("debug")){break;}
-                            case 1: return new JSONObject().put("url",url).put("version",version);
+                            case 1: return new JSON.Object().put("url",url).put("version",version);
                             case -1: break;
                         }
                     }
@@ -76,12 +74,12 @@ public class Updater {
             SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
             Set<String> hashes=prefs.getStringSet(Constants.scripts_hashes,new HashSet<>());
             try{
-                JSONArray json=new JSONArray(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/contents/app/src/main/assets/scripts"));
-                for(int i=0;i<json.length();i++) {
+                JSON.Array<?> json=JSON.Array.create(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/contents/app/src/main/assets/scripts"));
+                for(int i=0;i<json.size();i++) {
                     int index=i;
                     Thread thread=new Thread(() -> {
                         try{
-                            JSONObject jo=json.getJSONObject(index);
+                            JSON.Object jo=json.getObject(index);
                             if(!hashes.contains(jo.getString("sha"))){
                                 String url=jo.getString("download_url");
                                 String text_script=NetworkUtils.getString(url);
@@ -92,7 +90,7 @@ public class Updater {
                                 }
                             }
                             set.add(jo.getString("sha"));
-                        }catch (IOException | JSONException e){
+                        }catch (IOException e){
                             Logs.saveLog(e);
                         }
                     });
@@ -102,7 +100,7 @@ public class Updater {
                 if(set.size()>0){
                     prefs.edit().putStringSet(Constants.scripts_hashes,set).apply();
                 }
-            }catch (IOException | JSONException e){
+            }catch (IOException e){
                 Logs.saveLog(e);
             }
         }
@@ -140,10 +138,10 @@ public class Updater {
         }
     }
 
-    public static String getUrl(){return updateInfo!=null ? updateInfo.optString("url",null) : null;}
-    public static String getVersion(){return updateInfo!=null ? updateInfo.optString("url",null) : null;}
+    public static String getUrl(){return updateInfo!=null ? updateInfo.getString("url") : null;}
+    public static String getVersion(){return updateInfo!=null ? updateInfo.getString("url") : null;}
     public static File getFile(){return f;}
-    public static void getUpdate(Context context,Callback<JSONObject> callback){
+    public static void getUpdate(Context context,Callback<JSON.Object> callback){
         if(updateInfo!=null){callback.call(updateInfo);}else{
             if(NetworkUtils.isNetworkAvailable(context)){
                 new Thread(()->{
@@ -154,7 +152,7 @@ public class Updater {
     }
     public static void loadUpdate(Callback<String> progressUpdate, Callback<Boolean> finished){
         if(!f.exists()){
-            String url=updateInfo!=null ? updateInfo.optString("url",null) :null;
+            String url=updateInfo!=null ? updateInfo.getString("url") :null;
             if(url==null){return;}
             new Thread(()->{
                 boolean finish=NetworkUtils.load(url,null,f,null,(read,length)->{
@@ -194,7 +192,7 @@ public class Updater {
         return CustomSnackbar.makeSnackbar(parent, duration).setGravity(gravity).setText(text).setIcon(R.drawable.ic_caution_yellow).setAction(R.string.update,update).setBackgroundAlpha(200);
     }
     public static CustomSnackbar createSnackBarUpdate(ViewGroup parent, int gravity, int duration, View.OnClickListener update){
-        return createSnackBarUpdate(parent,gravity,duration,parent.getContext().getString(R.string.new_version_founded)+" "+updateInfo.optString("version"),update);
+        return createSnackBarUpdate(parent,gravity,duration,parent.getContext().getString(R.string.new_version_founded)+" "+updateInfo.getString("version"),update);
     }
     public static Dialog createDialogUpdate(Context context, View.OnClickListener update){
         Dialog dialog=new Dialog(context);

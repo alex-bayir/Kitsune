@@ -17,14 +17,14 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.json.JSON;
 import org.alex.kitsune.R;
 import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
+import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class SettingsShelf  extends Fragment {
     RecyclerView rv;
@@ -34,15 +34,15 @@ public class SettingsShelf  extends Fragment {
     SharedPreferences prefs;
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        View view=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
-        rv=view.findViewById(R.id.rv_list);
+        rv=new RecyclerView(requireContext());
+        rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter=new Adapter(containers=getSequence(prefs));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
-        return view;
+        return rv;
     }
 
     @Override
@@ -92,36 +92,30 @@ public class SettingsShelf  extends Fragment {
             this.count=count;
             this.first=first;
         }
-        public JSONObject toJSON(){
-            try{return new JSONObject().put("name",name).put("count",count).put("first", first);}catch(JSONException e){return null;}
+        public JSON.Object toJSON(){
+            return new JSON.Object().put("name",name).put("count",count).put("first", first);
         }
-        public static Container fromJSON(JSONObject json){
-            try{
-                return new Container(json.optString("name"), json.optInt("count"),json.optBoolean("first", false));
-            }catch (Throwable e){
-                return null;
-            }
+        public static Container fromJSON(JSON.Object json){
+            return new Container(json.getString("name"), json.getInt("count"),json.get("first", false));
         }
-        public static JSONArray toJSON(Collection<Container> list){
-            JSONArray jsonArray=new JSONArray();
+        public static JSON.Array<JSON.Object> toJSON(Collection<Container> list){
+            JSON.Array<JSON.Object> array=new JSON.Array<>();
             for(Container container:list){
                 if(container.toJSON()!=null){
-                    jsonArray.put(container.toJSON());
+                    array.add(container.toJSON());
                 }
             }
-            return jsonArray;
+            return array;
         }
-        public static ArrayList<Container> fromJSON(String json){
-            ArrayList<Container> list=new ArrayList<>(10);
+        public static List<Container> fromJSON(String json){
             if(json!=null && !json.isEmpty()){
                 try {
-                    JSONArray jsonArray=new JSONArray(json);
-                    for(int i=0;i<jsonArray.length();i++){
-                        list.add(Container.fromJSON(jsonArray.getJSONObject(i)));
-                    }
-                }catch (JSONException e){e.printStackTrace();}
+                    return JSON.Array.create(json).stream().map(j-> Container.fromJSON((JSON.Object)j)).collect(Collectors.toList());
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
             }
-            return list;
+            return new ArrayList<>(10);
         }
     }
     public class Adapter extends RecyclerView.Adapter<Holder>{

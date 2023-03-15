@@ -35,6 +35,7 @@ import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.util.List;
 
@@ -52,27 +53,32 @@ public class PreviewActivity extends AppCompatActivity{
     private static int hashManga=-1;
     static final int PERMISSION_REQUEST_CODE=1;
     static final int CALL_FILE_STORE=2;
+    private Runnable scrollToHistory=()->{adapter.getChaptersPage().scrollToHistory(); scrollToHistory=null;};
     private final Callback<Throwable> errorCallback=(throwable) -> {
         progressBar.progressiveStop(); this.throwable=throwable;
         if(throwable!=null && throwable.getCause() instanceof IOException e){
             Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
-            adapter.bindPages(manga,true);
+            adapter.bindPages();
         }else{
             throwableTime=Logs.saveLog(throwable);
             adapter.bindPages(throwable);
         }
         invalidateOptionsMenu();
     };
-    private void updateContent(){
+    private final Callback<Boolean> updateCallback=(updated) -> {
         toolbar.setTitle(manga.getName());
         toolbar.setSubtitle(manga.getNameAlt());
-        if(manga.isUpdated()){
+        if(updated){
             progressBar.progressiveStop();
             sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()));
             manga.loadSimilar(obj -> {MangaService.setCacheDirIfNull((List<Manga>) obj); adapter.bindPages();},errorCallback);
             invalidateOptionsMenu();
         }
+        adapter.bindPages();
         Utils.Activity.clippingToolbarTexts(toolbar,v->{createDialog(this,manga).show(); return true;});
+    };
+    public void updateContent(){
+        updateCallback.call(manga.isUpdated());
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,17 +115,19 @@ public class PreviewActivity extends AppCompatActivity{
             MangaService.init(this);
             hashManga=-1;
         }
-        manga=MangaService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash,hashManga),Manga.fromJSON(getIntent().getStringExtra(Constants.manga)));
+        manga=MangaService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash,hashManga),getIntent().getStringExtra(Constants.manga));
         hashManga=manga!=null ? manga.hashCode() : -1;
         if(manga==null){finish();}
         if(!manga.getDir().startsWith(MangaService.getDir())){manga.moveTo(MangaService.getDir());}
 
-        adapter=new PreviewPagerAdapter(this,manga);
+        adapter=new PreviewPagerAdapter(manga);
         pager=findViewById(R.id.pager);
         pager.setAdapter(adapter);
         progressBar.progressiveStart();
         updateContent();
-        manga.update(this, this::updateContent, errorCallback);
+        if(NetworkUtils.isNetworkAvailable(this)){
+            manga.update(updateCallback, errorCallback);
+        }else{errorCallback.call(null);}
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(adapter.getTitle(position))).attach();
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -129,6 +137,7 @@ public class PreviewActivity extends AppCompatActivity{
                     case 1 -> {
                         bottomBar.setVisibility(View.VISIBLE);
                         bottomBar.animate().translationY(0.0f).setListener(null).start();
+                        if(scrollToHistory!=null){scrollToHistory.run();}
                     }
                     default ->
                             bottomBar.animate().translationY((float) bottomBar.getHeight()).setListener(new AnimatorListenerAdapter() {
@@ -161,30 +170,31 @@ public class PreviewActivity extends AppCompatActivity{
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if(adapter!=null){adapter.bindPages();}
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.action_chapter_remove_all: adapter.getChaptersPage().action(ChaptersPage.RA); return true;
-            case R.id.action_chapter_save_all: adapter.getChaptersPage().action(ChaptersPage.SA); return true;
-            case R.id.action_chapter_remove_selected: adapter.getChaptersPage().action(ChaptersPage.RS); return true;
-            case R.id.action_chapter_save_selected: adapter.getChaptersPage().action(ChaptersPage.SS); return true;
-            case R.id.action_reverse:
-                boolean z=adapter.getChaptersPage().setReversed(!item.isChecked());
+        return switch (item.getItemId()) {
+            case android.R.id.home -> {finish(); yield true;}
+            case (R.id.action_chapter_remove_all) -> {adapter.getChaptersPage().action(ChaptersPage.RA); yield true;}
+            case (R.id.action_chapter_save_all) -> {adapter.getChaptersPage().action(ChaptersPage.SA); yield true;}
+            case (R.id.action_chapter_remove_selected) -> {adapter.getChaptersPage().action(ChaptersPage.RS); yield true;}
+            case (R.id.action_chapter_save_selected) -> {adapter.getChaptersPage().action(ChaptersPage.SS); yield true;}
+            case (R.id.action_reverse) -> {
+                boolean z = adapter.getChaptersPage().setReversed(!item.isChecked());
                 item.setChecked(z).setIcon(z ? R.drawable.ic_sort_numeric_reverse : R.drawable.ic_sort_numeric);
-                prefs.edit().putBoolean(Constants.reversed,z).apply();
-                return z;
-            case R.id.show_log: Logs.createDialog(this, throwable, throwableTime).show(); break;
-            case R.id.action_share: startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT,manga.getUrl()).setType("text/plain").putExtra(Intent.EXTRA_TITLE,manga.getAnyName()).putExtra(Intent.EXTRA_SUBJECT,manga.getAnyName()),null)); break;
-            case R.id.action_create_shortcut: if(createShortCutManga(manga)){CustomSnackbar.makeSnackbar(findViewById(android.R.id.content),Snackbar.LENGTH_LONG).setGravity(Gravity.TOP|Gravity.CENTER_VERTICAL).setText(R.string.if_shortcut_did_not_created).setIcon(R.drawable.ic_caution_yellow).setAction(R.string.settings,v -> Utils.App.callPermissionsScreen(this, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)).setBackgroundAlpha(200).show();}else{Toast.makeText(this,R.string.unable_create_shortcut,Toast.LENGTH_LONG).show();} break;
-            default: return super.onOptionsItemSelected(item);
-        }
-        return true;
+                prefs.edit().putBoolean(Constants.reversed, z).apply();
+                yield z;
+            }
+            case (R.id.show_log) -> {Logs.createDialog(this, throwable, throwableTime).show(); yield true;}
+            case (R.id.action_share) -> {startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, manga.getUrl()).setType("text/plain").putExtra(Intent.EXTRA_TITLE, manga.getAnyName()).putExtra(Intent.EXTRA_SUBJECT, manga.getAnyName()), null)); yield true;}
+            case (R.id.action_create_shortcut) -> {
+                if (createShortCutManga(manga)) {
+                    CustomSnackbar.makeSnackbar(findViewById(android.R.id.content), Snackbar.LENGTH_LONG).setGravity(Gravity.TOP | Gravity.CENTER_VERTICAL).setText(R.string.if_shortcut_did_not_created).setIcon(R.drawable.ic_caution_yellow).setAction(R.string.settings, v -> Utils.App.callPermissionsScreen(this, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)).setBackgroundAlpha(200).show();
+                } else {
+                    Toast.makeText(this, R.string.unable_create_shortcut, Toast.LENGTH_LONG).show();
+                }
+                yield true;
+            }
+            default -> super.onOptionsItemSelected(item);
+        };
     }
     private void onPrepareBottomBarMenu(Menu menu) {
         menu.findItem(R.id.action_reverse).setChecked(prefs.getBoolean(Constants.reversed,false)).setIcon(menu.findItem(R.id.action_reverse).isChecked() ? R.drawable.ic_sort_numeric_reverse : R.drawable.ic_sort_numeric);
@@ -195,7 +205,7 @@ public class PreviewActivity extends AppCompatActivity{
             @Override public boolean onQueryTextSubmit(String query){return false;}
             @Override
             public boolean onQueryTextChange(String newText) {
-                adapter.getChaptersPage().search(newText);
+                adapter.getChaptersPage().search(PreviewActivity.this,newText);
                 return false;
             }
         });

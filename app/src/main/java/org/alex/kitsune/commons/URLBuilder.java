@@ -1,8 +1,8 @@
 package org.alex.kitsune.commons;
 
 import androidx.annotation.NonNull;
+import org.alex.json.JSON;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 import java.net.URLEncoder;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,8 +43,8 @@ public class URLBuilder {
         }
         return this;
     }
-    public URLBuilder add(JSONObject params){
-        params.keys().forEachRemaining(key->add(key,params.opt(key)));
+    public URLBuilder add(JSON.Object params){
+        params.keySet().forEach(key->add(key,params.get(key)));
         return this;
     }
     public URLBuilder add(String param){

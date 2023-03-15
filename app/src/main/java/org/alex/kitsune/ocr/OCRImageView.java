@@ -128,6 +128,7 @@ public class OCRImageView extends PhotoView {
         DisplayMetrics displayMetrics = new DisplayMetrics();
         ((Activity)getContext()).getWindowManager().getDefaultDisplay().getRealMetrics(displayMetrics);
         int view_height = displayMetrics.heightPixels/2;
+        //int view_height = height/Math.round(height/(float)(displayMetrics.heightPixels/2))+1;
         new Thread(()->{
             int width=bitmap.getWidth();
             int height=bitmap.getHeight();
@@ -197,5 +198,28 @@ public class OCRImageView extends PhotoView {
         rect.top=(int)(rect.top*scaleY);
         rect.right=(int)(rect.right*scaleX);
         rect.bottom=(int)(rect.bottom*scaleY);
+    }
+
+    public org.alex.kitsune.ocr.Text.Group getTextBlock(float x,float y){
+        org.alex.kitsune.ocr.Text text=texts.get(save);
+        if(text!=null && text.getGroups()!=null && getDrawable() instanceof BitmapDrawable bd){
+            float scaleX=getWidth()/(float)bd.getBitmap().getWidth();
+            float scaleY=getHeight()/(float)bd.getBitmap().getHeight();
+            x=x/scaleX; y=y/scaleY;
+            for(org.alex.kitsune.ocr.Text.Group group:text.getGroups()){
+                if(group.getBoundingBox().contains((int)x,(int)y)){
+                    return group;
+                }
+            }
+        }
+        return null;
+    }
+    public boolean showDialogTranslateIfTextExists(float x,float y){
+        org.alex.kitsune.ocr.Text.Group group=getTextBlock(x,y);
+        if(group!=null){
+            new DialogTranslate(getContext()).init(group.getText(),group.getTranslated()).show();
+            return true;
+        }
+        return false;
     }
 }

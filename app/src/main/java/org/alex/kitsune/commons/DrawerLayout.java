@@ -121,18 +121,21 @@ public class DrawerLayout extends FrameLayout {
         drawer.layout(-drawerWidth, 0, 0, drawerHeight);
     }
 
+    private boolean moved=false;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
+                moved=false;
                 break;
             case MotionEvent.ACTION_MOVE:
+                moved=true;
                 drawer.animate().x(helper.slide(opened,event.getX()-startX))
                         .setUpdateListener(animation -> onSlide(drawer,helper.offset())).setDuration(0).start();
                 break;
             case MotionEvent.ACTION_UP:
             case MotionEvent.ACTION_CANCEL:
-                if(helper.shouldOpen(opened)){
+                if(helper.shouldOpen(opened) && moved){
                     openDrawer();
                 }else{
                     closeDrawer();

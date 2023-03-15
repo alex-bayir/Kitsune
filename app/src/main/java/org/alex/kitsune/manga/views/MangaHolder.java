@@ -77,7 +77,7 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         setRating(manga.getRating());
         setNumSaved(manga.countSaved());
         setNumNew(showUpdated ? manga.getNotCheckedNew() : manga.getCheckedNew());
-        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? manga.getProviderName() : manga.getStatus()), !button.hasOnClickListeners() || (manga.getNumChapterHistory()>=0));
+        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? manga.getSource() : manga.getStatus()), !button.hasOnClickListeners() || (manga.getNumChapterHistory()>=0));
         setVisibleMarkNew(manga.getNotCheckedNew()>0);
     }
     public void bind(Manga manga, boolean showSource, boolean showUpdated, long fullSize, boolean full_content, int orientation){

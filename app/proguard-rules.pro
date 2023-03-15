@@ -23,4 +23,5 @@
 -keep class com.github.mikephil.charting.** { *; }
 -keep class org.jsoup.** {*;}
 -keep class org.alex.kitsune.** {*;}
+-keep class org.alex.json.** {*;}
 -dontobfuscate

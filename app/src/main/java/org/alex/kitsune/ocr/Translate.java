@@ -2,16 +2,24 @@ package org.alex.kitsune.ocr;
 
 import android.os.Handler;
 import android.os.Looper;
+import org.alex.json.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.utils.NetworkUtils;
 import java.util.LinkedList;
-import org.json.JSONArray;
-import org.json.JSONException;
 import java.io.IOException;
 
-
 public class Translate {
+    public static final String[] default_langs=new String[]{"Russian","English","Korean","Japanese","Chinese"};
+    public static String convert(String lang){
+        return lang==null ? null : switch (lang){
+            case "Russian","ru"->"ru";
+            case "Korean","ko"->"ko";
+            case "Japanese","ja"->"ja";
+            case "Chinese","zh"->"zh";
+            default->"en";
+        };
+    }
     final String source_lang;
     final String target_lang;
     private LinkedList<Callback<Task>> success;
@@ -22,8 +30,8 @@ public class Translate {
         this(null,target_lang);
     }
     public Translate(String source_lang,String target_lang){
-        this.source_lang=source_lang;
-        this.target_lang=target_lang;
+        this.source_lang=convert(source_lang);
+        this.target_lang=convert(target_lang);
         if(target_lang==null || target_lang.isEmpty()){
             throw new IllegalArgumentException("Target language must be initialized");
         }
@@ -131,14 +139,14 @@ public class Translate {
         }
         public void translate(){
             try{
-                JSONArray json=new JSONArray(Translate.translate(source_lang,target_lang,text));
-                json=json.getJSONArray(0);
+                JSON.Array<?> json=JSON.Array.create(Translate.translate(source_lang,target_lang,text));
+                json=json.getArray(0);
                 StringBuilder builder=new StringBuilder();
-                for(int i=0;i<json.length();i++){
-                    builder.append('\n').append(json.getJSONArray(i).optString(0));
+                for(int i=0;i<json.size();i++){
+                    builder.append('\n').append(json.getArray(i).getString(0));
                 }
                 translated=builder.substring(1);
-            } catch (IOException|JSONException e) {
+            } catch (IOException e) {
                 error=e;
             }
         }

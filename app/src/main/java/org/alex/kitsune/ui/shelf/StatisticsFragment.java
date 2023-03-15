@@ -22,6 +22,7 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
+import org.alex.json.JSON;
 import org.alex.kitsune.R;
 import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.manga.Manga_Scripted;
@@ -29,14 +30,13 @@ import org.alex.kitsune.services.MangaService;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class StatisticsFragment extends Fragment implements MenuProvider {
     View root;
@@ -157,31 +157,25 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             }
             return map;
         }
-        public static JSONObject toJSON(Map<String, Set<Integer>> map){return new JSONObject(map);}
-        public static TreeMap<String, Set<Integer>> fromJSON(JSONObject json){return fromJSON(json,true);}
-        public static TreeMap<String, Set<Integer>> fromJSON(JSONObject json, boolean full){
+        public static JSON.Object toJSON(Map<String, Set<Integer>> map){return new JSON.Object(map.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue)));}
+        public static TreeMap<String, Set<Integer>> fromJSON(JSON.Object json){return fromJSON(json,true);}
+        public static TreeMap<String, Set<Integer>> fromJSON(JSON.Object json, boolean full){
             TreeMap<String, Set<Integer>> map=new TreeMap<>(String.CASE_INSENSITIVE_ORDER.reversed());
-            Iterator<String> it=json.keys();
-            while(it.hasNext()){
+            for (String key:json.keySet()){
                 try{
-                    String key=it.next();
-                    JSONArray arr=json.getJSONArray(key);
-                    ArraySet<Integer> set=new ArraySet<>(arr.length());
-                    for(int i=0;i<arr.length();i++){
-                        set.add(arr.optInt(i));
-                    }
+                    Set<Integer> set=json.getArray(key).stream().map(j->(int)j).collect(Collectors.toSet());
                     if(set.size()>0 || full){
                         map.put(key,set);
                     }
-                }catch (JSONException e){e.printStackTrace();}
+                }catch (Throwable e){e.printStackTrace();}
             }
             return map;
         }
-        public static TreeMap<String, Set<Integer>> fromJSON(String json, boolean full) throws JSONException {
-            return fromJSON(new JSONObject(json),full);
+        public static TreeMap<String, Set<Integer>> fromJSON(String json, boolean full) throws IOException {
+            return fromJSON(JSON.Object.create(json),full);
         }
-        public static TreeMap<String, Set<Integer>> fromJSON(String json) throws JSONException {
-            return fromJSON(new JSONObject(json));
+        public static TreeMap<String, Set<Integer>> fromJSON(String json) throws IOException {
+            return fromJSON(JSON.Object.create(json));
         }
         public static <T extends Map<String, Set<Integer>>> T saveGenresStatistics(String path,T map){
             try{Utils.File.writeFile(new File(path),toJSON(map).toString(),false); return map;}catch (FileNotFoundException e){e.printStackTrace(); return map;}
@@ -195,7 +189,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
         public static TreeMap<String, Set<Integer>> loadGenresStatistics(String path, Set<String> genres, Set<Manga> mangas, boolean all){
             try{
                 return applyByGenres(fromJSON(Utils.File.readFile(new File(path)),all),genres,mangas,all);
-            }catch (FileNotFoundException | JSONException e){
+            }catch (IOException e){
                 e.printStackTrace();
                 return byGenres(genres,mangas,all);
             }
@@ -240,14 +234,14 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
 
 
         public static void updateReading(SharedPreferences prefs,long new_time){
-            JSONObject json=new JSONObject();
+            JSON.Object json=new JSON.Object();
             try{
-                json=new JSONObject(prefs.getString(Constants.reading_time,null));
+                json=JSON.Object.create(prefs.getString(Constants.reading_time,null));
             }catch (Throwable ignored){}
-            long all_time=json.optLong("all time");
-            long today_time=json.optLong("today time");
-            long days=json.optLong("days",0);
-            String today=json.optString("today");
+            long all_time=json.getLong("all time");
+            long today_time=json.getLong("today time");
+            long days=json.get("days",0L);
+            String today=json.getString("today");
             String date=new SimpleDateFormat("dd.MM.yyyy",Locale.getDefault(Locale.Category.FORMAT)).format(Calendar.getInstance().getTime());
             if(date.equals(today)){
                 today_time+=new_time;
@@ -266,11 +260,11 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             prefs.edit().putString(Constants.reading_time,json.toString()).apply();
         }
         public static long getAverageTimeReading(SharedPreferences prefs){
-            JSONObject json=new JSONObject();
+            JSON.Object json=new JSON.Object();
             try{
-                json=new JSONObject(prefs.getString(Constants.reading_time,null));
+                json=JSON.Object.create(prefs.getString(Constants.reading_time,null));
             }catch (Throwable ignored){}
-            return json.optLong("all time")/json.optLong("days",1);
+            return json.getLong("all time")/json.get("days",1L);
         }
 
     }

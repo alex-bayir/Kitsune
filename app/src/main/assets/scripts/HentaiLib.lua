@@ -3,22 +3,19 @@
 --- Created by Аlex Bayir.
 --- DateTime: 18.01.2023 21:22
 ---
-Wrapper=luajava.bindClass("org.alex.kitsune.manga.Wrapper")
 Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
 Page=luajava.bindClass("org.alex.kitsune.manga.Page")
 Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-UrlBuilder=luajava.bindClass("org.alex.kitsune.commons.URLBuilder")
-JSONObject=luajava.bindClass("org.json.JSONObject")
-JSONArray=luajava.bindClass("org.json.JSONArray")
-ArrayList=luajava.bindClass("java.util.ArrayList")
-Map_class=luajava.bindClass("java.util.TreeMap")
+JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
+JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
-version="1.3"
-provider="hentailib.me"
-providerName="HentaiLib"
-sourceDescription="Один из самых популярных источников манги в СНГ."
-host="https://"..provider
+version="1.4"
+domain="v1.hentailib.org"
+source="HentaiLib"
+description="Один из самых популярных источников манги в СНГ."
+host="https://"..domain
 auth_tokens={"remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d"}
+icon=host.."/icons/icon-192x192.png"
 
 Sorts={["По рейтингу"]="rating_score", ["По количеству оценок"]="rate", ["По названию"]="name", ["По дате обновлениям"]="last_chapter_at",["По дате добавления"]="created_at",["По просмотрам"]="views",["По количеству глав"]="chap_count"}
 sorts={[1]="rate",[2]="created_at",[3]="last_chapter_at"}
@@ -30,51 +27,46 @@ Types={["Манга"]="1",["OEL-манга"]="4",["Манхва"]="5",["Мань
 Status={["Онгоинг"]="1",["Завершён"]="2",["Анонс"]="3",["Приостановлен"]="4",["Выпуск прекращён"]="5"}
 Formats={["4-кома (Ёнкома)"]="1",["Сборник"]="2",["Додзинси"]="3",["В цвете"]="4",["Сингл"]="5",["Веб"]="6",["Вебтун"]="7"}
 
-function update(url) -- Wrapper
-    local doc=Wrapper:loadDocument(url)
-    local json=JSONObject.new(doc:select("script"):toString():match("window.__DATA__ = (%b{})"))
-    local ui=json:optJSONObject("user"); if(ui) then ui=ui:optInt("id",-1); if(ui==-1) then ui=nil end end
-    local jo=json:getJSONObject("manga")
+function update(url)
+    local doc=network:load_as_Document(url)
+    local json=JSONObject:create(doc:select("script"):toString():match("window.__DATA__ = (%b{})"))
+    local ui=json:getObject("user"); if(ui) then ui=ui:get("id",-1); if(ui==-1) then ui=nil end end
+    local jo=json:getObject("manga")
     local container=doc:selectFirst("div.media-container")
     local genres=container:select("a.media-tag-item") local str="" for i=0,genres:size()-1,1 do str=str..", "..genres:get(i):text() end genres=str:sub(3)
-    local list=json:getJSONObject("chapters"):getJSONArray("list")
-    local chapters=ArrayList.new(list:length())
-    local branches=json:getJSONObject("chapters"):getJSONArray("branches")
-    local translaters={}
-    for i=0,(branches~=nil and branches:length() or 0)-1,1 do
-        local jobj=branches:getJSONObject(i)
-        local teams=jobj:getJSONArray("teams")
-        for j=0,(teams~=nil and teams:length() or 0)-1,1 do
-            jobj=teams:getJSONObject(j)
-            translaters[jobj:getInt("branch_id")]=jobj:getString("name")
+    local list=json:getObject("chapters"):getArray("list")
+    local chapters=utils:to_list({})
+    local branches=json:getObject("chapters"):getArray("branches")
+    local translators={}
+    for i=0,(branches~=nil and branches:size() or 0)-1,1 do
+        local teams=branches:getObject(i):getArray("teams")
+        for j=0,(teams~=nil and teams:size() or 0)-1,1 do
+            local o=teams:getObject(j)
+            translators[o:getInt("branch_id")]= o:getString("name")
         end
     end
-    for i=list:length()-1,0,-1 do
-        local jobj=list:getJSONObject(i); local branch_id=jobj:optInt("branch_id",-1); if(branch_id==-1) then branch_id=nil end
-        chapters:add(Chapter.new(jobj,"chapter_id","chapter_volume","chapter_number","chapter_name", "chapter_created_at","yyyy-MM-dd' 'HH:mm:ss",convert({["translater"]=translaters[branch_id],["bid"]=branch_id,["ui"]=ui})))
+    for i=list:size()-1,0,-1 do
+        local o=list:getObject(i); local branch_id=o:get("branch_id",-1); if(branch_id==-1) then branch_id=nil end
+        chapters:add(Chapter.new(o:get("chapter_volume"),o:get("chapter_number"),o:get("chapter_name"),utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),utils:to_map({["translator"]=translators[branch_id], ["bid"]=branch_id, ["ui"]=ui})))
     end
     local author=container:selectFirst("a[abs:href*=/people/]")
-    return Wrapper.new(
-            url,
-            jo:getInt("id"),
-            jo:getString("name"),
-            jo:getString("rusName"),
-            Wrapper:text(author),
-            Wrapper:attr(author,"abs:href"),
-            genres,
-            num(container:selectFirst("div.media-rating__value"):text()),
-            jo:optInt("status"),
-            Wrapper:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
-            container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
-            url,
-            Wrapper:uniqueChapters(chapters,true),
-            similar(container:select("div.media-slider__item"))
-    )
+    return {
+        ["url"]=url,
+        ["url_web"]=url,
+        ["name"]=jo:getString("name"),
+        ["name_alt"]=jo:getString("rus_name"),
+        ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
+        ["genres"]=genres,
+        ["rating"]=num(container:selectFirst("div.media-rating__value"):text()),
+        ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
+        ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
+        ["chapters"]=utils:uniqueChapters(chapters,true),
+        ["similar"]=similar(container:select("div.media-slider__item"))
+    }
 end
-function query(name,page,params) -- java.util.ArrayList<Wrapper>
-    local url=UrlBuilder.new(host.."/manga-list")
-    url:add("name",name)
-    url:add("page",page+1)
+
+function query(name,page,params)
+    local url=network:url_builder(host.."/manga-list"):add("name",name):add("page",page+1)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
             url:add("sort",params[1]:getSelected()[1])
@@ -91,79 +83,65 @@ function query(name,page,params) -- java.util.ArrayList<Wrapper>
     end
     url=url:build()
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
+    return query_url(url)
+end
+
+function query_url(url,page)
+    if page then url=url:find("page=") and url:gsub("page=%d+","page="..tostring(page+1)) or url.."&page="..tostring(page+1) end
     print(url)
-    local selects=Wrapper:loadDocument(url):selectFirst("div.media-cards-grid"):select("div.media-card-wrap")
-    local list=ArrayList.new(selects:size())
+    local selects=network:load_as_Document(url):selectFirst("div.media-cards-grid"):select("div.media-card-wrap")
+    local list={}
     for i=0,selects:size()-1,1 do
         local e=selects:get(i)
         local f=e:selectFirst("a.media-card")
-        list:add(Wrapper.new(
-                f:attr("abs:href"),
-                num(f:attr("data-media-id")),
-                Wrapper:text(e:selectFirst("h3")),
-                Wrapper:text(e:selectFirst("h3")),
-                nil,
-                nil,
-                nil,
-                0,
-                nil,
-                nil,
-                (select(1,f:attr("data-src"):gsub("^/",host.."/")))
-        ))
+        list[i]={
+            ["url"]=f:attr("abs:href"),
+            ["url_web"]=f:attr("abs:href"),
+            ["name"]=utils:text(e:selectFirst("h3")),
+            ["name_alt"]=utils:text(e:selectFirst("h3")),
+            ["thumbnail"]=select(1,f:attr("data-src"):gsub("^/",host.."/"))
+        }
     end
     return list
 end
-function getPages(url,chapter) -- ArrayList<Page>
-    local scripts=Wrapper:loadDocument(UrlBuilder.new(url.."/v"..chapter.vol.."/c"..chapter.num):add("page",1):add(chapter.info):build()):select("script")
-    local json=JSONObject.new(scripts:toString():match("window.__info = (.-);"))
-    local array=JSONArray.new(scripts:toString():match("window.__pg = (.-);"))
-    local domain=json:getJSONObject("servers"):getString("main").."/"..json:getJSONObject("img"):getString("url")
-    local pages=ArrayList.new(array:length())
-    for i=0,array:length()-1,1 do
-        local jo=array:getJSONObject(i)
-        pages:add(Page.new(0,jo:getInt("p"),domain..jo:getString("u")))
+
+function getPages(url,chapter) -- table <Page>
+    local scripts=network:load_as_Document(network:url_builder(url.."/v"..chapter["vol"].."/c"..chapter["num"]):add("page",1):add("bid",chapter["bid"]):add("ui",chapter["ui"]):build()):select("script")
+    local json=JSONObject:create(scripts:toString():match("window.__info = (.-);"))
+    local array=JSONArray:create(scripts:toString():match("window.__pg = (.-);"))
+    local domain=json:getObject("servers"):getString("main").."/"..json:getObject("img"):getString("url")
+    local pages={}
+    for i=0,array:size()-1,1 do
+        local jo=array:getObject(i)
+        pages[i]=Page.new(jo:getInt("p"),domain..jo:getString("u"))
     end
     return pages
 end
-function createAdvancedSearchOptions() -- ArrayList<Options>
-    local options=ArrayList.new()
-    options:add(Options.new("Сортировка","desc","asc",convert(Sorts),0))
-    options:add(Options.new("Жанры",convert(Genres),2))
-    options:add(Options.new("Теги",convert(Tags),2))
-    options:add(Options.new("Серии",convert(Series),1))
-    options:add(Options.new("Типы",convert(Types),1))
-    options:add(Options.new("Статус тайтла",convert(Status),1))
-    options:add(Options.new("Формат",convert(Formats),2))
-    return options
-end
 
-function convert(luaTable)
-    local javaTable=Map_class.new()
-    for key,value in pairs(luaTable) do javaTable:put(key,value) end
-    return javaTable
+function createAdvancedSearchOptions() -- table <Options>
+    return {
+        Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
+        Options.new("Жанры",utils:to_map(Genres),2),
+        Options.new("Теги",utils:to_map(Tags),2),
+        Options.new("Серии",utils:to_map(Series),1),
+        Options.new("Типы",utils:to_map(Types),1),
+        Options.new("Статус тайтла",utils:to_map(Status),1),
+        Options.new("Формат",utils:to_map(Formats),2)
+    }
 end
-
-function num(n) return n==nil and 0 or tonumber(n:match("[0-9]*%.?[0-9]+")) end
 
 function similar(elements)
-    local similar=ArrayList.new()
-    for i=0,(elements~=nil and elements:size() or 0)-1,1 do
+    local similar={}; local n=0
+    for i=0,(elements and elements:size() or 0)-1,1 do
         local e=elements:get(i):selectFirst("a")
-        if(e~=nil) then
-            similar:add(Wrapper.new(
-                    e:attr("abs:href"),
-                    0,
-                    e:attr("title"),
-                    e:attr("title"),
-                    nil,
-                    nil,
-                    nil,
-                    0,
-                    nil,
-                    nil,
-                    (select(1,e:selectFirst("div.manga-list-item__cover"):attr("style"):match("url%((.*)%)"):gsub("^/",host.."/")))
-            ))
-        end
+        similar[n]=e and {
+            ["url"]=e:attr("abs:href"),
+            ["url_web"]=e:attr("abs:href"),
+            ["name"]=e:attr("title"),
+            ["name_alt"]=e:attr("title"),
+            ["thumbnail"]=select(1,e:selectFirst("div.manga-list-item__cover"):attr("style"):match("url%((.*)%)"):gsub("^/",host.."/"))
+        }
+        n=n+(e and 1 or 0)
     end
     return similar
 end

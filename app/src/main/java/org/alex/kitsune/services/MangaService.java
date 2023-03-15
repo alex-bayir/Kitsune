@@ -33,10 +33,10 @@ public class MangaService {
     public static String init(Context context){
         clearCache(cacheDir=context.getExternalCacheDir().getAbsolutePath());
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
-        Catalogs.init(prefs);
         dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
         copyScriptsFromAssets(context);
         Manga_Scripted.setScripts(Catalogs.getMangaScripts(context.getExternalFilesDir(Constants.manga_scripts)));
+        Catalogs.init(prefs);
         update();
         return dir;
     }
@@ -76,6 +76,14 @@ public class MangaService {
 
     public static HashSet<String> getCategories(){return categories;}
     public static int putNew(Manga manga){if(manga!=null){manga.setDir(cacheDir);} return put(map,manga);}
+    public static Manga getOrPutNewWithDir(int hash,String json){
+        Manga manga=get(hash);
+        if(manga==null && (manga=Manga.fromJSON(json))!=null){
+            manga.moveTo(dir);
+            put(map,manga);
+        }
+        return manga;
+    }
     public static Manga getOrPutNewWithDir(int hash,Manga manga){
         Manga m=get(hash);
         if(m==null && (m=manga)!=null){
@@ -164,14 +172,13 @@ public class MangaService {
         return new HashSet<>(getMap(type).values());
     }
     public static Comparator<Manga> getComparator(Type type){
-        switch (type!=null ? type : Type.All){
-            default:
-            case All: return Manga.AlphabeticalComparator;
-            case History: return Manga.HistoryComparator;
-            case Saved: return Manga.SavingTimeComparator;
-            case Favorites: return Manga.FavoriteTimeComparator;
-            case Size: return Manga.ImagesSizesComparator;
-        }
+        return switch (type != null ? type : Type.All) {
+            default -> Manga.AlphabeticalComparator;
+            case History -> Manga.HistoryComparator;
+            case Saved -> Manga.SavingTimeComparator;
+            case Favorites -> Manga.FavoriteTimeComparator;
+            case Size -> Manga.ImagesSizesComparator;
+        };
     }
     public static ArrayList<Manga> sort(ArrayList<Manga> list,Type type){
         Collections.sort(list,getComparator(type));

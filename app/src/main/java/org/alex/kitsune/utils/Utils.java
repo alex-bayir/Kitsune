@@ -49,7 +49,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-    public static void registerOnEmptyAdapterRunnable(RecyclerView.Adapter<? extends RecyclerView.ViewHolder> adapter, Runnable runnable){
+    public static void registerAdapterDataChangeRunnable(RecyclerView.Adapter<? extends RecyclerView.ViewHolder> adapter, Runnable runnable){
         adapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
             @Override public void onChanged(){runnable.run();}
             @Override public void onItemRangeRemoved(int positionStart, int itemCount){runnable.run();}
@@ -480,6 +480,42 @@ public class Utils {
         return false;
     }
 
+    public static boolean isUrl(String string){
+        return string!=null && (string.startsWith("https://") || string.startsWith("http://"));
+    }
+    public static String unescape_unicodes(String escaped) {
+        StringBuilder unescaped=new StringBuilder(escaped.length());
+        char[] buffer=new char[6]; int len=0;
+        int digits=0; boolean parse=false;
+        for(int i=0;i<escaped.length();i++){
+            char c=escaped.charAt(i);
+            if(c=='\\' || c=='u'){
+                if(len==1 && (buffer[0]!='\\' || c!='u')){
+                    unescaped.append(buffer[--len]);  //len=0 - clear (rewrite) buffer
+                }
+                buffer[len++]=c; parse=true;
+            }else if(parse){
+                buffer[len++]=c;
+                if(('0'<=c && c<='9') || ('a'<=c && c<='f') || ('A'<=c && c<='F')){
+                    if(++digits==4){
+                        int escape=0;
+                        for(int j=len-digits;j<len;j++){
+                            c=buffer[j];
+                            escape=(escape<<4)+(c>='A' ? (c>='a'? c-'a'+10:c-'A'+10):c-'0');
+                        }
+                        unescaped.append((char) escape);
+                        parse=false; digits=0; len=0; //len=0 - clear (rewrite) buffer
+                    }
+                }else{
+                    unescaped.append(buffer,0,len);
+                    parse=false; digits=0; len=0; //len=0 - clear (rewrite) buffer
+                }
+            }else{
+                unescaped.append(c);
+            }
+        }
+        return unescaped.toString();
+    }
     public static String match(String text, String regex){
         StringBuilder builder=new StringBuilder();
         Matcher matcher=Pattern.compile(regex).matcher(text);
@@ -517,13 +553,23 @@ public class Utils {
         if(sort){list.sort(Integer::compareTo);}
         return list;
     }
+    public static void showToolTip(View anchor,int text){
+        showToolTip(anchor,text,R.layout.tooltip);
+    }
+    public static void showToolTip(View anchor,String text){
+        showToolTip(anchor,text,R.layout.tooltip);
+    }
 
-    public static void showToolTip(View anchor){
-        showToolTip(anchor.getContext(),anchor);
+    public static void showToolTip(View anchor, int text, View layout, int text_view_id){
+        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout,text_view_id).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
     }
-    public static void showToolTip(Context context,View anchor){
-        new SimpleTooltip.Builder(context).anchorView(anchor).contentView(R.layout.tooltip).text(R.string.auth_help_info).arrowColor(context.getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
+    public static void showToolTip(View anchor,int text,int layout){
+        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
     }
+    public static void showToolTip(View anchor,String text,int layout){
+        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
+    }
+
     public static Throwable getRootCause(Throwable throwable, int depth){
         return change_known_errors(throwable!=null && throwable.getCause()!=null && (depth>0||depth==-1)? getRootCause(throwable.getCause(),--depth) : throwable);
     }

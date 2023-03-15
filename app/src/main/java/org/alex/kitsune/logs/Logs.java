@@ -18,6 +18,7 @@ import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
+import org.alex.kitsune.commons.HttpStatusException;
 import org.jetbrains.annotations.NotNull;
 import javax.net.ssl.SSLException;
 import java.io.*;
@@ -40,7 +41,7 @@ public class Logs {
     public static long saveLog(Throwable throwable){return saveLog(throwable,true);}
     public static long saveLog(Throwable throwable, boolean checkNetworkErrors){
         if(throwable==null){return 0;}
-        if(checkNetworkErrors && (checkType(throwable,SocketTimeoutException.class) || checkType(throwable,SSLException.class))){
+        if(checkNetworkErrors && (checkType(throwable,SocketTimeoutException.class) || checkType(throwable,SSLException.class)) || checkType(throwable,HttpStatusException.class)){
             return System.currentTimeMillis();
         }
         try{
@@ -76,8 +77,8 @@ public class Logs {
     }
     public static void e(Object log){e(log!=null?log.toString():"null");}
     public static void d(Object log){d(log!=null?log.toString():"null");}
-    public static void e(String log){android.util.Log.e("Debug",log);}
-    public static void d(String log){android.util.Log.d("Debug",log);}
+    public static void e(String log){android.util.Log.e("Debug",log!=null?log:"null");}
+    public static void d(String log){android.util.Log.d("Debug",log!=null?log:"null");}
 
     public static boolean clearLog(long date){
         return new File(dir+"/"+date).delete();

@@ -27,7 +27,9 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     private final Script script;
     private final Options[] options;
     private final ArrayList<StringPair> pairs=new ArrayList<>(200);
-    public FilterSortAdapter(Script script,ArrayList<Options> options){this(script,options!=null ? options.toArray(new Options[0]) : new Options[0]);}
+    public FilterSortAdapter(Script script,List<Options> options){
+        this(script,options!=null ? options.toArray(new Options[0]) : new Options[0]);
+    }
     public FilterSortAdapter(Script script,Options... options){
         this.options=options;
         this.script=script;
@@ -38,7 +40,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     public void update_pairs(){
         pairs.clear();
         for(Options option: options){if(option!=null){pairs.add(option.title); if(option.title.getValue()==0){pairs.addAll(Arrays.asList(option.values));}}}
-        notifyDataSetChanged();
+        //notifyDataSetChanged();
     }
     public Options[] getOptions(){return options;}
     private Options getOptions(int index){

@@ -17,6 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 import com.alex.shimmer.Shimmer;
 import com.alex.shimmer.ShimmerTextView;
+import org.alex.json.JSON;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.AspectRatioImageView;
@@ -24,7 +25,6 @@ import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
-import org.json.JSONObject;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -35,14 +35,14 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
     TextView version,buildTime,progress;
     ImageView launcher,update;
     SharedPreferences prefs;
-    Callback<JSONObject> ucs=json -> {
+    Callback<JSON.Object> ucs= json -> {
         update.setImageDrawable(Updater.getStatusIcon(this));
         update.setEnabled(json!=null);
         if(json==null){
             update.setVisibility(View.GONE); Toast.makeText(this,R.string.no_updates_found,Toast.LENGTH_SHORT).show();
         }
     };
-    Callback<JSONObject> ucl=json -> Updater.loadUpdate(p->{
+    Callback<JSON.Object> ucl=json -> Updater.loadUpdate(p->{
         if(progress.getVisibility()!=View.VISIBLE){progress.setVisibility(View.VISIBLE);}
         update.setEnabled(false);
         progress.setText(p);

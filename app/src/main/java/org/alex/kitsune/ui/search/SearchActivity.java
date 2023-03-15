@@ -123,7 +123,7 @@ public class SearchActivity extends AppCompatActivity {
         if(callback!=null){
             new Thread(()->{
                 try{
-                    ArrayList<Manga> list= Manga_Scripted.query(source,query,0,order);
+                    List<Manga> list= Manga_Scripted.query(source,query,0,order);
                     new Handler(Looper.getMainLooper()).post(()->{
                         callback.call(list);
                     });
@@ -162,6 +162,7 @@ public class SearchActivity extends AppCompatActivity {
             }else{
                 out_error.setText(R.string.nothing_found);
             }
+            //out_error.setVisibility(View.VISIBLE);
         }
     }
 }

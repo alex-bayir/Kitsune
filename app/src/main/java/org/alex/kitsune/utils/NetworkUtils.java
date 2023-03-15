@@ -8,18 +8,20 @@ import android.os.Looper;
 import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import okhttp3.*;
+import okio.Buffer;
+import org.alex.json.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HttpStatusException;
+import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.services.LoadService;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import java.io.*;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +32,6 @@ public class NetworkUtils {
     public static final String USER_AGENT_DEFAULT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/106.0.0.0 YaBrowser/22.11.5.715 Yowser/2.5 Safari/537.36";
     public static final Headers HEADERS_DEFAULT = new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).build();
     private static final CacheControl CACHE_CONTROL_DEFAULT = new CacheControl.Builder().maxAge(10, TimeUnit.MINUTES).build();
-
     private static final TreeMap<String,List<Cookie>> cookies=new TreeMap<>();
     public static final OkHttpClient sHttpClient=new OkHttpClient.Builder().cookieJar(new CookieJar() {
         @Override
@@ -40,11 +41,7 @@ public class NetworkUtils {
         @NotNull
         @Override
         public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-            List<Cookie> list=cookies.get(httpUrl.host());
-            if(list==null){
-                list=Catalogs.getCookies(httpUrl.host());
-                cookies.put(httpUrl.host(),list);
-            }
+            List<Cookie> list=Catalogs.getCookies(httpUrl.host(),cookies.get(httpUrl.host()));
             return list!=null ? list : new LinkedList<>();
         }
     }).readTimeout(60,TimeUnit.SECONDS).build();
@@ -53,7 +50,7 @@ public class NetworkUtils {
         NetworkUtils.cookies.put(domain,cookies);
     }
     public static Headers getHeadersDefault(String url){
-        return getHeadersDefault(null,url);
+        return getHeadersDefault(getDomain(null,url),url);
     }
     public static Headers getHeadersDefault(String domain,String url){
         return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add(HEADER_REFERER,getDomain(domain,url)).build();
@@ -64,13 +61,23 @@ public class NetworkUtils {
     }
     public static String getString(String url, okhttp3.Headers headers) throws IOException {
         String answer;
-        Response response=sHttpClient.newCall(new Request.Builder().url(url).headers(headers!=null ? headers : HEADERS_DEFAULT).cacheControl(CACHE_CONTROL_DEFAULT).get().build()).execute();
+        Request request=new Request.Builder().url(url).headers(headers!=null ? headers : HEADERS_DEFAULT).cacheControl(CACHE_CONTROL_DEFAULT).get().build();
+        Response response=sHttpClient.newCall(request).execute();
         try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
         response.close();
         if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
     return answer;}
-    public static JSONObject getJSONObject(String url) throws IOException, JSONException {
-        return new JSONObject(getString(url));
+    public static String getString(String url, okhttp3.Headers headers,RequestBody body) throws IOException {
+        String answer;
+        Request request=new Request.Builder().url(url).headers(headers!=null ? headers : HEADERS_DEFAULT).cacheControl(CACHE_CONTROL_DEFAULT).post(body).build();
+        Logs.e(bodyToString(request.body()));
+        Response response=sHttpClient.newCall(request).execute();
+        try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
+        response.close();
+        if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
+        return answer;}
+    public static JSON.Object getJSONObject(String url) throws IOException {
+        return JSON.Object.create(getString(url));
     }
 
     public static Document getDocument(String url) throws IOException {
@@ -79,6 +86,9 @@ public class NetworkUtils {
 
     public static Document getDocument(String str, Headers headers) throws IOException {
         return Jsoup.parse(getString(str, headers), str);
+    }
+    public static Document getDocument(String str, Headers headers,RequestBody body) throws IOException {
+        return Jsoup.parse(getString(str, headers,body), str);
     }
     public static boolean isNetworkAvailable(Context context) {
         NetworkInfo activeNetworkInfo;
@@ -111,6 +121,27 @@ public class NetworkUtils {
         );
     }
 
+    public static Headers extendHeaders(Map<String,String> headers){
+        if(headers==null){return NetworkUtils.HEADERS_DEFAULT;}
+        Headers.Builder builder=NetworkUtils.HEADERS_DEFAULT.newBuilder();
+        headers.forEach(builder::add);
+        return builder.build();
+    }
+    public static RequestBody convertBody(Map<String,String> body){
+        if(body==null){return null;}
+        FormBody.Builder builder=new FormBody.Builder();
+        body.forEach(builder::add);
+        return builder.build();
+    }
+    public static String bodyToString(final RequestBody body){
+        try {
+            final Buffer buffer = new Buffer();
+            body.writeTo(buffer);
+            return buffer.readUtf8();
+        } catch (final IOException e) {
+            return "did not work";
+        }
+    }
 
     private static final Handler main=new Handler(Looper.getMainLooper());
     public static Handler getMainHandler(){return main;}

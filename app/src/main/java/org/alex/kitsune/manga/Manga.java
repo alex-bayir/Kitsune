@@ -10,7 +10,7 @@ import android.text.Html;
 import androidx.annotation.Nullable;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.ClickSpan;
-import org.alex.kitsune.commons.HttpStatusException;
+import org.alex.json.JSON;
 import org.alex.kitsune.commons.ListSet;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.search.FilterSortAdapter;
@@ -19,126 +19,75 @@ import org.alex.kitsune.services.LoadService;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.*;
-import java.net.SocketException;
 import java.util.*;
-
+import java.util.stream.Collectors;
 
 public abstract class Manga {
-    protected final String url;
-    protected int id;
-    protected String name;
-    protected String name_alt;
-    protected String author;
-    protected String author_url;
+    protected JSON.Object info;
 
-    protected String genres;
-    protected double rating;
-    protected int status;
-    protected String description;
-    protected String thumbnail;
-    protected String url_web;
-
-    protected final ArrayList<Chapter> chapters;
-
-    protected final ArrayList<BookMark> bookMarks;
-    protected BookMark history;
-
-    protected String CategoryFavorite;
-
-    private int lastSize;
-
-    private String dir;
-
-    private long lastTimeSave;
-    private long lastTimeFavorite;
-    private int lastMaxChapters;
-    private boolean updated=false;
     protected final ListSet<Manga> similar=new ListSet<>(new ArrayList<>(10));
-    protected boolean edited;
-    public static final int Status_None=0;
-    public static final int Status_Ongoing=1;
-    public static final int Status_Released=2;
+    private boolean updated=false;
     public static final String[] FN={"Source","url","id","name","name_alt","author","author url","genres","rating","status","description","thumbnail","url_web","chapters","bookmarks","history","CategoryFavorite","lastSize","dir","lastTimeSave","lastTimeFavorite","lastMaxChapters","edited"};
-
-    public Manga(String url, int id, String name, String name_alt, String author,String author_url, String genres, double rating, int status, String description, String thumbnail, String url_web, ArrayList<Chapter> chapters, ArrayList<BookMark> bookMarks, BookMark history, String CategoryFavorite, int lastSize, String dir, long lastTimeSave, long lastTimeFavorite, int lastMaxChapters, boolean edited){
-        this.url=url.replace("http://","https://");
-        this.id=id;
-        this.name=name;
-        this.name_alt=name_alt;
-        this.author=author;
-        this.author_url=author_url;
-
-        this.genres=genres;
-        this.rating=rating;
-        this.status=status;
-        this.description=description;
-        this.thumbnail=thumbnail;
-        this.url_web=url_web!=null?url_web:url;
-
-        this.chapters=chapters!=null ? chapters : new ArrayList<>();
-        this.bookMarks=bookMarks!=null ? bookMarks : new ArrayList<>();
-        this.history=history;
-
-        this.CategoryFavorite=CategoryFavorite;
-
-        this.lastSize=lastSize==-1 ? this.chapters.size() : lastSize;
-
-        this.dir=dir;
-        this.lastTimeSave=lastTimeSave;
-        this.lastTimeFavorite=lastTimeFavorite;
-        this.lastMaxChapters=lastMaxChapters;
-        this.edited=edited;
+    public Manga(JSON.Object json){
+        this(
+                json,
+                Chapter.fromJSON(JSON.filter(json.getArray("chapters"),JSON.Object.class)),
+                BookMark.fromJSON(JSON.filter(json.getArray("bookmarks"),JSON.Object.class)),
+                BookMark.fromJSON(json.getObject("history"))
+        );
     }
-    public Manga clone(){
-        return Objects.requireNonNull(newInstance(getProviderName(), url, id, name, name_alt, author, author_url, genres, rating, status, description, thumbnail, url_web, new ArrayList<>(chapters), new ArrayList<>(bookMarks), history, CategoryFavorite, lastSize, dir, lastTimeSave, lastTimeFavorite,lastMaxChapters,edited));
+    public Manga(JSON.Object info,List<Chapter> chapters, List<BookMark> bookMarks, BookMark history){
+        this.info=info; if(info==null){throw new IllegalArgumentException("Json info cannot be null");}
+        if(getUrl_WEB()==null){set("url_web",getUrl());}
+        this.info.put("chapters",chapters!=null ? chapters : new ArrayList<>());
+        this.info.put("bookmarks",bookMarks!=null ? bookMarks : new ArrayList<>());
+        this.info.put("history",history);
+        set("lastSize",get("lastSize",getChapters().size()));
     }
 
-    public static Manga newInstance(String providerName,String url,int id,String name,String name_alt,String author,String author_url,String genres,double rating,int status,String description,String thumbnail,String url_web,ArrayList<Chapter> chapters,ArrayList<BookMark> bookMarks,BookMark history,String CategoryFavorite,int lastSize,String dir,long lastTimeSave,long lastTimeFavorite,int lastMaxChapters, boolean edited){
-        return Manga_Scripted.newInstance(providerName,url,id,name,name_alt,author,author_url,genres,rating,status,description,thumbnail,url_web,chapters,bookMarks,history,CategoryFavorite,lastSize,dir,lastTimeSave,lastTimeFavorite,lastMaxChapters,edited);
+    public static Manga newInstance(JSON.Object json){
+        return Manga_Scripted.newInstance(json);
+    }
+    public static Manga newInstance(Map<String,?> map){
+        return newInstance(new JSON.Object(map));
     }
 
-    public abstract String getProvider();
-    public abstract String getProviderName();
-    public final String getStatus(){return getStatus(this.status);}
-    public static String getStatus(int status){
+    public abstract String getDomain();
+    public abstract String getSource();
+    public final String getStatus(){return getStatus(getString("status"));}
+    public final String getStatus(Context context){return getStatus(getStatus(getString("status")),context);}
+    private static String getStatus(String status,Context context){
         return switch (status) {
-            case Status_Ongoing -> "Ongoing";
-            case Status_Released -> "Completed";
-            default -> "None";
-        };
-    }
-    public final String getStatus(Context context){return getStatus(this.status,context);}
-    public static String getStatus(int status,Context context){
-        return switch (status) {
-            case Status_Ongoing -> context.getString(R.string.Ongoing);
-            case Status_Released -> context.getString(R.string.Completed);
+            case "Ongoing" -> context.getString(R.string.Ongoing);
+            case "Released" -> context.getString(R.string.Completed);
             default -> context.getString(R.string.None);
         };
     }
-    public static int getStatus(String status){
+    private static String getStatus(String status){
         switch (status!=null ? status.toLowerCase() : "none"){
             case "продолжается":
-            case "ongoing": return Status_Ongoing;
+            case "1":
+            case "ongoing": return "Ongoing";
             case "cингл":
             case "single":
             case "завершен":
             case "completed":
-            case "released": return Status_Released;
+            case "2":
+            case "released": return "Released";
             default:
-            case "none": return Status_None;
+            case "none": return "None";
         }
     }
     public abstract boolean update() throws Exception;
 
-    public final ArrayList<Page> getPages(int chapter) throws IOException, JSONException{
-        return getPages(chapters.get(chapter));
+    public final List<Page> getPages(int chapter) throws IOException, JSONException{
+        return getPages(getChapters().get(chapter));
     }
-    public final ArrayList<Page> getPagesE(Chapter chapter){
+    public final List<Page> getPagesE(Chapter chapter){
         try{return getPages(chapter);}catch(Exception e){Logs.saveLog(e); return null;}
     }
-    public abstract ArrayList<Page> getPages(Chapter chapter) throws IOException, JSONException;
+    public abstract List<Page> getPages(Chapter chapter) throws IOException, JSONException;
     protected final void updateSimilar(Set<Manga> mangas){
         mangas.removeAll(Collections.singleton(null));
         if(mangas.size()!=0){
@@ -146,7 +95,7 @@ public abstract class Manga {
             similar.addAll(mangas);
         }
     }
-    protected abstract HashSet<Manga> loadSimilar() throws Exception;
+    protected abstract Set<Manga> loadSimilar() throws Exception;
     public final void loadSimilar(Callback<Set<Manga>> callback,Callback<Throwable> error){
         if(similar.size()==0){
             new Thread(() -> {
@@ -163,30 +112,29 @@ public abstract class Manga {
     }
 
 
-
-    public final String getUrl(){return url;}
-    public String getUrl_WEB(){return url_web;}
-    public final int getId(){return id;}
-    public final String getName(){return name;}
-    public final String getNameAlt(){return name_alt;}
+    public final String getUrl(){return getString("url");}
+    public String getUrl_WEB(){return getString("url_web");}
+    public final String getName(){return getString("name");}
+    public final String getNameAlt(){return getString("name_alt");}
     public final String getAnyName(){return getAnyName(false);}
-    public final String getAnyName(boolean en){return en ? name!=null ? name : name_alt : name_alt!=null ? name_alt : name;}
-    public final String getAuthor(){return author;}
-    public final String getAuthorUrl(){return author_url;}
-    public final String getGenres(){return genres;}
-    public final double getRating(){return rating;}
-    public final String getDescription(){return description;}
+    public final String getAnyName(boolean en){return en ? getName()!=null ? getName() : getNameAlt() : getNameAlt()!=null ? getNameAlt() : getName();}
+    public final Object getAuthor(){return get("author");}
+    public final String getGenres(){return getString("genres");}
+    public final String getThumbnail(){return getString("thumbnail");}
+    public final double getRating(){return get("rating",0.0);}
+    public final String getDescription(){return getString("description");}
     public final CharSequence getDescription(int flags){return getDescription(flags,null);}
-    public final CharSequence getDescription(int flags, String def){return description!=null && description.length()>0 ? Html.fromHtml(description, flags) : def;}
-    public final BookMark getHistory(){return history;}
-    public final ArrayList<Chapter> getChapters(){return chapters;}
-    public final ArrayList<BookMark> getBookMarks(){return bookMarks;}
+    public final CharSequence getDescription(int flags, String def){return getDescription()!=null && getDescription().length()>0 ? Html.fromHtml(getDescription(), flags) : def;}
+    public final BookMark getHistory(){return (BookMark)get("history");}
+    public final List<Chapter> getChapters(){return (List<Chapter>)get("chapters");}
+    public final List<BookMark> getBookMarks(){return (List<BookMark>)get("bookmarks");}
     public final ListSet<Manga> getSimilar(){return similar;}
-    @Override public final int hashCode(){return url.hashCode();}
+    public final int getLastSize(){return get("lastSize",0);}
+    @Override public final int hashCode(){return getUrl().hashCode();}
     @Override public final boolean equals(@Nullable Object obj){return obj instanceof Manga && hashCode()==obj.hashCode();}
 
-    public final String setDir(String dir){return this.dir=dir+(dir.endsWith("/") ? "" :"/")+hashCode();}
-    public final String getDir(){return dir;}
+    public final String setDir(String dir){set("dir",dir+(dir.endsWith("/") ? "" :"/")+hashCode()); return getDir();}
+    public final String getDir(){return getString("dir");}
     public final String getCoverPath(){return getDir()+"/card";}
     public final String getInfoPath(){return getDir()+"/summary";}
     public final String getPagesPath(){return getDir()+"/pages";}
@@ -194,7 +142,7 @@ public abstract class Manga {
         return chapter!=null ? getPagePath(chapter,chapter.getPage(page)) : null;
     }
     public final String getPagePath(Chapter chapter,Page page){
-        return (chapter!=null && page!=null) ? getPagesPath()+"/"+chapter.getVol()+"--"+chapter.getNum()+"--"+page.getNum() : null;
+        return (chapter!=null && page!=null) ? getPagesPath()+File.separator+chapter.getVol()+"--"+chapter.getNum()+"--"+page.getNum() : null;
     }
     public final File getPage(Chapter chapter,Page page){
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
@@ -212,52 +160,32 @@ public abstract class Manga {
             NetworkUtils.getMainHandler().post(()->callback.call(drawable));
         }).start();
     }
-    public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),thumbnail,callback);}
+    public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),getThumbnail(),callback);}
 
-    public final JSONObject toJSON(){
-        try{
-            return new JSONObject().put(FN[0],getProviderName())
-                    .put(FN[1],url).put(FN[2],id).put(FN[3],name).put(FN[4], name_alt).put(FN[5],author).put(FN[6],author_url)
-                    .put(FN[7],genres).put(FN[8],rating).put(FN[9],status).put(FN[10],description).put(FN[11],thumbnail).put(FN[12],url_web)
-                    .put(FN[13],Chapter.toJSON(chapters)).put(FN[14],BookMark.toJSON(bookMarks)).put(FN[15],history!=null ? history.toJSON() : null)
-                    .put(FN[16],CategoryFavorite).put(FN[17],lastSize).put(FN[18],dir).put(FN[19],lastTimeSave).put(FN[20],lastTimeFavorite).put(FN[21],lastMaxChapters).put(FN[22],edited);
-        }catch(JSONException e){e.printStackTrace();}
-    return null;}
-
-    @Override
-    public final String toString(){return Objects.requireNonNull(this.toJSON()).toString();}
-
-    public static Manga fromJSON(String json){
-        if(json!=null && json.length()>0){try{return fromJSON(new JSONObject(json));}catch(JSONException e){e.printStackTrace();}}
-    return null;}
-    public static Manga fromJSON(JSONObject json) throws JSONException{
-        return newInstance(
-                json.optString(FN[0],null),
-                json.optString(FN[1],null),
-                json.optInt(FN[2],-1),
-                json.optString(FN[3],null),
-                json.optString(FN[4],null),
-                json.optString(FN[5],null),
-                json.optString(FN[6],null),
-                json.optString(FN[7],null),
-                json.optDouble(FN[8],-1),
-                json.optInt(FN[9],-1),
-                json.optString(FN[10],null),
-                json.optString(FN[11],null),
-                json.optString(FN[12],null),
-                Chapter.fromJSON(json.optJSONArray(FN[13])),
-                BookMark.fromJSON(json.optJSONArray(FN[14])),
-                BookMark.fromJSON(json.optJSONObject(FN[15])),
-                json.optString(FN[16],null),
-                json.optInt(FN[17],-1),
-                json.optString(FN[18],null),
-                json.optLong(FN[19],0),
-                json.optLong(FN[20],0),
-                json.optInt(FN[21],0),
-                json.optBoolean(FN[22],false)
-        );
+    private List<Chapter> filter(boolean full, List<Chapter> chapters){
+        return full ? chapters : chapters.stream().filter(this::checkChapter).collect(Collectors.toList());
+    }
+    public final JSON.Object toJSON(){
+        return new JSON.Object(info).put("chapters",Chapter.toJSON(getChapters()))
+                .put("bookmarks",BookMark.toJSON(getBookMarks()))
+                .put("history",getHistory()!=null ? getHistory().toJSON() : null);
+    }
+    public final JSON.Object toJSON(boolean full){
+        return new JSON.Object(info)
+                .put("chapters",Chapter.toJSON(filter(full,getChapters())))
+                .put("bookmarks",BookMark.toJSON(getBookMarks()))
+                .put("history",getHistory()!=null ? getHistory().toJSON() : null);
     }
 
+    @Override
+    public final String toString(){return this.toJSON().toString();}
+
+    public static Manga fromJSON(String json){
+        if(json!=null && json.length()>0){try{return fromJSON(JSON.Object.create(json));}catch(IOException e){e.printStackTrace();}}
+    return null;}
+    public static Manga fromJSON(JSON.Object json){
+        return newInstance(json);
+    }
     public static Manga loadFromStorage(String filePath){
         return loadFromStorage(new File(filePath));
     }
@@ -270,7 +198,7 @@ public abstract class Manga {
                 String line;
                 while((line=in.readLine())!=null){b.append(line).append("\n");}
                 manga=Manga.fromJSON(b.toString());
-                if(manga!=null){manga.dir=file.getParent();}
+                if(manga!=null){manga.set("dir",file.getParent());}
             }catch(IOException e){
                 Logs.saveLog(e);
             }finally{
@@ -281,14 +209,11 @@ public abstract class Manga {
     }
 
     public final void save(){
-        Manga manga=this.clone();
-        manga.chapters.clear();
-        for(Chapter chapter : this.chapters){if(checkChapter(chapter)){manga.chapters.add(chapter);}}
         FileOutputStream out=null;
         try{
-            new File(dir).mkdirs();
+            new File(getDir()).mkdirs();
             out=new FileOutputStream(getInfoPath());
-            out.write(manga.toString().getBytes());
+            out.write(toJSON(false).toString().getBytes());
         }catch(IOException e){
             e.printStackTrace();
         }finally{
@@ -297,17 +222,22 @@ public abstract class Manga {
     }
 
     public final void moveTo(String path){
-        if(dir==null){
+        if(getDir()==null){
             setDir(path); save();
         } else {
-            Utils.File.move(new File(dir),new File(setDir(path)));
+            Utils.File.move(new File(getDir()),new File(setDir(path)));
             save();
         }
     }
-    public final void delete(){Utils.File.delete(new File(dir));}
-    public final void deleteAllPages(){Utils.File.delete(new File(getPagesPath()));}
+    public final void delete(){
+        Utils.File.delete(new File(getDir()));
+    }
+    public final void deleteAllPages(){
+        Utils.File.delete(new File(getPagesPath()));
+    }
 
-    public final boolean checkChapterInfo(int chapter){return (chapter>=0 && chapter<chapters.size() && checkChapterInfo(chapters.get(chapter)));}
+    public final boolean checkChapterInfo(int chapter,List<Chapter> chapters){return (chapter>=0 && chapter<chapters.size() && checkChapterInfo(chapters.get(chapter)));}
+    public final boolean checkChapterInfo(int chapter){return checkChapterInfo(chapter,getChapters());}
     public static boolean checkChapterInfo(Chapter chapter){return chapter.getPages()!=null && chapter.getPages().size()>0;}
 
     public final boolean checkChapter(Chapter chapter){
@@ -320,48 +250,48 @@ public abstract class Manga {
         }
     return false;}
 
-    public int countSaved(){int i=0; for(Chapter chapter:chapters){if(checkChapter(chapter)){i++;}} return i;}
+    public int countSaved(){int i=0; for(Chapter chapter:getChapters()){if(checkChapter(chapter)){i++;}} return i;}
 
     public static int getNumChapter(List<Chapter> list,Chapter chapter){if(chapter!=null && list!=null){for(int i=0;i<list.size();i++){if(chapter.equals(list.get(i))){return i;}}}return -1;}
-    public final int getNumChapter(Chapter chapter){return getNumChapter(chapters,chapter);}
+    public final int getNumChapter(Chapter chapter){return getNumChapter(getChapters(),chapter);}
     public final int getNumChapter(BookMark bookMark){return getNumChapter(bookMark!=null ? bookMark.getChapter() : null);}
-    public final int getNumChapterHistory(){return getNumChapter(history);}
+    public final int getNumChapterHistory(){return getNumChapter(getHistory());}
 
     public final boolean updateDetails(){return updateDetails(loadFromStorage(getInfoPath()));}
     public final boolean updateDetails(Manga manga){
         if(manga!=null && this.hashCode()==manga.hashCode()){
-            updateChapters(manga.chapters);
-            updateBookMarks(manga.bookMarks);
-            this.history=manga.history;
-            this.lastSize=manga.lastSize;
-            this.lastTimeSave=manga.lastTimeSave;
-            this.CategoryFavorite=manga.CategoryFavorite;
-            this.lastTimeFavorite=manga.lastTimeFavorite;
+            updateChapters(manga.getChapters());
+            updateBookMarks(manga.getBookMarks());
+            set("history",manga.getHistory());
+            set("lastSize",manga.getLastSize());
+            set("lastTimeSave",manga.getLastTimeSave());
+            set("CategoryFavorite",manga.getCategoryFavorite());
+            set("lastTimeFavorite",manga.getLastTimeFavorite());
             return true;
         }
         return false;
     }
 
     public final void updateChapters(List<Chapter> chapters){
-        boolean b=chapters.size()>this.chapters.size();
-        for(Chapter saved: b?this.chapters:chapters){
-            for(Chapter source: b?chapters:this.chapters){
+        boolean b=chapters.size()>getChapters().size();
+        for(Chapter saved: b?getChapters():chapters){
+            for(Chapter source: b?chapters:getChapters()){
                 if(saved.equals(source) && source.countPages()==0){
-                    source.pages=saved.getPages(); break;
+                    source.setPages(saved.getPages()); break;
                 }
             }
         }
         if(b){
-            this.chapters.clear();
-            this.chapters.addAll(chapters);
+            getChapters().clear();
+            getChapters().addAll(chapters);
         }
     }
-    public final void updateBookMarks(ArrayList<BookMark> bookMarks){
+    public final void updateBookMarks(List<BookMark> bookMarks){
         bookMarks.removeAll(Collections.singleton(null));
-        this.bookMarks.clear();
-        this.bookMarks.addAll(bookMarks);
-        for(Chapter chapter:chapters){
-            for(BookMark bookMark:this.bookMarks){
+        getBookMarks().clear();
+        getBookMarks().addAll(bookMarks);
+        for(Chapter chapter:getChapters()){
+            for(BookMark bookMark:getBookMarks()){
                 if(chapter.equals(bookMark.getChapter())){
                     bookMark.chapter=chapter;
                 }
@@ -370,32 +300,32 @@ public abstract class Manga {
     }
     public final void addBookMark(Chapter chapter,int page){
         if(chapter!=null){
-            bookMarks.add(new BookMark(chapter,page));
+            getBookMarks().add(new BookMark(chapter,page));
             save();
         }
     }
 
     public final void removeBookMark(BookMark bookMark){
-        if(bookMarks!=null){
-            bookMarks.remove(bookMark);
+        if(getBookMarks()!=null){
+            getBookMarks().remove(bookMark);
             save();
         }
     }
 
     public final void clearHistory(){
-        history=null;
-        lastSize=0;
+        set("history",null);
+        set("lastSize",0);
         save();
     }
     public final void createHistory(Chapter chapter,int page){
         if(chapter!=null){
-            history=new BookMark(chapter,page);
+            set("history",new BookMark(chapter,page));
             save();
         }
     }
 
     public final void clearChapter(int index){
-        Chapter chapter=chapters.get(index);
+        Chapter chapter=getChapters().get(index);
         if(chapter!=null && chapter.getPages()!=null){
             for(Page page: chapter.getPages()){getPage(chapter,page).delete();}
         }
@@ -405,52 +335,53 @@ public abstract class Manga {
         context.startService(task.toIntent(new Intent(context, LoadService.class).setAction(LoadService.actionLoad)));
     }
 
-    public void update(Context context,final Runnable onUpdated,final Callback<Throwable> onNotUpdated){
-        if(NetworkUtils.isNetworkAvailable(context)){
-            new Thread(()->{
-                Message msg=new Message();
+    public void update(Callback<Boolean> update,Callback<Throwable> error, boolean re_updating){
+        new Thread(()->{
+            if(!updated || re_updating){
                 try{
-                    if(!updated){updated=update();}
-                }catch(Throwable e){updated=false; if(!(e.getCause() instanceof HttpStatusException || e.getCause() instanceof SocketException)){Logs.saveLog(e);} msg.obj=e;}
-                new Handler(Looper.getMainLooper()){
-                    @Override
-                    public void handleMessage(Message msg){
-                        if(updated){
-                            if(onUpdated!=null){onUpdated.run();}
-                        }else{
-                            if(onNotUpdated!=null){onNotUpdated.call((Throwable) msg.obj);}
-                        }
+                    updated=update();
+                }catch(Throwable e){
+                    updated=false;
+                    Logs.saveLog(e);
+                    if(error!=null){
+                        new Handler(Looper.getMainLooper()).post(()->error.call(e));
                     }
-                }.sendMessage(msg);
-            }).start();
-        }else{if(onNotUpdated!=null){onNotUpdated.call(null);}}
+                }
+            }
+            if(update!=null){
+                new Handler(Looper.getMainLooper()).post(()->update.call(updated));
+            }
+        }).start();
     }
-    public void setNames(String name,String name_alt){this.name=name; this.name_alt=name_alt; setEdited(true);}
-    public void setEdited(boolean edited){this.edited=edited; save();}
+    public void update(Callback<Boolean> update,Callback<Throwable> error){
+        update(update,error,false);
+    }
+    public void setNames(String name,String name_alt){set("name",name); set("name_alt",name_alt); setEdited(true);}
+    public void setEdited(boolean edited){set("edited",edited); save();}
     public boolean isUpdated(){return updated;}
-    public int getCheckedNew(){int size=chapters!=null ? chapters.size() : 0; return size>lastSize ? size-lastSize : 0;}
+    public int getCheckedNew(){int size=getChapters()!=null ? getChapters().size() : 0; return size>getLastSize() ? size-getLastSize() : 0;}
     public void seen(int chapter){
-        lastSize=Math.max(chapter+1, lastSize);
-        if(chapter+1>lastMaxChapters){lastMaxChapters=chapter+1;}
+        set("lastSize",Math.max(chapter+1, getLastSize()));
+        if(chapter+1>get("lastMaxChapters",0)){set("lastMaxChapters",chapter+1);}
     }
-    public boolean isNew(Chapter chapter){return lastSize<=chapters.indexOf(chapter);}
-    public void checkedNew(){lastMaxChapters=chapters.size(); save();}
-    public int getNotCheckedNew(){return Math.max(chapters.size()-lastMaxChapters,0);}
+    public boolean isNew(Chapter chapter){return getLastSize()<=getChapters().indexOf(chapter);}
+    public void checkedNew(){set("lastMaxChapters",getChapters().size()); save();}
+    public int getNotCheckedNew(){return Math.max(getChapters().size()-get("lastMaxChapters",0),0);}
 
-    public long getHistoryDate(){return history!=null ? history.getDate() : 0;}
-    public final void setLastTimeSave(){this.lastTimeSave=System.currentTimeMillis();}
-    public final long getLastTimeSave(){return this.lastTimeSave;}
+    public long getHistoryDate(){return getHistory()!=null ? getHistory().getDate() : 0;}
+    public final void setLastTimeSave(){set("lastTimeSave",System.currentTimeMillis());}
+    public final long getLastTimeSave(){return get("lastTimeSave",0L);}
     public final void setCategoryFavorite(String category){
-        CategoryFavorite=category;
+        set("CategoryFavorite",category);
         if(category!=null){setLastTimeFavorite();}
-        else{this.lastTimeFavorite=0;}
+        else{set("lastTimeSave",0L);}
         save();
     }
     public final String getCategoryFavorite(){
-        return this.CategoryFavorite;
+        return getString("CategoryFavorite");
     }
-    public final void setLastTimeFavorite(){this.lastTimeFavorite=System.currentTimeMillis();}
-    public final long getLastTimeFavorite(){return this.lastTimeFavorite;}
+    public final void setLastTimeFavorite(){set("lastTimeFavorite",System.currentTimeMillis());}
+    public final long getLastTimeFavorite(){return get("lastTimeFavorite",0L);}
     private long ImagesSize=-1;
     public long recalculateImagesSize(){return ImagesSize=Utils.File.getSize(new File(getPagesPath()));}
     public long getImagesSize(){return ImagesSize<0 ? recalculateImagesSize() : ImagesSize;}
@@ -463,16 +394,53 @@ public abstract class Manga {
     }
 
     public CharSequence getGenres(ClickSpan.SpanClickListener listener){
-        FilterSortAdapter adapter=Manga.getFilterSortAdapter(getProviderName());
-        return adapter!=null && genres!=null ? adapter.getClickableSpans(genres, listener) : genres;
+        FilterSortAdapter adapter=Manga.getFilterSortAdapter(getSource());
+        return adapter!=null && getGenres()!=null ? adapter.getClickableSpans(getGenres(), listener) : getGenres();
     }
 
     public static final Comparator<Manga> HistoryComparator=(o1,o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
-    public static final Comparator<Manga> SavingTimeComparator=(o1,o2)->Long.compare(o2.lastTimeSave,o1.lastTimeSave);
-    public static final Comparator<Manga> FavoriteTimeComparator=(o1,o2)->Long.compare(o2.lastTimeFavorite,o1.lastTimeFavorite);
+    public static final Comparator<Manga> SavingTimeComparator=(o1,o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
+    public static final Comparator<Manga> FavoriteTimeComparator=(o1,o2)->Long.compare(o2.getLastTimeFavorite(),o1.getLastTimeFavorite());
     public static final Comparator<Manga> AlphabeticalComparatorEn=(o1,o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(true),""));
     public static final Comparator<Manga> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
     public static final Comparator<Manga> ImagesSizesComparator=(o1,o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
-    public static final Comparator<Manga> RatingComparator=(o1,o2)->Double.compare(o1.rating,o2.rating);
-    public static Comparator<Manga> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getProviderName()));}
+    public static final Comparator<Manga> RatingComparator=Comparator.comparingDouble(Manga::getRating);
+    public static Comparator<Manga> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}
+
+    public final void set(String key,Object value){
+        info.put(key,value);
+    }
+    public final Object get(String key){
+        return info.get(key);
+    }
+    public final Object get(String key,Object def){
+        return info.get(key,def);
+    }
+    public final String get(String key,String def){
+        return info.get(key,def);
+    }
+    public final String getString(String key){
+        return info.getString(key);
+    }
+    public final int get(String key,int def){
+        return info.get(key,def);
+    }
+    public final long get(String key,long def){
+        return info.get(key,def);
+    }
+    public final double get(String key,double def){
+        return info.get(key,def);
+    }
+    public final float get(String key,float def){
+        return info.get(key,def);
+    }
+    public final boolean get(String key,boolean def){
+        return info.get(key,def);
+    }
+    public final JSON.Object getObject(String key){
+        return info.getObject(key);
+    }
+    public final JSON.Array<?> getArray(String key){
+        return info.getArray(key);
+    }
 }

@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import okhttp3.Cookie;
+import org.alex.json.JSON;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.manga.Manga_Scripted;
@@ -34,10 +35,9 @@ import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -51,8 +51,8 @@ public class Catalogs extends Fragment implements MenuProvider {
     FragmentActivity activity;
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        View root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
-        rv=root.findViewById(R.id.rv_list);
+        rv=new RecyclerView(requireContext());
+        rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new CatalogsAdapter(init(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
@@ -62,7 +62,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         activity=requireActivity();
         activity.removeMenuProvider(this);
         activity.addMenuProvider(this);
-        return root;
+        return rv;
     }
 
     public static List<Container> init(SharedPreferences prefs,boolean update){
@@ -132,7 +132,7 @@ public class Catalogs extends Fragment implements MenuProvider {
             for(File file:files){
                 try{
                     Script script=Script.getInstance(file);
-                    String source=script.get(Constants.providerName,String.class);
+                    String source=script.get(Constants.source,String.class);
                     if(source!=null){table.put(source,script);}
                 }catch (Throwable e){
                     e.printStackTrace();
@@ -152,8 +152,8 @@ public class Catalogs extends Fragment implements MenuProvider {
         public LinkedList<Cookie> cookies_converted;
         public Container(Script script,Boolean enable,String cookies){
             this.script=script;
-            this.source=script.getString(Constants.providerName,null);
-            this.domain=script.getString(Constants.provider,null);
+            this.source=script.getString(Constants.source,null);
+            this.domain=script.getString(Constants.domain,null);
             this.enable=enable;
             setCookies(cookies);
             this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
@@ -167,12 +167,12 @@ public class Catalogs extends Fragment implements MenuProvider {
         public LinkedList<Cookie> setCookies(String cookies){
             return cookies_converted=convert(domain, this.cookies=cookies);
         }
-        public JSONObject toJSON(){
-            try{return script==null ? null : new JSONObject().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);}catch(JSONException e){return null;}
+        public JSON.Object toJSON(){
+            return script==null ? null : new JSON.Object().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);
         }
-        public static Container fromJSON(JSONObject json){
+        public static Container fromJSON(JSON.Object json){
             try{
-                return new Container(Manga_Scripted.getScript(json.optString("source"), json.optString("script")),json.optBoolean("enable", true),json.optString("cookies",null));
+                return new Container(Manga_Scripted.getScript(json.getString("source"), json.getString("script").replace('\\',File.separatorChar)),json.get("enable", true),json.getString("cookies"));
             }catch (JSONException e){
                 return null;
             }catch (Throwable e){
@@ -180,11 +180,11 @@ public class Catalogs extends Fragment implements MenuProvider {
                 return null;
             }
         }
-        public static JSONArray toJSON(Collection<Container> list){
-            JSONArray jsonArray=new JSONArray();
+        public static JSON.Array<JSON.Object> toJSON(Collection<Container> list){
+            JSON.Array<JSON.Object> jsonArray=new JSON.Array<>();
             for(Container container:list){
                 if(container.toJSON()!=null){
-                    jsonArray.put(container.toJSON());
+                    jsonArray.add(container.toJSON());
                 }
             }
             return jsonArray;
@@ -192,11 +192,11 @@ public class Catalogs extends Fragment implements MenuProvider {
         public static ArrayList<Container> fromJSON(String json){
             ArrayList<Container> list=new ArrayList<>(10);
             try {
-                JSONArray jsonArray=new JSONArray(json);
-                for(int i=0;i<jsonArray.length();i++){
-                    list.add(Container.fromJSON(jsonArray.getJSONObject(i)));
+                JSON.Array<?> jsonArray=JSON.Array.create(json);
+                for(int i=0;i<jsonArray.size();i++){
+                    list.add(Container.fromJSON(jsonArray.getObject(i)));
                 }
-            }catch (JSONException e){e.printStackTrace();}
+            }catch (IOException e){e.printStackTrace();}
             return list;
         }
         public static int countEnabled(List<Container> containers){
@@ -217,15 +217,15 @@ public class Catalogs extends Fragment implements MenuProvider {
         }
         save(prefs,containers);
     }
-    public static LinkedList<Cookie> getCookies(String domain){
+    public static List<Cookie> getCookies(String domain,List<Cookie> def){
         if(containers!=null){
             for(Container c:containers){
-                if(domain.equalsIgnoreCase(c.domain)){
+                if(domain.equalsIgnoreCase(c.domain) || domain.contains(c.domain)){
                     return c.cookies_converted;
                 }
             }
         }
-        return null;
+        return def;
     }
     public static String filterCookies(String source,String cookies_original){
         if(cookies_original==null){return null;}
