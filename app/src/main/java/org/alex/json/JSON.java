@@ -6,8 +6,15 @@ import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class JSON{
-    public static class Object extends TreeMap<String, java.lang.Object> {
+public interface JSON {
+    boolean isObject();
+    boolean isArray();
+    Object object();
+    Array<?> array();
+    Writer json(Writer writer,int spaces) throws IOException;
+    String json(int spaces) throws IOException;
+    File json(File file,int spaces) throws IOException;
+    final class Object extends TreeMap<String, java.lang.Object> implements JSON {
         public Object(){}
         public Object(Map<String,?> map){
             if(map!=null){
@@ -21,7 +28,7 @@ public class JSON{
             return create(new FileReader(json));
         }
         public static Object create(Reader reader) throws IOException {
-            return (Object)JSON.json(reader);
+            return JSON.json(reader).object();
         }
         @NonNull
         @Override public Object put(String key, java.lang.Object value){
@@ -124,6 +131,27 @@ public class JSON{
             writer.write('}');
             return writer;
         }
+
+        @Override
+        public boolean isObject() {
+            return true;
+        }
+
+        @Override
+        public boolean isArray() {
+            return false;
+        }
+
+        @Override
+        public Object object() {
+            return this;
+        }
+
+        @Override
+        public Array<?> array() {
+            return null;
+        }
+
         @NonNull
         @Override
         public String toString() {
@@ -133,18 +161,17 @@ public class JSON{
             return JSON.filter(this,String.class, c);
         }
     }
-    public static String escape(String s){
+    private static String escape(String s){
         return s.replace("\\", "\\\\")
                 .replace("\t", "\\t")
                 .replace("\b", "\\b")
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\f", "\\f")
-                .replace("'", "\\'")
                 .replace("\"", "\\\"");
     }
 
-    public static class Array<T> extends LinkedList<T> {
+    final class Array<T> extends LinkedList<T> implements JSON{
         public Array(){}
         public Array(Collection<T> array){
             if(array!=null){
@@ -161,7 +188,7 @@ public class JSON{
             return create(new FileReader(json));
         }
         public static Array<?> create(Reader reader) throws IOException {
-            return (Array<?>)JSON.json(reader);
+            return JSON.json(reader).array();
         }
 
         public Array<T> put(T obj){add(obj); return this;}
@@ -248,6 +275,22 @@ public class JSON{
             return writer;
         }
 
+        @Override
+        public boolean isObject() {
+            return false;
+        }
+        @Override
+        public boolean isArray() {
+            return true;
+        }
+        @Override
+        public Object object() {
+            return null;
+        }
+        @Override
+        public Array<?> array() {
+            return this;
+        }
         @NonNull
         @NotNull
         @Override
@@ -268,25 +311,25 @@ public class JSON{
             return JSON.filter(this,c);
         }
     }
-    public static <E,T> List<E> filter(List<T> list,Class<E> c){
+    static <E,T> List<E> filter(List<T> list,Class<E> c){
         return list==null ? null : list.stream().filter(c::isInstance).map(c::cast).collect(Collectors.toList());
     }
-    public static <T> Map<String,T> filter(Map<?,?> map,Class<T> c){
+    static <T> Map<String,T> filter(Map<?,?> map,Class<T> c){
         return JSON.filter(map,String.class, c);
     }
-    public static <K,V> Map<K,V> filter(Map<?,?> map,Class<K> k,Class<V> v){
+    static <K,V> Map<K,V> filter(Map<?,?> map,Class<K> k,Class<V> v){
         return map==null ? null : map.entrySet().stream().filter(e->k.isInstance(e.getKey()) && v.isInstance(e.getValue())).collect(Collectors.toMap(e->(K)e.getKey(),e->(V)e.getValue()));
     }
-    public static java.lang.Object json(String json) throws IOException{
+    static JSON json(String json) throws IOException{
         return json(new StringReader(json));
     }
-    public static java.lang.Object json(File json) throws IOException{
+    static JSON json(File json) throws IOException{
         return json(new FileReader(json));
     }
-    public static java.lang.Object json(Reader reader) throws IOException{
+    static JSON json(Reader reader) throws IOException{
         return json(reader,null);
     }
-    private static java.lang.Object json(Reader reader,java.lang.Object o) throws IOException {
+    private static JSON json(Reader reader,JSON o) throws IOException {
         char c;
         boolean rs=false;
         boolean rv=o instanceof Array<?>;
@@ -471,7 +514,7 @@ public class JSON{
     }
 
 
-    public static Boolean[] toObject(final boolean[] array) {
+    private static Boolean[] toObject(final boolean[] array) {
         if (array == null) {return null;}
         final Boolean[] result = new Boolean[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -479,7 +522,7 @@ public class JSON{
         }
         return result;
     }
-    public static Byte[] toObject(final byte[] array) {
+    private static Byte[] toObject(final byte[] array) {
         if (array == null) {return null;}
         final Byte[] result = new Byte[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -487,7 +530,7 @@ public class JSON{
         }
         return result;
     }
-    public static Character[] toObject(final char[] array) {
+    private static Character[] toObject(final char[] array) {
         if (array == null) {return null;}
         final Character[] result = new Character[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -495,7 +538,7 @@ public class JSON{
         }
         return result;
     }
-    public static Double[] toObject(final double[] array) {
+    private static Double[] toObject(final double[] array) {
         if (array == null) {return null;}
         final Double[] result = new Double[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -503,7 +546,7 @@ public class JSON{
         }
         return result;
     }
-    public static Float[] toObject(final float[] array) {
+    private static Float[] toObject(final float[] array) {
         if (array == null) {return null;}
         final Float[] result = new Float[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -511,7 +554,7 @@ public class JSON{
         }
         return result;
     }
-    public static Integer[] toObject(final int[] array) {
+    private static Integer[] toObject(final int[] array) {
         if (array == null) {return null;}
         final Integer[] result = new Integer[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -519,7 +562,7 @@ public class JSON{
         }
         return result;
     }
-    public static Long[] toObject(final long[] array) {
+    private static Long[] toObject(final long[] array) {
         if (array == null) {return null;}
         final Long[] result = new Long[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -527,7 +570,7 @@ public class JSON{
         }
         return result;
     }
-    public static Short[] toObject(final short[] array) {
+    private static Short[] toObject(final short[] array) {
         if (array == null) {return null;}
         final Short[] result = new Short[array.length];
         for (int i = 0; i < array.length; i++) {
