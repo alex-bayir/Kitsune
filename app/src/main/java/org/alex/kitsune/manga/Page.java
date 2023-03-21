@@ -7,20 +7,17 @@ import java.util.stream.Collectors;
 public class Page {
     float num;
     String url;
-    private static final String[] FN={"num","url"};
-
     public Page(float num,String url){
         this.num=num;
         this.url=url;
     }
     public float getNum(){return num;}
     public String getUrl(){return url;}
-
     public JSON.Object toJSON(){
-        return new JSON.Object().put(FN[0],num).put(FN[1],url);
+        return new JSON.Object().put("num",num).put("url",url);
     }
     public static Page fromJSON(JSON.Object json){
-        return json==null ? null : new Page(json.getFloat(FN[0]), json.getString(FN[1]));
+        return json==null ? null : new Page(json.getFloat("num"), json.getString("url"));
     }
     public static JSON.Array<JSON.Object> toJSON(List<Page> pages){
         return pages==null ? null : new JSON.Array<>(pages.stream().map(Page::toJSON).collect(Collectors.toList()));}

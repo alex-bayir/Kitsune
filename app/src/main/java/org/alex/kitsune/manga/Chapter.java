@@ -12,12 +12,10 @@ import static org.alex.json.JSON.filter;
 
 public class Chapter{
     JSON.Object info;
-    private static final String[] FN={"vol","num","name","date","pages"};
     public Chapter(JSON.Object info,List<Page> pages){
-        this.info=info;
-        this.info.put("pages",pages);
+        this.info=info.put("pages",pages);
     }
-    public Chapter(int vol,float num,String name,long date,List<Page> pages,JSON.Object additional){
+    public Chapter(int vol,float num,String name,long date,List<Page> pages,Map<String,Object> additional){
         info=new JSON.Object();
         if(additional!=null){info.putAll(additional);}
         info.put("vol",vol);
@@ -26,11 +24,8 @@ public class Chapter{
         info.put("date",date);
         info.put("pages",pages);
     }
-    public Chapter(int vol,float num,String name,long date,JSON.Object additional){
-        this(vol,num,name,date,null,additional);
-    }
     public Chapter(int vol,float num,String name,long date,Map<String,Object> additional){
-        this(vol,num,name,date,new JSON.Object(additional));
+        this(vol,num,name,date,null,additional);
     }
     public Page getPage(int page){
         return getPage(page,getPages());
@@ -44,8 +39,7 @@ public class Chapter{
     public long getDate(){return info.get("date",0L);}
     public List<Page> getPages(){return info.get("pages") instanceof List<?> pages ? filter(pages, Page.class):null;}
     public List<Page> setPages(List<Page> pages){
-        info.put("pages",pages);
-        return pages;
+        info.put("pages",pages); return pages;
     }
     public JSON.Object getInfo(){return info;}
     public String getTranslator(){return info.getString("translator");}

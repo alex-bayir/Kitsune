@@ -28,7 +28,6 @@ public abstract class Manga {
 
     protected final ListSet<Manga> similar=new ListSet<>(new ArrayList<>(10));
     private boolean updated=false;
-    public static final String[] FN={"Source","url","id","name","name_alt","author","author url","genres","rating","status","description","thumbnail","url_web","chapters","bookmarks","history","CategoryFavorite","lastSize","dir","lastTimeSave","lastTimeFavorite","lastMaxChapters","edited"};
     public Manga(JSON.Object json){
         this(
                 json,
@@ -84,9 +83,6 @@ public abstract class Manga {
     public final List<Page> getPages(int chapter) throws IOException, JSONException{
         return getPages(getChapters().get(chapter));
     }
-    public final List<Page> getPagesE(Chapter chapter){
-        try{return getPages(chapter);}catch(Exception e){Logs.saveLog(e); return null;}
-    }
     public abstract List<Page> getPages(Chapter chapter) throws IOException, JSONException;
     protected final void updateSimilar(Set<Manga> mangas){
         mangas.removeAll(Collections.singleton(null));
@@ -133,11 +129,11 @@ public abstract class Manga {
     @Override public final int hashCode(){return getUrl().hashCode();}
     @Override public final boolean equals(@Nullable Object obj){return obj instanceof Manga && hashCode()==obj.hashCode();}
 
-    public final String setDir(String dir){set("dir",dir+(dir.endsWith("/") ? "" :"/")+hashCode()); return getDir();}
+    public final String setDir(String dir){set("dir",dir+(dir.endsWith(File.separator) ? "" :File.separator)+hashCode()); return getDir();}
     public final String getDir(){return getString("dir");}
-    public final String getCoverPath(){return getDir()+"/card";}
-    public final String getInfoPath(){return getDir()+"/summary";}
-    public final String getPagesPath(){return getDir()+"/pages";}
+    public final String getCoverPath(){return getDir()+File.separator+"card";}
+    public final String getInfoPath(){return getDir()+File.separator+"summary";}
+    public final String getPagesPath(){return getDir()+File.separator+"pages";}
     public final String getPagePath(Chapter chapter,int page){
         return chapter!=null ? getPagePath(chapter,chapter.getPage(page)) : null;
     }
@@ -181,8 +177,18 @@ public abstract class Manga {
     public final String toString(){return this.toJSON().toString();}
 
     public static Manga fromJSON(String json){
-        if(json!=null && json.length()>0){try{return fromJSON(JSON.Object.create(json));}catch(IOException e){e.printStackTrace();}}
-    return null;}
+        return json!=null && json.length()>0 ? fromJSON(new StringReader(json)):null;
+    }
+    public static Manga fromJSON(Reader reader){
+        Manga manga=null;
+        try{
+            manga=fromJSON(JSON.Object.create(reader));
+            reader.close();
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+        return manga;
+    }
     public static Manga fromJSON(JSON.Object json){
         return newInstance(json);
     }
@@ -190,34 +196,24 @@ public abstract class Manga {
         return loadFromStorage(new File(filePath));
     }
     public static Manga loadFromStorage(File file){
-        BufferedReader in=null; Manga manga=null;
+        Manga manga=null;
         if(file.exists()){
             try{
-                in=new BufferedReader(new FileReader(file));
-                StringBuilder b=new StringBuilder();
-                String line;
-                while((line=in.readLine())!=null){b.append(line).append("\n");}
-                manga=Manga.fromJSON(b.toString());
+                manga=Manga.fromJSON(new FileReader(file));
                 if(manga!=null){manga.set("dir",file.getParent());}
             }catch(IOException e){
                 Logs.saveLog(e);
-            }finally{
-                try{if(in!=null){in.close();}}catch(IOException e){e.printStackTrace();}
             }
         }
         return manga;
     }
 
     public final void save(){
-        FileOutputStream out=null;
         try{
             new File(getDir()).mkdirs();
-            out=new FileOutputStream(getInfoPath());
-            out.write(toJSON(false).toString().getBytes());
+            toJSON(false).json(new File(getInfoPath()),0);
         }catch(IOException e){
             e.printStackTrace();
-        }finally{
-            try{if(out!=null){out.close();}}catch(IOException e){e.printStackTrace();}
         }
     }
 

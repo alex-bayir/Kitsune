@@ -54,7 +54,7 @@ public class Updater {
                     }
                     if(url!=null && url.contains(".apk")){
                         switch (compareVersions(BuildConfig.VERSION_NAME,version)){
-                            case 0: if(!BuildConfig.BUILD_TYPE.equals("debug")){break;}
+                            case 0: if(BuildConfig.TIMESTAMP+1000*3600>Utils.parseDate(jo.getString("updated_at"),"yyyy-MM-ddTHH:mm:ssZ")){break;}
                             case 1: return new JSON.Object().put("url",url).put("version",version);
                             case -1: break;
                         }

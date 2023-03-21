@@ -10,6 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.selection.Selection;
+import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.manga.Page;
 import org.alex.kitsune.manga.Chapter;
@@ -17,6 +18,7 @@ import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -54,6 +56,9 @@ public class LoadService extends Service {
         super();
     }
 
+    private List<Page> getPages(Manga manga,Chapter chapter){
+        try{return manga.getPages(chapter);}catch(Exception e){Logs.saveLog(e); return null;}
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("action", intent.getAction());
@@ -74,7 +79,7 @@ public class LoadService extends Service {
                             bundle.putString(text, "getting urls...");
                             bundle.putInt(max, 1);
                             publicProgress(bundle);
-                            while (task.manga.getPagesE(chapter) == null) {
+                            while (getPages(task.manga,chapter) == null) {
                                 if (task.isCanceled()) {
                                     task.clearCancel();
                                     finish(download); return;

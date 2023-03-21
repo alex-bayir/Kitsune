@@ -44,10 +44,10 @@ public class MangaService {
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
         try{
             String[] paths=context.getAssets().list("scripts");
-            String dir=context.getExternalFilesDir(Constants.manga_scripts).getAbsolutePath()+"/";
-            for(int i=0;i<paths.length;i++){
-                if(!BuildConfig.VERSION_NAME.equals(prefs.getString(Constants.version,"")) || BuildConfig.BUILD_TYPE.equals("debug") || !new File(dir+paths[i]).exists()){
-                    Utils.File.copy(context.getAssets().open("scripts/"+paths[i]),new FileOutputStream(dir+paths[i]));
+            String dir=context.getExternalFilesDir(Constants.manga_scripts).getAbsolutePath()+File.separator;
+            for(String path : paths){
+                if(!BuildConfig.VERSION_NAME.equals(prefs.getString(Constants.version,"")) || BuildConfig.BUILD_TYPE.equals("debug") || !new File(dir+path).exists()){
+                    Utils.File.copy(context.getAssets().open("scripts"+File.separator+path),new FileOutputStream(dir+path));
                 }
             }
             prefs.edit().putString(Constants.version,BuildConfig.VERSION_NAME).apply();
@@ -123,14 +123,14 @@ public class MangaService {
         mapFavorites=new Hashtable<>();
         categories=new HashSet<>();
         categories.add(defFavoriteCategory);
-        LinkedList<Integer> removelist=new LinkedList<>();
+        LinkedList<Integer> remove_list=new LinkedList<>();
         for(Map.Entry<Integer,Manga> entry: map.entrySet()){
             Manga manga=entry.getValue();
             if(manga==null || allocate(manga,true)){
-                removelist.add(entry.getKey());
+                remove_list.add(entry.getKey());
             }
         }
-        for(Integer i:removelist){map.remove(i);}
+        for(Integer i:remove_list){map.remove(i);}
     }
 
     public static void update(int manga_hash){update(map.get(manga_hash));}
@@ -159,7 +159,7 @@ public class MangaService {
         File[] files=new File(dir).listFiles();
         if(files==null){return map;}
         for (File file : files) {
-            int hash=put(map,Manga.loadFromStorage(file.getAbsolutePath()+"/summary"));
+            int hash=put(map,Manga.loadFromStorage(file.getAbsolutePath()+File.separator+"summary"));
             if(hash==-1){Utils.File.delete(file);}
         }
         return map;

@@ -19,7 +19,6 @@ import org.alex.kitsune.manga.views.MangaAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.jetbrains.annotations.NotNull;
-import java.util.Objects;
 
 public class NewFragment extends Fragment implements MenuProvider {
     RecyclerView rv;
@@ -34,18 +33,18 @@ public class NewFragment extends Fragment implements MenuProvider {
         if(root!=null){return root;}
         root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
         rv=root.findViewById(R.id.rv_list);
-        prefs=PreferenceManager.getDefaultSharedPreferences(Objects.requireNonNull(getContext()));
+        prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new MangaAdapter(null, MangaAdapter.Mode.LIST,
                 manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
                 manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
         );
         adapter.setShowSource(false);
-        adapter.setShowUpdated(true);
+        adapter.setShowCheckedNew(false);
         adapter.initRV(rv,1);
         mainActivity=(MainActivity)getActivity();
         IntentFilter filter=new IntentFilter(Constants.action_Update_New);
         filter.addAction(Constants.action_Update);
-        getContext().registerReceiver(new BroadcastReceiver() {
+        requireContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 Manga manga=MangaService.get(intent.getIntExtra(Constants.hash,-1));
@@ -56,8 +55,7 @@ public class NewFragment extends Fragment implements MenuProvider {
                     }else if(Constants.action_Update.equals(intent.getAction())){
                         String tmp=intent.getStringExtra(Constants.option);
                         switch(tmp!=null ? tmp : ""){
-                            case Constants.load:
-                            case Constants.delete: adapter.update(manga); break;
+                            case Constants.load, Constants.delete -> adapter.update(manga);
                         }
                     }
                 }
@@ -68,7 +66,7 @@ public class NewFragment extends Fragment implements MenuProvider {
             Manga manga=adapter.remove(i);
             manga.checkedNew();
             mainActivity.setNew(adapter.getItemCount());
-            getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()));
+            requireContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()));
         }));
         requireContext().registerReceiver(new BroadcastReceiver() {
             @Override

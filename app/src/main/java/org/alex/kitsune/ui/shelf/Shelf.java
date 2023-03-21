@@ -59,11 +59,11 @@ public class Shelf extends Fragment implements MenuProvider {
             @Override public void onStart(){progress.setVisibility(View.VISIBLE);}
         }).build());
         progress.progressiveStop();
-        prefs=PreferenceManager.getDefaultSharedPreferences(getContext());
+        prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new Adapter(getContext(),createWrappers(true)).initRV(root);
         IntentFilter filter=new IntentFilter(Constants.action_Update);
         filter.addAction(Constants.action_Update_Shelf);
-        getContext().registerReceiver(new BroadcastReceiver() {
+        requireContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 adapter.update(createWrappers(true));

@@ -22,8 +22,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
     private final HolderClickListener listener,buttonListener;
     private Mode mode;
     private boolean showSource;
-    private boolean showUpdated=false;
-    private long fullsize;
+    private boolean showCheckedNew=true;
+    private long full_size;
     public MangaAdapter(Collection<Manga> mangas, Mode mode, Callback<Manga> clickListener){this(mangas,mode,clickListener,null);}
     public MangaAdapter(Collection<Manga> mangas, Mode mode, Callback<Manga> mangaListener, Callback<Manga> mangaButtonListener){
         if(mangas!=null){this.list.addAll(mangas);}
@@ -61,6 +61,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         return (mode==Mode.LIST || (mode==Mode.MIXED && position==0)) ? 1:0;
     }
 
+    @NotNull
     @Override
     public MangaHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
         return new MangaHolder(parent,listener,buttonListener,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
@@ -68,7 +69,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
 
     @Override
     public void onBindViewHolder(MangaHolder holder, int position) {
-        holder.bind(list.get(position),showSource,showUpdated,fullsize);
+        holder.bind(list.get(position),showSource, showCheckedNew, full_size);
     }
 
     @Override
@@ -86,8 +87,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         setSpanCount(spanCount,false);
         sort(comparator,true);
     }
-    public void setShowUpdated(boolean showUpdated){this.showUpdated=showUpdated;}
-    public boolean isShowUpdated(){return showUpdated;}
+    public void setShowCheckedNew(boolean showCheckedNew){this.showCheckedNew=showCheckedNew;}
+    public boolean isShowCheckedNew(){return showCheckedNew;}
     public List<Manga> getList(){return this.list;}
     public Manga get(int index){return list.get(index);}
     public int get(Manga manga){return list.indexOf(manga);}
@@ -165,8 +166,8 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         list.clear();
     }
 
-    public void recalculateFullSize(){fullsize=0; for(Manga manga:list){fullsize+=manga.recalculateImagesSize();}}
-    public void calculateFullSize(long offset){fullsize=offset; for(Manga manga:list){fullsize+=manga.getImagesSize();}}
+    public void recalculateFullSize(){full_size=0; for(Manga manga:list){full_size+=manga.recalculateImagesSize();}}
+    public void calculateFullSize(long offset){full_size=offset; for(Manga manga:list){full_size+=manga.getImagesSize();}}
     public void addBySize(Manga manga){
         calculateFullSize(manga.recalculateImagesSize());
         add(manga,Manga.ImagesSizesComparator);

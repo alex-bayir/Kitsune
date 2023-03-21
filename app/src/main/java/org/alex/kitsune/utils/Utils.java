@@ -42,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -478,6 +479,14 @@ public class Utils {
             }
         }
         return false;
+    }
+
+    public static long parseDate(String date,String format){
+        try{
+            return java.util.Objects.requireNonNull(new SimpleDateFormat(format,java.util.Locale.US).parse(date)).getTime();
+        }catch (Exception e){
+            return System.currentTimeMillis();
+        }
     }
 
     public static boolean isUrl(String string){

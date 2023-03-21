@@ -68,7 +68,7 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         setFullContent(fullContent,horizontal);
     }
 
-    public void bind(Manga manga, boolean showSource, boolean showUpdated, long fullSize){
+    public void bind(Manga manga, boolean showSource, boolean showCheckedNew, long fullSize){
         setCover(manga);
         setTitle(manga.getName());
         setSubtitle(manga.getNameAlt());
@@ -76,7 +76,7 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         setSize(manga.getImagesSize(),fullSize);
         setRating(manga.getRating());
         setNumSaved(manga.countSaved());
-        setNumNew(showUpdated ? manga.getNotCheckedNew() : manga.getCheckedNew());
+        setNumNew(showCheckedNew ? manga.getCheckedNew() : manga.getNotCheckedNew());
         setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? manga.getSource() : manga.getStatus()), !button.hasOnClickListeners() || (manga.getNumChapterHistory()>=0));
         setVisibleMarkNew(manga.getNotCheckedNew()>0);
     }
@@ -123,11 +123,11 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         button.setEnabled(enabled);
     }
     public final void setNumSaved(int num){
-        num_saved.setText(Integer.toString(num));
+        num_saved.setText(String.valueOf(num));
         num_saved.setVisibility(num==0 ? View.INVISIBLE : View.VISIBLE);
     }
     public final void setNumNew(int num){
-        num_new.setText(Integer.toString(num));
+        num_new.setText(String.valueOf(num));
         num_new.setVisibility(num==0 ? View.INVISIBLE : View.VISIBLE);
     }
     public final void setSize(long size,long fullSize){

@@ -177,7 +177,7 @@ public class PreviewPage extends PreviewHolder {
                     web_dialog.setOnCloseListener(()->{
                         Catalogs.updateCookies(view.getContext(),source,CookieManager.getInstance().getCookie(url));
                         manga.update(update->{
-                            if(((View)itemView.getParent()).getContext() instanceof PreviewActivity pa){
+                            if(itemView.getParent() instanceof View v && v.getContext() instanceof PreviewActivity pa){
                                 pa.updateContent();
                             }
                         },null,true);

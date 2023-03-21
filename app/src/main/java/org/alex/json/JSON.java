@@ -110,7 +110,7 @@ public interface JSON {
             return json;
         }
         public File json(File json,int spaces) throws IOException {
-            json(new FileWriter(json),spaces); return json;
+            json(new FileWriter(json),spaces).close(); return json;
         }
         public Writer json(Writer writer,int spaces) throws IOException {
             String line=spaces>0?"\n"+new String(new char[spaces-1]).replace("\0", "\t"):"";
@@ -257,7 +257,7 @@ public interface JSON {
             return json;
         }
         public File json(File json,int spaces) throws IOException {
-            json(new FileWriter(json),spaces); return json;
+            json(new FileWriter(json),spaces).close(); return json;
         }
         public Writer json(Writer writer,int spaces) throws IOException {
             String line=spaces>0?"\n"+new String(new char[spaces-1]).replace("\0", "\t"):"";
@@ -476,10 +476,8 @@ public interface JSON {
         throw new IllegalArgumentException("No ending tag found");
     }
     private static void json(Writer writer, java.lang.Object value, int spaces) throws IOException {
-        if(value instanceof Object obj){
-            obj.json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof Array<?> arr){
-            arr.json(writer,spaces>0?spaces+1:0);
+        if(value instanceof JSON json){
+            json.json(writer,spaces>0?spaces+1:0);
         }else if(value instanceof Number || value instanceof Boolean){
             writer.write(String.valueOf(value));
         }else if(value instanceof Map<?,?> map){
