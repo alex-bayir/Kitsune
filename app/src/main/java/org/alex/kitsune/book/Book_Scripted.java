@@ -1,49 +1,53 @@
-package org.alex.kitsune.manga;
+package org.alex.kitsune.book;
 
 import android.text.Html;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.scripts.Script;
-import org.alex.kitsune.manga.search.FilterSortAdapter;
+import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.Utils;
-import org.json.JSONException;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class Manga_Scripted extends Manga{
+public class Book_Scripted extends Book {
     private static final Hashtable<String, Script> scripts=new Hashtable<>();
     public static Hashtable<String,Script> getScripts(){return scripts;}
-    public static void setScripts(Hashtable<String,Script> scripts){Manga_Scripted.scripts.clear(); Manga_Scripted.scripts.putAll(scripts);}
+    public static void setScripts(Hashtable<String,Script> scripts){
+        Book_Scripted.scripts.clear(); Book_Scripted.scripts.putAll(scripts);}
     public static Script getScript(String source){return source!=null ? scripts.get(source) : null;}
     public static Script getScript(String source, Script def){return source!=null ? scripts.getOrDefault(source, def) : def;}
     public static Script getScript(String source, String path) throws Throwable {
         return getScript(source, Script.getInstance(path));
     }
     private final Script script;
-    public static Manga_Scripted newInstance(Map<String,?> map){
+    public static Book_Scripted newInstance(Map<String,?> map){
         return newInstance(new JSON.Object(map));
     }
-    public static Manga_Scripted newInstance(JSON.Object json){
+    public static Book_Scripted newInstance(JSON.Object json){
         return newInstance(getScript(json.get(Constants.source,json.getString("Source"))),json);
     }
-    public static Manga_Scripted newInstance(Script script,Map<String,?> json){
-        return newInstance(script,new JSON.Object(json));
+    public static Book_Scripted newInstance(Script script, Map<String,?> map){
+        return newInstance(script,map instanceof JSON.Object json ? json : new JSON.Object(map));
     }
-    public static Manga_Scripted newInstance(Script script,JSON.Object json){
-        return script!=null? new Manga_Scripted(script,json):null;
+    public static Book_Scripted newInstance(Script script, JSON.Object json){
+        return script!=null? new Book_Scripted(script,json):null;
     }
-    public Manga_Scripted(Script script, JSON.Object json) {
+    public Book_Scripted(Script script, JSON.Object json) {
         super(json);
         this.script=script;
         json.put(Constants.domain,script.getString(Constants.domain,null));
         json.put(Constants.source,script.getString(Constants.source,null));
+        json.put(Constants.Type,script.getString(Constants.Type,null));
     }
     @Override
     public String getDomain(){return getString(Constants.domain);}
 
     @Override
     public String getSource(){return getString(Constants.source);}
+
+    @Override
+    public String getType(){return getString(Constants.Type);}
 
     public static String getSourceDescription(String source){return getSourceDescription(getScript(source));}
     public static String getSourceDescription(Script script){return script.getString(Constants.description,null);}
@@ -83,26 +87,26 @@ public class Manga_Scripted extends Manga{
     }
 
     @Override
-    public List<Page> getPages(Chapter chapter) throws IOException, JSONException {
+    public List<Page> getPages(Chapter chapter) throws IOException {
         return chapter.setPages((List<Page>)script.invokeMethod(Constants.methodGetPages,List.class,getUrl(),chapter.toJSON()));
     }
-    public static List<Manga> query(String source,String name,int page,Object... params){return query(getScript(source),name,page,params);}
-    public static List<Manga> query(Script script,String name,int page,Object... params){
+    public static List<Book> query(String source, String name, int page, Object... params){return query(getScript(source),name,page,params);}
+    public static List<Book> query(Script script, String name, int page, Object... params){
         List<Map<String,?>> list=script.invokeMethod(Constants.methodQuery,List.class,name,page,params);
         return list.stream().map(m->newInstance(script,m)).filter(Objects::nonNull).collect(Collectors.toList());
     }
-    public static List<Manga> query(String source,String url,int page){return query(getScript(source),url,page);}
-    public static List<Manga> query(Script script,String url,int page){
+    public static List<Book> query(String source, String url, int page){return query(getScript(source),url,page);}
+    public static List<Book> query(Script script, String url, int page){
         List<Map<String,?>> list=script.invokeMethod(Constants.methodQueryURL,List.class,url,page);
         return list.stream().map(m->newInstance(script,m)).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     @Override
-    public Set<Manga> loadSimilar() throws Exception {
+    public Set<Book> loadSimilar() throws Exception {
         return getSimilar((List<Map<String,?>>)script.invokeMethod(Constants.methodLoadSimilar,List.class,info));
     }
-    private Set<Manga> getSimilar(List<Map<String,?>> similar){
-        return similar.stream().filter(Objects::nonNull).map(m->newInstance(script,m)).collect(Collectors.toSet());
+    private Set<Book> getSimilar(List<Map<String,?>> similar){
+        return similar.stream().filter(Objects::nonNull).map(Book_Scripted::determinate).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 
     public static FilterSortAdapter createAdvancedSearchAdapter(String source){return createAdvancedSearchAdapter(getScript(source));}
@@ -117,13 +121,47 @@ public class Manga_Scripted extends Manga{
         return set;
     }
 
-    public static Manga_Scripted determinate(String url){
+    public static Script determinate_script(String url){
+        if(url==null){return null;}
+        int min=Integer.MAX_VALUE; Script script=null;
+        String url_domain=Utils.group(url,"://(.*?)/");
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
-            String provider=entry.getValue().getString(Constants.domain,null);
-            if(provider!=null && url.contains(provider)){
-                return newInstance(new JSON.Object().put(Constants.source,entry.getValue()).put("url",url));
+            String domain=entry.getValue().getString(Constants.domain,null);
+            if(domain!=null){
+                int distance=levenshtein_distance(url_domain,domain);
+                if(distance<=min && distance<domain.length()/2){
+                    min=distance; script=entry.getValue();
+                }
             }
         }
-        return null;
+        return script;
+    }
+    public static Book_Scripted determinate(String url){
+        return determinate(new JSON.Object().put("url",url));
+    }
+    public static Book_Scripted determinate(Map<String,?> map){
+        return newInstance(determinate_script(map.get("url") instanceof String str ? str : null),map);
+    }
+
+    private static int levenshtein_distance(CharSequence str1, CharSequence str2) {
+        int[][] distance = new int[str1.length() + 1][str2.length() + 1];
+
+        for (int i = 0; i <= str1.length(); i++){
+            distance[i][0] = i;
+        }
+        for (int j = 1; j <= str2.length(); j++){
+            distance[0][j] = j;
+        }
+
+        for (int i = 1; i <= str1.length(); i++)
+            for (int j = 1; j <= str2.length(); j++)
+                distance[i][j] = min(distance[i - 1][j] + 1,
+                        distance[i][j - 1] + 1,
+                        distance[i - 1][j - 1] + ((str1.charAt(i - 1) == str2.charAt(j - 1)) ? 0 : 1));
+
+        return distance[str1.length()][str2.length()];
+    }
+    private static int min(int a, int b, int c) {
+        return Math.min(Math.min(a, b), c);
     }
 }

@@ -15,12 +15,12 @@ import androidx.recyclerview.selection.SelectionTracker;
 import androidx.recyclerview.widget.*;
 import org.alex.kitsune.commons.FastScroller;
 import org.alex.kitsune.commons.HolderListener;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
 import org.alex.kitsune.services.LoadService;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.book.Chapter;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.utils.Utils;
 import java.util.stream.Collectors;
@@ -40,7 +40,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         rv.setLayoutManager(new LinearLayoutManager(itemView.getContext()));
         setReversed(PreferenceManager.getDefaultSharedPreferences(itemView.getContext()).getBoolean(Constants.reversed,false));
         rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
-        FastScroller.createDefault(rv).setPadding(30,0,30,0).setOnStateChangeListener(state -> adapter.setSelectable(state!=FastScroller.STATE_DRAGGING));
+        FastScroller.createDefault(rv).setPadding(32,0,32,0).setOnStateChangeListener(state -> adapter.setSelectable(state!=FastScroller.STATE_DRAGGING));
         noItems.setText(R.string.No_chapters);
         noItems.setVisibility(View.VISIBLE);
         Utils.registerAdapterDataChangeRunnable(adapter,()-> noItems.setVisibility(adapter.getItemCount()==0 ? View.VISIBLE : View.GONE));
@@ -53,8 +53,8 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     }
 
     @Override
-    public void bind(Manga manga) {
-        adapter.setManga(manga);
+    public void bind(Book book) {
+        adapter.setBook(book);
     }
 
     @Override
@@ -62,7 +62,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         if(adapter.getTracker().hasSelection()){
             select_deselect(adapter.getTracker(),Integer.toUnsignedLong(index));
         }else{
-            itemView.getContext().startActivity(new Intent(itemView.getContext(),ReaderActivity.class).putExtra(Constants.hash,adapter.manga.hashCode()).putExtra(Constants.chapter, index));
+            itemView.getContext().startActivity(new Intent(itemView.getContext(),ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.chapter, index));
         }
     }
 
@@ -86,43 +86,43 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     }
 
     public void scrollToHistory(){
-        if(adapter.manga!=null && adapter.manga.getHistory()!=null){rv.scrollToPosition(Math.min(adapter.getPosition(adapter.manga.getHistory().getChapter())+5,adapter.getItemCount()-1));}
+        if(adapter.book !=null && adapter.book.getHistory()!=null){rv.scrollToPosition(Math.min(adapter.getPosition(adapter.book.getHistory().getChapter())+5,adapter.getItemCount()-1));}
     }
-    public void action(int action){action(itemView.getContext(),adapter.manga,action,adapter);}
-    public static void action(Context context, Manga manga, int action, CustomAdapter<Chapter> adapter){
-        if(manga==null){return;}
+    public void action(int action){action(itemView.getContext(),adapter.book,action,adapter);}
+    public static void action(Context context, Book book, int action, CustomAdapter<Chapter> adapter){
+        if(book ==null){return;}
         new Thread(()->{
             Handler handler=new Handler(Looper.getMainLooper());
             boolean deleted=false;
             switch (action) {
                 case RA -> {
-                    for (int i = 0; i < manga.getChapters().size(); i++) {
-                        manga.clearChapter(i); int f=i; handler.post(() -> adapter.notifyItemChanged(f));
+                    for (int i = 0; i < book.getChapters().size(); i++) {
+                        book.clearChapter(i); int f=i; handler.post(() -> adapter.notifyItemChanged(f));
                     }
-                    manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
-                    manga.save(); deleted=true; adapter.getTracker().clearSelection();
+                    book.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
+                    book.save(); deleted=true; adapter.getTracker().clearSelection();
                 }
                 case RS -> {
                     for (int i : Utils.convert(adapter.getTracker().getSelection())) {
-                        manga.clearChapter(i); handler.post(() -> adapter.notifyItemChanged(i));
+                        book.clearChapter(i); handler.post(() -> adapter.notifyItemChanged(i));
                     }
-                    if (adapter.getTracker().getSelection().size() == manga.getChapters().size()) {
-                        manga.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
+                    if (adapter.getTracker().getSelection().size() == book.getChapters().size()) {
+                        book.deleteAllPages(); handler.postDelayed(adapter::notifyDataSetChanged, 100);
                     }
-                    manga.save(); deleted = true; adapter.getTracker().clearSelection();
+                    book.save(); deleted = true; adapter.getTracker().clearSelection();
                 }
                 case SA -> {
-                    manga.loadChapters(context, new LoadService.Task(manga, 0, manga.getChapters().size() - 1));
+                    book.loadChapters(context, new LoadService.Task(book, 0, book.getChapters().size() - 1));
                     adapter.getTracker().clearSelection();
                 }
                 case SS -> {
-                    manga.loadChapters(context, new LoadService.Task(manga, adapter.getTracker().getSelection()));
+                    book.loadChapters(context, new LoadService.Task(book, adapter.getTracker().getSelection()));
                     adapter.getTracker().clearSelection();
                 }
             }
-            MangaService.allocate(manga,false);
+            BookService.allocate(book,false);
             if(deleted){
-                context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.delete));
+                context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.delete));
             }
         }).start();
     }

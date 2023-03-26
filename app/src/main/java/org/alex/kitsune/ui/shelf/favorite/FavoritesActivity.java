@@ -12,10 +12,10 @@ import com.google.android.material.tabs.TabLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.tabs.TabLayoutMediator;
 import org.alex.kitsune.commons.DiffCallback;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.utils.Utils;
@@ -48,7 +48,7 @@ public class FavoritesActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.Favorites);
         viewPager=findViewById(R.id.view_pager);
 
-        categories=new ArrayList<>(MangaService.getCategories());
+        categories=new ArrayList<>(BookService.getCategories());
         adapter=new CategoriesAdapter(categories);
         viewPager.setAdapter(adapter);
         tabs=findViewById(R.id.tabs);
@@ -64,7 +64,7 @@ public class FavoritesActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         categories.clear();
-        categories.addAll(MangaService.getCategories());
+        categories.addAll(BookService.getCategories());
         adapter.setCategories(categories);
     }
 
@@ -79,8 +79,8 @@ public class FavoritesActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (android.R.id.home) -> finish();
-            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Manga.FavoriteTimeComparator);}
-            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Manga.AlphabeticalComparator);}
+            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.FavoriteTimeComparator);}
+            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
             case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);
@@ -88,9 +88,9 @@ public class FavoritesActivity extends AppCompatActivity {
 
     public class CategoriesAdapter extends RecyclerView.Adapter<CategoriesAdapter.CategoryHolder>{
         List<String> categories=new ArrayList<>();
-        List<MangaAdapter> adapters=new ArrayList<>();
+        List<BookAdapter> adapters=new ArrayList<>();
         boolean showSource=true;
-        Comparator<Manga> comparator=Manga.FavoriteTimeComparator;
+        Comparator<Book> comparator= Book.FavoriteTimeComparator;
         public CategoriesAdapter(List<String> categories){
             setCategories(categories);
         }
@@ -102,18 +102,18 @@ public class FavoritesActivity extends AppCompatActivity {
             notifyItemRangeChanged(0, getItemCount());
         }
         public boolean isShowSource(){return showSource;}
-        public void sort(Comparator<Manga> comparator){
+        public void sort(Comparator<Book> comparator){
             this.comparator=comparator;
-            for(MangaAdapter adapter:adapters){
+            for(BookAdapter adapter:adapters){
                 adapter.sort(comparator,true);
             }
         }
-        private MangaAdapter add(MangaAdapter adapter){adapters.add(adapter); return adapter;}
+        private BookAdapter add(BookAdapter adapter){adapters.add(adapter); return adapter;}
         @NonNull
         @NotNull
         @Override
         public CategoryHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-            return new CategoryHolder(parent, add(new MangaAdapter(null, MangaAdapter.Mode.LIST,manga -> startActivity(new Intent(FavoritesActivity.this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())))));
+            return new CategoryHolder(parent, add(new BookAdapter(null, BookAdapter.Mode.LIST, book -> startActivity(new Intent(FavoritesActivity.this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode())))));
         }
 
         @Override
@@ -125,15 +125,15 @@ public class FavoritesActivity extends AppCompatActivity {
         public int getItemCount(){return categories.size();}
 
         public class CategoryHolder extends RecyclerView.ViewHolder{
-            final MangaAdapter adapter;
-            public CategoryHolder(@NonNull @NotNull ViewGroup parent, MangaAdapter adapter) {
+            final BookAdapter adapter;
+            public CategoryHolder(@NonNull @NotNull ViewGroup parent, BookAdapter adapter) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list, parent, false));
                 this.adapter=adapter;
                 this.adapter.initRV(itemView.findViewById(R.id.rv_list),1);
             }
-            public void bind(String category, boolean showSource, Comparator<Manga> comparator){
+            public void bind(String category, boolean showSource, Comparator<Book> comparator){
                 adapter.setShowSource(showSource, false);
-                adapter.replace(MangaService.getFavorites(category), comparator, false);
+                adapter.replace(BookService.getFavorites(category), comparator, false);
             }
         }
     }

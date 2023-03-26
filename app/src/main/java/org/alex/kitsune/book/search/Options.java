@@ -1,4 +1,4 @@
-package org.alex.kitsune.manga.search;
+package org.alex.kitsune.book.search;
 
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;

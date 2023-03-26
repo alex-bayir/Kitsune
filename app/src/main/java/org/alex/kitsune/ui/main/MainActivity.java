@@ -28,9 +28,9 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.commons.DrawerLayout;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.Manga_Scripted;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.settings.SettingsActivity;
 import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
@@ -63,9 +63,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 int start=query.lastIndexOf("http"),end=query.indexOf('?',start+1);
                 if(start>=0){
                     query=URLDecoder.decode(query.substring(start,end!=-1?end:query.length()));
-                    Manga manga=MangaService.getOrPutNewWithDir(Manga_Scripted.determinate(query.trim()));
-                    if(manga!=null){
-                        startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()));
+                    Book book = BookService.getOrPutNewWithDir(Book_Scripted.determinate(query.trim()));
+                    if(book !=null){
+                        startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()));
                     }else{
                         CustomSnackbar.makeSnackbar((ViewGroup) drawer.getParent(), Snackbar.LENGTH_LONG).setGravity(Gravity.CENTER).setText(getString(R.string.sourcenotdefined,query.trim())).setIcon(R.drawable.ic_caution_yellow).setBackgroundAlpha(200).show();
                     }
@@ -96,7 +96,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         getWindow().setNavigationBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
         Updater.init(this);
 
-        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Constants.saved_path, MangaService.init(this)).apply();
+        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Constants.saved_path, BookService.init(this)).apply();
         adapter=new PagesAdapter(this.getSupportFragmentManager(),R.id.pager);
         headerImagePath=getExternalFilesDir(null).getAbsolutePath()+"/header";
         drawer=findViewById(R.id.drawer_layout);
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onCreateMenu(@NonNull @NotNull Menu menu, @NonNull @NotNull MenuInflater menuInflater) {
         menuInflater.inflate(R.menu.options_main, menu);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView = (SearchView) menu.findItem(R.id.action_find_manga).getActionView();
+        SearchView searchView = (SearchView) menu.findItem(R.id.action_find_book).getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
         searchView.setOnQueryTextListener(listener);
         if(menu instanceof MenuBuilder){((MenuBuilder)menu).setOptionalIconsVisible(true);}
@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onDestroy() {
         super.onDestroy();
-        File[] listF=new File(MangaService.getCacheDir()).listFiles();
+        File[] listF=new File(BookService.getCacheDir()).listFiles();
         if(listF!=null){for(File f:listF){Utils.File.delete(f);}}
     }
     public void updateMenu(){

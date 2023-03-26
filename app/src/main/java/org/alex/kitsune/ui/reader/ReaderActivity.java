@@ -24,15 +24,15 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.shelf.StatisticsFragment;
 import org.alex.kitsune.utils.Utils.Translator;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.ui.settings.SettingsActivity;
-import org.alex.kitsune.manga.BookMark;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.BookMark;
+import org.alex.kitsune.book.Chapter;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.preview.CustomAdapter;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.utils.*;
@@ -51,7 +51,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     RecyclerView reader;
     Dialog Chapters, FailedLoadPagesInfo;
     ReaderPageAdapter adapter;
-    Manga manga;
+    Book book;
     Chapter chapter;
     private int num_chapter;
     private int page=0;
@@ -67,17 +67,17 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     TextView error_info;
 
     private void setData(int num_chapter){
-        chapter=manga.getChapters().get(num_chapter);
+        chapter= book.getChapters().get(num_chapter);
         if(chapter!=null){
-            toolBar.setTitle(manga.getName());
+            toolBar.setTitle(book.getName());
             toolBar.setSubtitle(chapter.text(toolBar.getContext()));
             if(chapter.getPages()!=null && chapter.getPages().size()>0){
                 seekBar.setMax(chapter.getPages().size()-1);
                 adapter.setChapter(num_chapter);
                 if(page==-1){page=chapter.getPages().size()-1;}
                 reader.scrollToPosition(page);
-                manga.createHistory(chapter,page);
-                manga.seen(num_chapter);
+                book.createHistory(chapter,page);
+                book.seen(num_chapter);
                 seekBar.setProgress(page);
             }else{
                 seekBar.setMax(-1);
@@ -88,7 +88,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onSaveInstanceState(@NonNull @NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(Constants.hash,manga!=null ? manga.hashCode():-1);
+        outState.putInt(Constants.hash, book !=null ? book.hashCode():-1);
         outState.putBoolean(Constants.history,true);
     }
 
@@ -101,7 +101,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         lastBrightness=getBrightness();
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
         Intent intent=getIntent();
-        manga=MangaService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
+        book = BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
         translate.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
@@ -129,7 +129,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         });
         translate.setOnClickListener(v -> adapter.invertShowTranslate());
         reader=findViewById(R.id.reader);
-        adapter=new ReaderPageAdapter(manga,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});
+        adapter=new ReaderPageAdapter(book,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});
         reader.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull @NotNull RecyclerView recyclerView, int newState) {
@@ -138,19 +138,19 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         });
         num_chapter=intent.getIntExtra(Constants.chapter,0);
         int num_bookMark=intent.getIntExtra(Constants.bookmark,-1);
-        if(intent.getBooleanExtra(Constants.history,savedState!=null && savedState.getBoolean(Constants.history,false)) && manga.getHistory()!=null){
-            num_chapter=manga.getNumChapterHistory();
-            page=manga.getHistory().getPage();
+        if(intent.getBooleanExtra(Constants.history,savedState!=null && savedState.getBoolean(Constants.history,false)) && book.getHistory()!=null){
+            num_chapter= book.getNumChapterHistory();
+            page= book.getHistory().getPage();
         }
-        if(num_bookMark>=0 && manga.getBookMarks()!=null && num_bookMark<manga.getBookMarks().size()){
-            final BookMark bookMark=manga.getBookMarks().get(num_bookMark);
-            num_chapter=manga.getNumChapter(bookMark);
+        if(num_bookMark>=0 && book.getBookMarks()!=null && num_bookMark< book.getBookMarks().size()){
+            final BookMark bookMark= book.getBookMarks().get(num_bookMark);
+            num_chapter= book.getNumChapter(bookMark);
             page=bookMark.getPage();
             if(num_chapter<0 && NetworkUtils.isNetworkAvailable(this)){
-                manga.update((updated) -> {
+                book.update((updated) -> {
                     if(updated){
-                        manga.updateDetails();
-                        num_chapter=manga.getNumChapter(bookMark.getChapter());
+                        book.updateDetails();
+                        num_chapter= book.getNumChapter(bookMark.getChapter());
                         page=bookMark.getPage();
                         initChapter(num_chapter,page);
                     }
@@ -210,7 +210,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             rv=view.findViewById(R.id.rv_list);
             rv.setLayoutManager(new LinearLayoutManager(this));
             rv.addItemDecoration(new DividerItemDecoration(rv.getContext(), DividerItemDecoration.VERTICAL));
-            chaptersAdapter=new CustomAdapter<>(manga,R.layout.item_chapter, new HolderListener() {
+            chaptersAdapter=new CustomAdapter<>(book,R.layout.item_chapter, new HolderListener() {
                 @Override
                 public void onItemClick(View v, int index){
                     initChapter(index,0);
@@ -249,17 +249,17 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
 
 
     public void initChapter(int num_chapter,int page){
-        if(num_chapter<manga.getChapters().size() && num_chapter>=0){
+        if(num_chapter< book.getChapters().size() && num_chapter>=0){
             this.num_chapter=num_chapter;
             this.page=page;
-            if(manga.checkChapterInfo(num_chapter)){
+            if(book.checkChapterInfo(num_chapter)){
                 setData(num_chapter);
             }else{
                 if(NetworkUtils.isNetworkAvailable(this)){
                     lastThrowable=null;
                     new Thread(()->{
                         int pages=-1;
-                        try{pages=manga.getPages(num_chapter).size();}catch(Exception e){Logs.saveLog(lastThrowable=e);}
+                        try{pages= book.getPages(num_chapter).size();}catch(Exception e){Logs.saveLog(lastThrowable=e);}
                         NetworkUtils.getMainHandler().post(pages>0? ()-> setData(num_chapter) : this::showErrorInfo);
                     }).start();
                 }else{
@@ -299,9 +299,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onStop() {
         super.onStop();
-        manga.createHistory(chapter,page);
-        MangaService.allocate(manga,false);
-        sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.history));
+        book.createHistory(chapter,page);
+        BookService.allocate(book,false);
+        sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.history));
         StatisticsFragment.Statistics.updateReading(prefs,System.currentTimeMillis()-start_read_time);
     }
 
@@ -338,8 +338,8 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home -> finish();
-            case (R.id.action_chapters) -> {btn_next.setEnabled(num_chapter!=manga.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show();}
-            case (R.id.create_bookmark) -> manga.addBookMark(chapter,page);
+            case (R.id.action_chapters) -> {btn_next.setEnabled(num_chapter!= book.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show();}
+            case (R.id.create_bookmark) -> book.addBookMark(chapter,page);
             case (R.id.change_reader_mode) -> new AlertDialog.Builder(this).setTitle(R.string.reader_mode)
                     .setSingleChoiceItems(R.array.reader_mode_entries, adapter.getReaderMode(), (dialog, i) -> {setModes(i, adapter.getScaleMode()); dialog.dismiss();})
                     .setNegativeButton(android.R.string.cancel, null).create().show();

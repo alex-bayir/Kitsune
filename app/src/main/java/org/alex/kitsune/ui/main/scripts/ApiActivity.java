@@ -48,6 +48,7 @@ public class ApiActivity extends AppCompatActivity {
                 "version – версия скрипта\n" +
                 "domain – провайдер (например mangalib.me)\n" +
                 "source – имя провайдера (например MangaLib)\n" +
+                "Type – тип (например Manga или Ranobe)\n" +
                 "description – описание ресурса\n" +
                 "auth_tokens – токены для авторизации\n"+
                 "\n" +

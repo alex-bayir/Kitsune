@@ -1,6 +1,6 @@
-package org.alex.kitsune.manga;
+package org.alex.kitsune.book;
 
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -10,7 +10,7 @@ public class BookMark{
     int page;
     long date;
     private static final String[] FN={"chapter","page","date"};
-    public BookMark(Chapter chapter,int page,long date){
+    private BookMark(Chapter chapter,int page,long date){
         this.chapter=chapter;
         this.page=page;
         this.date=date;

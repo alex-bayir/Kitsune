@@ -3,15 +3,11 @@
 --- Created by А.
 --- DateTime: 22.03.2022 13:49
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="xxxxx.hentaichan.live"
 source="HentaiChan"
+Type="Manga"
 description="Самый известный каталог хентая. Пожалуйста отключите этот источник если вам меньше 18."
 host="https://"..domain
 auth_tokens={"PHPSESSID"}

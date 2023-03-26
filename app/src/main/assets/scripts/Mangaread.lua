@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 03.03.2023 23:56
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.json.JSONObject")
-JSONArray=luajava.bindClass("org.json.JSONArray")
 
 version="1.0"
 domain="www.mangaread.org"
 source="MangaRead"
+Type="Manga"
 description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
 host="https://"..domain
 auth_tokens={}

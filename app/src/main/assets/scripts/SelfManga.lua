@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 19:08
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="selfmanga.live"
 source="SelfManga"
+Type="Manga"
 description="На этом источнике размещается только русская авторская манга и журналы о манге."
 host="https://"..domain
 auth_tokens={"JSESSIONID"}

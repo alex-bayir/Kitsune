@@ -8,16 +8,16 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.commons.HolderMenuItemClickListener;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.Chapter;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Chapter;
 import org.alex.kitsune.R;
 
 public class ChapterHolder extends RecyclerView.ViewHolder {
     private final TextView title, subtitle,date,download;
     private final ImageView play,markNew;
-    protected Manga manga;
+    protected Book book;
 
-    public ChapterHolder(ViewGroup parent, int layout,HolderListener listener, Manga manga, HolderMenuItemClickListener menuListener){
+    public ChapterHolder(ViewGroup parent, int layout, HolderListener listener, Book book, HolderMenuItemClickListener menuListener){
         super(LayoutInflater.from(parent.getContext()).inflate(layout,parent,false));
         if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getBindingAdapterPosition()));}
         if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getBindingAdapterPosition()));}
@@ -27,15 +27,15 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         download=itemView.findViewById(R.id.download_text);
         play=itemView.findViewById(R.id.chapter_play);
         markNew=itemView.findViewById(R.id.mark_new);
-        this.manga=manga;
+        this.book = book;
     }
     public void bind(Chapter chapter, boolean selected){
         title.setText(chapter.text(title.getContext()));
         subtitle.setText(chapter.getTranslator());
         date.setText(getDate(chapter.getDate()));
-        download.setVisibility(manga.checkChapter(chapter) ? View.VISIBLE : View.GONE);
-        play.setVisibility((manga.getHistory()!=null && chapter.equals(manga.getHistory().getChapter())) ? View.VISIBLE : View.INVISIBLE);
-        markNew.setVisibility(manga.isNew(chapter)? View.VISIBLE : View.INVISIBLE);
+        download.setVisibility(book.checkChapter(chapter) ? View.VISIBLE : View.GONE);
+        play.setVisibility((book.getHistory()!=null && chapter.equals(book.getHistory().getChapter())) ? View.VISIBLE : View.INVISIBLE);
+        markNew.setVisibility(book.isNew(chapter)? View.VISIBLE : View.INVISIBLE);
         itemView.setActivated(selected);
     }
     public static java.text.SimpleDateFormat format=new java.text.SimpleDateFormat("dd.MM.yyyy");

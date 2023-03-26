@@ -7,8 +7,8 @@ public class Constants {
     public static final String action_Update_Shelf=Shelf.class.getPackage().getName()+".update()";
     public static final String update_on_start="update_on_start";
     public static final String action_Update_New="update new";
-    public static final String hash="Manga_Hash";
-    public static final String manga="Manga";
+    public static final String hash="hash";
+    public static final String book="Book";
     public static final String saved_path="savedPath";
     public static final String chapter="Chapter";
     public static final String bookmark="Bookmark";
@@ -35,9 +35,10 @@ public class Constants {
     public static final String adjust_brightness="adjust_brightness";
     public static final String adjust_brightness_value="adjust_brightness_value";
     public static final String file="file";
-    public static final String manga_scripts="manga_scripts";
+    public static final String scripts ="scripts";
     public static final String domain="domain";
     public static final String source="source";
+    public static final String Type="Type";
     public static final String description="description";
     public static final String methodUpdate="update";
     public static final String methodQuery="query";

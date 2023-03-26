@@ -4,12 +4,15 @@ import com.alex.edittextcode.EditTextCode.SyntaxHighlightRule;
 import okhttp3.Headers;
 import okhttp3.RequestBody;
 import org.alex.kitsune.R;
+import com.alex.json.java.JSON;
 import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.URLBuilder;
-import org.alex.kitsune.manga.Chapter;
+import org.alex.kitsune.book.Chapter;
+import org.alex.kitsune.book.Page;
+import org.alex.kitsune.book.search.Options;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -30,6 +33,11 @@ public class Lua extends Script{
         globals.load("function num(n) return n==nil and 0 or tonumber(n:match(\"[0-9]*%.?[0-9]+\")) end").call(); // init num(string) - safe tonumber function
         globals.set("network", Coercion.coerce(Network.class));
         globals.set("utils", Coercion.coerce(Utils.class));
+        globals.set("JSONObject",Coercion.coerce(JSON.Object.class));
+        globals.set("JSONArray",Coercion.coerce(JSON.Array.class));
+        globals.set("Chapter",Coercion.coerce(Chapter.class));
+        globals.set("Page",Coercion.coerce(Page.class));
+        globals.set("Options",Coercion.coerce(Options.class));
         globals.loadfile(script.getAbsolutePath()).call();
         //globals.STDOUT=System.out;
         //globals.STDERR=System.err;

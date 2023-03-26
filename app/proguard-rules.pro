@@ -20,8 +20,7 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 -keep class org.luaj.vm2.lib.**
--keep class com.github.mikephil.charting.** { *; }
 -keep class org.jsoup.** {*;}
 -keep class org.alex.kitsune.** {*;}
--keep class org.alex.json.** {*;}
+-keep class com.alex.json.** {*;}
 -dontobfuscate

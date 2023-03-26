@@ -230,6 +230,7 @@ public class Utils {
             return text;
         }
         public static void writeFile(java.io.File file,String text,boolean append) throws FileNotFoundException {
+            file.getParentFile().mkdirs();
             FileOutputStream stream=new FileOutputStream(file,append);
             try{
                 stream.write(text.getBytes(StandardCharsets.UTF_8));
@@ -493,6 +494,7 @@ public class Utils {
         return string!=null && (string.startsWith("https://") || string.startsWith("http://"));
     }
     public static String unescape_unicodes(String escaped) {
+        if(escaped==null){return null;}
         StringBuilder unescaped=new StringBuilder(escaped.length());
         char[] buffer=new char[6]; int len=0;
         int digits=0; boolean parse=false;

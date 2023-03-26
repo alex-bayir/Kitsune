@@ -1,4 +1,4 @@
-package com.alex.json
+package com.alex.json.kotlin
 
 import java.io.*
 import java.util.*
@@ -22,20 +22,20 @@ sealed class JSON {
 
         private fun json(writer: Writer, value: Any?, spaces: Int){
             when(value){
-                is Object->value.json(writer, if (spaces > 0) spaces + 1 else 0)
-                is Array<*>->value.json(writer, if (spaces > 0) spaces + 1 else 0)
+                is JSON ->value.json(writer, spaces)
                 is Number->writer.write(value.toString())
-                is Map<*,*>->Object(filter(value,String::class.java)).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is Collection<*>->Array(value).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is kotlin.Array<*>->Array(value).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is IntArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is LongArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is FloatArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is DoubleArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is BooleanArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is ShortArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is CharArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
-                is ByteArray->Array(value.toList()).json(writer, if (spaces > 0) spaces + 1 else 0)
+                is Boolean->writer.write(value.toString())
+                is Map<*,*>-> Object(filter(value,String::class.java)).json(writer, spaces)
+                is Collection<*>-> Array(value).json(writer, spaces)
+                is kotlin.Array<*>-> Array(value).json(writer, spaces)
+                is IntArray-> Array(value.toList()).json(writer, spaces)
+                is LongArray-> Array(value.toList()).json(writer, spaces)
+                is FloatArray-> Array(value.toList()).json(writer, spaces)
+                is DoubleArray-> Array(value.toList()).json(writer, spaces)
+                is BooleanArray-> Array(value.toList()).json(writer, spaces)
+                is ShortArray-> Array(value.toList()).json(writer, spaces)
+                is CharArray-> Array(value.toList()).json(writer, spaces)
+                is ByteArray-> Array(value.toList()).json(writer, spaces)
                 is Any->{
                     writer.write('\"'.code)
                     writer.write(escape(value.toString()))
@@ -79,7 +79,6 @@ sealed class JSON {
             var rs = false
             var rv = o is Array<*>
             var vs = false
-            var vd = false
             val buffer = StringBuilder()
             var key: String? = null
             while (reader.read().toChar().also { c = it } != (-1).toChar()) {
@@ -87,9 +86,10 @@ sealed class JSON {
                     '{' -> {
                         if (!rs) {
                             when(o){
-                                is Object->{o.put(key, json(reader, Object())); key = null}
-                                is Array<*>->{(o as Array<Any>).add(json(reader, Object()))}
-                                else ->{o = Object()}
+                                is Object ->{o.put(key, json(reader, Object())); key = null}
+                                is Array<*> ->{(o as Array<Any>).add(json(reader, Object()))}
+                                else ->{o = Object()
+                                }
                             }
                         }
                     }
@@ -97,8 +97,8 @@ sealed class JSON {
                     '[' -> {
                         if (!rs) {
                             when(o){
-                                is Object->{o.put(key, json(reader, Array<Any>())); key = null}
-                                is Array<*>->{(o as Array<Any>).add(json(reader, Array<Any>()))}
+                                is Object ->{o.put(key, json(reader, Array<Any>())); key = null}
+                                is Array<*> ->{(o as Array<Any>).add(json(reader, Array<Any>()))}
                                 else ->{o = Array<Any>(); rv=true}
                             }
                         }
@@ -141,45 +141,19 @@ sealed class JSON {
                             }
                         )
                     }
-
-                    '.' -> {
-                        if (rv) {
-                            vd = true
-                        }
-                        buffer.append(c)
-                    }
-
                     ',' -> {
                         if (rs) {
                             buffer.append(c)
                         } else {
                             if (buffer.isNotEmpty() || vs) {
-                                var value:Any?=buffer.toString()
-                                if (!vs){
-                                    when (value) {
-                                        "null" -> value = null
-                                        "false" -> value = false
-                                        "true" -> value = true
-                                        else -> {
-                                            if (vd) {
-                                                value = (value as String).toDouble()
-                                            } else {
-                                                value = (value as String).toLong()
-                                                if (Int.MIN_VALUE <= value && value <= Int.MAX_VALUE) {
-                                                    value = value.toInt()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                val value:Any?=if(vs) buffer.toString() else parse_primitive(buffer.toString())
                                 when(o){
-                                    is Object->{o.put(key, value)}
-                                    is Array<*>->{(o as Array<Any>).add(value)}
+                                    is Object ->{o.put(key, value)}
+                                    is Array<*> ->{(o as Array<Any>).add(value)}
                                     else->{}
                                 }
                                 rv = o is Array<*>
                                 vs = false
-                                vd = false
                                 key = null
                                 buffer.clear()
                             }
@@ -191,27 +165,10 @@ sealed class JSON {
                             buffer.append(c)
                         } else {
                             if (buffer.isNotEmpty() || vs) {
-                                var value:Any?=buffer.toString()
-                                if (!vs){
-                                    when (value) {
-                                        "null" -> value = null
-                                        "false" -> value = false
-                                        "true" -> value = true
-                                        else -> {
-                                            if (vd) {
-                                                value = (value as String).toDouble()
-                                            } else {
-                                                value = (value as String).toLong()
-                                                if (Int.MIN_VALUE <= value && value <= Int.MAX_VALUE) {
-                                                    value = value.toInt()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                                val value:Any?=if(vs) buffer.toString() else parse_primitive(buffer.toString())
                                 when(o){
-                                    is Object->{o.put(key, value)}
-                                    is Array<*>->{(o as Array<Any>).add(value)}
+                                    is Object ->{o.put(key, value)}
+                                    is Array<*> ->{(o as Array<Any>).add(value)}
                                     else->{}
                                 }
                             }
@@ -231,6 +188,22 @@ sealed class JSON {
                 }
             }
             throw IllegalArgumentException("No ending tag found")
+        }
+        private fun parse_primitive(str:String):Any?{
+            return when (str) {
+                "null" -> null
+                "false" -> false
+                "true" -> true
+                else -> {
+                    val d=str.toDouble()
+                    val l=d.toLong()
+                    return if(d==l.toDouble()){
+                        l
+                    }else{
+                        d
+                    }
+                }
+            }
         }
     }
 
@@ -371,7 +344,7 @@ sealed class JSON {
                 writer.write(key)
                 writer.write('"'.code)
                 writer.write(':'.code)
-                json(writer,value,spaces)
+                json(writer,value,if (spaces > 0) spaces + 1 else 0)
                 delimiter = true
             }
             writer.write(line)
@@ -406,7 +379,7 @@ sealed class JSON {
     }
 
     class Array<E>() : JSON(), MutableList<E?> {
-        val list=LinkedList<E?>()
+        private val list=LinkedList<E?>()
         constructor(collection: Collection<E>?) : this() {
             collection?.let { addAll(it) }
         }
@@ -546,8 +519,8 @@ sealed class JSON {
 
         @Throws(IOException::class)
         override fun json(writer: Writer, spaces: Int): Writer {
-            val line = if (spaces > 0) "\n" + String(CharArray(spaces - 1)).replace("\u0000", "\t") else ""
-            val tab = if (spaces <= 0) "" else "\n" + String(CharArray(spaces)).replace("\u0000", "\t")
+            val line = if (spaces > 0) "\n" + "\t".repeat(spaces-1) else ""
+            val tab = if (spaces <= 0) "" else "\n" + "\t".repeat(spaces)
             var delimiter = false
             writer.write('['.code)
             for (value in this) {
@@ -555,7 +528,7 @@ sealed class JSON {
                     writer.write(','.code)
                 }
                 writer.write(tab)
-                json(writer,value,spaces)
+                json(writer,value,if (spaces > 0) spaces + 1 else 0)
                 delimiter = true
             }
             writer.write(line)

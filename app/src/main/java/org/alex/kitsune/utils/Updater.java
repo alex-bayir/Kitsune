@@ -14,14 +14,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.main.Constants;
 import java.io.File;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public class Updater {
     private static JSON.Object getUpdate(Context context){
         if(NetworkUtils.isNetworkAvailable(context)){
             try{
-                JSON.Array<?> json=JSON.Array.create(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/releases"));
+                JSON.Array<?> json=NetworkUtils.getJSON("https://api.github.com/repos/alex-bayir/Kitsune/releases").array();
                 for(int i=0;i<json.size();i++){
                     JSON.Object jo=json.getObject(i);
                     String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
@@ -53,10 +53,11 @@ public class Updater {
                         url=assets.getObject(j).getString("browser_download_url");
                     }
                     if(url!=null && url.contains(".apk")){
-                        switch (compareVersions(BuildConfig.VERSION_NAME,version)){
-                            case 0: if(BuildConfig.TIMESTAMP+1000*3600>Utils.parseDate(jo.getString("updated_at"),"yyyy-MM-ddTHH:mm:ssZ")){break;}
-                            case 1: return new JSON.Object().put("url",url).put("version",version);
-                            case -1: break;
+                        String date=jo.getArray("assets").getObject(0).getString("updated_at").replaceAll("[TZ]"," ");
+                        if(BuildConfig.TIMESTAMP+1000*3600<Utils.parseDate(date,"yyyy-MM-dd HH:mm:ss")){
+                            return new JSON.Object().put("url",url).put("version",version);
+                        }else{
+                            break;
                         }
                     }
                 }
@@ -69,7 +70,7 @@ public class Updater {
     private static boolean updateScripts(Context context){
         AtomicBoolean update=new AtomicBoolean(false);
         if(NetworkUtils.isNetworkAvailable(context)){
-            String dir=context.getExternalFilesDir(Constants.manga_scripts).getAbsolutePath();
+            String dir=context.getExternalFilesDir(Constants.scripts).getAbsolutePath();
             LinkedHashSet<String> set=new LinkedHashSet<>();
             SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
             Set<String> hashes=prefs.getStringSet(Constants.scripts_hashes,new HashSet<>());
@@ -83,7 +84,7 @@ public class Updater {
                             if(!hashes.contains(jo.getString("sha"))){
                                 String url=jo.getString("download_url");
                                 String text_script=NetworkUtils.getString(url);
-                                Script script=Manga_Scripted.getScript(Utils.group(url,".*/(.*).lua"));
+                                Script script= Book_Scripted.getScript(Utils.group(url,".*/(.*).lua"));
                                 if(text_script!=null){
                                     Utils.File.writeFile(new File(script!=null?script.getPath():dir+Utils.group(url,".*/(.*)")),text_script,false);
                                     update.set(true);
@@ -116,10 +117,10 @@ public class Updater {
                         boolean updated=updateScripts(activity);
                         NetworkUtils.getMainHandler().post(()->{
                             if(updated){
-                                if(MangaService.getAll().size()>0){
+                                if(BookService.getAll().size()>0){
                                     Utils.Activity.restartActivity(activity);
                                 }else{
-                                    MangaService.init(activity);
+                                    BookService.init(activity);
                                 }
                             }
                             Toast.makeText(activity,R.string.all_scripts_updated,Toast.LENGTH_LONG).show();

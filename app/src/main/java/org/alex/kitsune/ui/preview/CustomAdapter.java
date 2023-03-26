@@ -11,9 +11,9 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.commons.HolderMenuItemClickListener;
-import org.alex.kitsune.manga.BookMark;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.BookMark;
+import org.alex.kitsune.book.Chapter;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -25,16 +25,16 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     List<T> items=new LinkedList<>();
     HolderListener listener;
     HolderMenuItemClickListener menuListener;
-    Manga manga;
+    Book book;
     SelectionTracker<Long> tracker;
     private boolean selectable=true;
-    Function<Manga,List<T>> getItems;
+    Function<Book,List<T>> getItems;
 
     public CustomAdapter(int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
         this.ResourceId=holder_layout_id;
         this.getItems=switch (holder_layout_id) {
-            case (R.layout.item_chapter) -> (manga->(List<T>)manga.getChapters());
-            case (R.layout.item_bookmark) -> (manga->(List<T>)manga.getBookMarks());
+            case (R.layout.item_chapter) -> (book->(List<T>)book.getChapters());
+            case (R.layout.item_bookmark) -> (book->(List<T>)book.getBookMarks());
             default -> throw new IllegalArgumentException("Wrong layout");
         };
         this.listener=listener;
@@ -50,9 +50,9 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
                     }).build();
         }
     }
-    public CustomAdapter(Manga manga,int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
+    public CustomAdapter(Book book, int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener, RecyclerView rv, String selectionId){
         this(holder_layout_id, listener, menuListener, rv, selectionId);
-        setManga(manga);
+        setBook(book);
     }
 
     public void setSelectable(boolean selectable){
@@ -62,8 +62,8 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         return selectable;
     }
 
-    public void setManga(Manga manga){
-        setList(getItems.apply(this.manga=manga));
+    public void setBook(Book book){
+        setList(getItems.apply(this.book = book));
     }
     private void setList(List<T> list){
         new DiffCallback<>(items, list).updateAfter(()->items=new ArrayList<>(list),this);
@@ -80,8 +80,8 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType){
         return switch (viewType) {
-            case (R.layout.item_chapter) -> new ChapterHolder(parent, viewType, listener, manga, menuListener);
-            case (R.layout.item_bookmark) -> new BookMarkHolder(parent, viewType, listener, manga, menuListener);
+            case (R.layout.item_chapter) -> new ChapterHolder(parent, viewType, listener, book, menuListener);
+            case (R.layout.item_bookmark) -> new BookMarkHolder(parent, viewType, listener, book, menuListener);
             default -> throw new IllegalArgumentException("View holder cannot be null");
         };
     }
@@ -110,8 +110,8 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
 
     public int search(Context context,String query){
         query=query.toLowerCase();
-        for (Chapter chapter: manga.getChapters()) {
-            if(chapter.text(context).toLowerCase().contains(query)){return manga.getChapters().indexOf(chapter);}
+        for (Chapter chapter: book.getChapters()) {
+            if(chapter.text(context).toLowerCase().contains(query)){return book.getChapters().indexOf(chapter);}
         }
         return -1;
     }

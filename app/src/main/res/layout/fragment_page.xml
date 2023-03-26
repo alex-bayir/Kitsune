@@ -13,6 +13,14 @@
                 android:minHeight="512dp"
                 android:adjustViewBounds="false"
                 android:scaleType="centerCrop"/>
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/text"
+                android:visibility="gone"
+                android:paddingStart="8sp"
+                android:paddingEnd="8sp"
+                android:textIsSelectable="true"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"/>
         <LinearLayout android:id="@+id/load_info"
                       android:gravity="center"
                       android:orientation="vertical"

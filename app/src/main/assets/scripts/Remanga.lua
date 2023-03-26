@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 11:22
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="remanga.org"
 source="Remanga"
+Type="Manga"
 description="Ещё один довольно популярный каталог манги."
 host="https://api."..domain
 auth_tokens={"user","token"}
@@ -98,7 +94,7 @@ function getPages(url,chapter) -- table <Page>
             pages[n]=Page.new(jo:getInt("page"),jo:getString("link")); n=n+1
         else
             jo=array:getArray(i)
-            local d=jo:size()<10 and 10 or 100;
+            local d=jo:size()<10 and 10 or (jo:size()<100 and 100 or 100);
             for j=0,jo:size()-1,1 do
                 local tmp=jo:getObject(j)
                 pages[n]=Page.new(tmp:getInt("page")+j/d,tmp:getString("link")); n=n+1

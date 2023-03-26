@@ -30,7 +30,7 @@
                         android:ellipsize="end"
                         android:textStyle="bold"
                         android:textColor="@android:color/white"
-                        android:background="@drawable/manga_info_gradient"
+                        android:background="@drawable/info_gradient"
                         android:layout_alignStart="@id/cover"
                         android:layout_alignBottom="@id/cover"
                         android:layout_alignEnd="@+id/cover"

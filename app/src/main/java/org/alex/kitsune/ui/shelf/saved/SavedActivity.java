@@ -18,12 +18,12 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.commons.AppBarStateChangeListener;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.commons.PhotoCollageDrawable;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -37,7 +37,7 @@ public class SavedActivity extends AppCompatActivity {
     Toolbar toolbar;
     CollapsingToolbarLayout toolBarLayout;
     RecyclerView rv;
-    MangaAdapter adapter;
+    BookAdapter adapter;
     ImageView backdrop;
     int currentSort=R.id.latest;
     final Random r=new Random();
@@ -67,16 +67,16 @@ public class SavedActivity extends AppCompatActivity {
                 }
             }
         });
-        toolbar.setTitle(getString(R.string.Saved_manga).toUpperCase());
+        toolbar.setTitle(getString(R.string.Saved).toUpperCase());
         toolBarLayout=findViewById(R.id.toolbar_layout);
-        toolBarLayout.setTitle(getString(R.string.Saved_manga).toUpperCase());
+        toolBarLayout.setTitle(getString(R.string.Saved).toUpperCase());
         TypedValue v=new TypedValue();
         getTheme().resolveAttribute(R.attr.appBarColor,v,true);
         toolBarLayout.setContentScrimColor(v.data);
         toolBarLayout.setExpandedTitleColor(Color.HSVToColor(new float[]{r.nextFloat()*360,1,1}));
         backdrop=findViewById(R.id.backdrop);
         rv=findViewById(R.id.rv_list);
-        adapter=new MangaAdapter(MangaService.getSorted(MangaService.Type.Saved), MangaAdapter.Mode.GRID, manga -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())));
+        adapter=new BookAdapter(BookService.getSorted(BookService.Type.Saved), BookAdapter.Mode.GRID, book -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode())));
         adapter.initRV(rv,3);
         adapter.recalculateFullSize();
         backdrop.setImageDrawable(createBackDrop(adapter));
@@ -86,31 +86,31 @@ public class SavedActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(Constants.action_Update.equals(intent.getAction())){
-                    Manga manga=MangaService.get(intent.getIntExtra(Constants.hash,-1));
+                    Book book = BookService.get(intent.getIntExtra(Constants.hash,-1));
                     if(Constants.load.equals(intent.getStringExtra(Constants.option)) || Constants.delete.equals(intent.getStringExtra(Constants.option))){
-                        if(manga.countSaved()>0){
+                        if(book.countSaved()>0){
                             switch (currentSort) {
-                                case (R.id.latest) -> adapter.add(0,manga);
-                                case (R.id.images_size) -> adapter.addBySize(manga);
-                                case (R.id.alphabetical) -> adapter.add(manga,Manga.AlphabeticalComparator);
+                                case (R.id.latest) -> adapter.add(0, book);
+                                case (R.id.images_size) -> adapter.addBySize(book);
+                                case (R.id.alphabetical) -> adapter.add(book, Book.AlphabeticalComparator);
                             }
-                            adapter.update(manga);
+                            adapter.update(book);
                         }else{
-                            adapter.remove(manga);
+                            adapter.remove(book);
                         }
                         backdrop.setImageDrawable(createBackDrop(adapter));
                     }else{
-                        adapter.update(manga);
+                        adapter.update(book);
                     }
                 }
             }
         },new IntentFilter(Constants.action_Update));
     }
-    private Drawable createBackDrop(MangaAdapter adapter){
+    private Drawable createBackDrop(BookAdapter adapter){
         return new PhotoCollageDrawable(AppCompatResources.getDrawable(this,R.drawable.ic_caution), 10, v->adapter.getItemCount(), i->adapter.get(i).loadThumbnail());
     }
     private boolean sharePhotoCollage(PhotoCollageDrawable drawable){
-        return drawable!=null && Utils.Bitmap.shareBitmap(this,getString(R.string.Saved_manga).toUpperCase(),drawable.getBitmap());
+        return drawable!=null && Utils.Bitmap.shareBitmap(this,getString(R.string.Saved).toUpperCase(),drawable.getBitmap());
     }
 
     @Override
@@ -122,14 +122,14 @@ public class SavedActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (android.R.id.home) -> finish();
-            case (R.id.latest) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.SavingTimeComparator);}
-            case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.AlphabeticalComparator);}
-            case (R.id.images_size) -> {currentSort=item.getItemId(); item.setChecked(true); start(Manga.ImagesSizesComparator);}
+            case (R.id.latest) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.SavingTimeComparator);}
+            case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparator);}
+            case (R.id.images_size) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.ImagesSizesComparator);}
         }
         return super.onOptionsItemSelected(item);
     }
-    private void start(Comparator<Manga> comparator){
-        adapter.sort(comparator, comparator==Manga.ImagesSizesComparator ? 1:3);
+    private void start(Comparator<Book> comparator){
+        adapter.sort(comparator, comparator== Book.ImagesSizesComparator ? 1:3);
         new Thread(()->{
             Drawable drawable=createBackDrop(adapter);
             NetworkUtils.getMainHandler().post(()->backdrop.setImageDrawable(drawable));

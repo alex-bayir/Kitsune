@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 21:22
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="manga-chan.me"
 source="MangaChan"
+Type="Manga"
 description="Тоже хороший источник манги. Но часто падает, из-за чего бывает недоступен от нескольких часов до пары дней."
 host="https://"..domain
 auth_tokens={"PHPSESSID"}

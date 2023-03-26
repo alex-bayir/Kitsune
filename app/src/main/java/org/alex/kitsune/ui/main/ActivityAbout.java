@@ -17,7 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.preference.PreferenceManager;
 import com.alex.shimmer.Shimmer;
 import com.alex.shimmer.ShimmerTextView;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.AspectRatioImageView;

@@ -24,12 +24,12 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.commons.*;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import com.alex.ratingbar.RatingBar;
-import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
 import org.alex.kitsune.ui.settings.SettingsShelf;
@@ -56,7 +56,7 @@ public class PreviewPage extends PreviewHolder {
     private final ListItemView genres;
     private final ListItemView averageTime;
     private final ListItemView description;
-    private MangaAdapter similar;
+    private BookAdapter similar;
     private final Drawable caution;
     private final WebViewBottomSheetDialog web_dialog=new WebViewBottomSheetDialog();
 
@@ -85,8 +85,8 @@ public class PreviewPage extends PreviewHolder {
         description.setOnClickListener(v-> description.changeSubtitleSingleLine());
         description.setOnLongClickListener(v-> {Utils.setClipboard(itemView.getContext(), description.getSubtitle()); Toast.makeText(itemView.getContext(),R.string.text_copied,Toast.LENGTH_SHORT).show(); return true;});
         RecyclerView rv=itemView.findViewById(R.id.rv_list);
-        similar=new MangaAdapter(null, MangaAdapter.Mode.GRID, m -> {
-            similar.add(MangaService.getOrPutNewWithDir(m));
+        similar=new BookAdapter(null, BookAdapter.Mode.GRID, m -> {
+            similar.add(BookService.getOrPutNewWithDir(m));
             itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,m.hashCode()));
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
@@ -94,7 +94,7 @@ public class PreviewPage extends PreviewHolder {
     }
 
 
-    private static Dialog createDialog(Context context,Manga manga){
+    private static Dialog createDialog(Context context, Book book){
         View v1=LayoutInflater.from(context).inflate(R.layout.dialog_choose_category,null);
         Dialog chooseCategory=new AlertDialog.Builder(context).setView(v1).create();
         View v2=LayoutInflater.from(context).inflate(R.layout.dialog_input,null);
@@ -104,14 +104,14 @@ public class PreviewPage extends PreviewHolder {
         RadioGroup group=v1.findViewById(R.id.group);
         v1.findViewById(R.id.close).setOnClickListener(v -> chooseCategory.cancel());
         v1.findViewById(R.id.create).setOnClickListener(v -> inputNewCategory.show());
-        v1.findViewById(R.id.remove).setOnClickListener(v -> {group.clearCheck(); chooseCategory.cancel(); v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.favorites));});
+        v1.findViewById(R.id.remove).setOnClickListener(v -> {group.clearCheck(); chooseCategory.cancel(); v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));});
 
-        setGroups(context, MangaService.getCategories(),group,manga!=null ? manga.getCategoryFavorite() : null);
+        setGroups(context, BookService.getCategories(),group, book !=null ? book.getCategoryFavorite() : null);
         group.setOnCheckedChangeListener((group1, checkedId) -> {
-            if(manga!=null){
-                manga.setCategoryFavorite(checkedId>=0 ? MangaService.getCategories().toArray(new String[0])[checkedId] : null);
-                MangaService.allocate(manga,false);
-                context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.favorites));
+            if(book !=null){
+                book.setCategoryFavorite(checkedId>=0 ? BookService.getCategories().toArray(new String[0])[checkedId] : null);
+                BookService.allocate(book,false);
+                context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));
             }
             chooseCategory.cancel();
         });
@@ -120,18 +120,18 @@ public class PreviewPage extends PreviewHolder {
         EditText input=v2.findViewById(R.id.input);
         v2.findViewById(R.id.close).setOnClickListener(v -> inputNewCategory.cancel());
         v2.findViewById(R.id.create).setOnClickListener(v -> {
-            if(manga!=null && input.getText()!=null && input.getText().length()>0){
+            if(book !=null && input.getText()!=null && input.getText().length()>0){
                 String category=input.getText().toString();
-                HashSet<String> categories=new HashSet<>(MangaService.getCategories());
+                HashSet<String> categories=new HashSet<>(BookService.getCategories());
                 categories.add(Shelf.History);
                 categories.add(Shelf.Saved);
                 if(!categories.contains(category)){
-                    MangaService.getCategories().add(category);
+                    BookService.getCategories().add(category);
                     SettingsShelf.add(PreferenceManager.getDefaultSharedPreferences(v.getContext()),category);
-                    setGroups(v.getContext(),MangaService.getCategories(),group,manga.getCategoryFavorite());
-                    manga.setCategoryFavorite(input.getText().toString());
-                    MangaService.allocate(manga,false);
-                    v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.favorites));
+                    setGroups(v.getContext(), BookService.getCategories(),group, book.getCategoryFavorite());
+                    book.setCategoryFavorite(input.getText().toString());
+                    BookService.allocate(book,false);
+                    v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));
                     inputNewCategory.cancel();
                 }else{
                     input.setError("This category name already exist");
@@ -143,32 +143,32 @@ public class PreviewPage extends PreviewHolder {
         return chooseCategory;
     }
     @Override
-    public void bind(Manga manga){
-        bind(manga,manga.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
+    public void bind(Book book){
+        bind(book, book.isUpdated() || !NetworkUtils.isNetworkAvailable(itemView.getContext()));
     }
     public void bind(Throwable th){
         notifyError(th.getCause()!=null ? th.getCause() : th);
     }
 
-    public void bind(Manga manga, boolean full){
-        manga.loadThumbnail(drawable -> {
+    public void bind(Book book, boolean full){
+        book.loadThumbnail(drawable -> {
             cover.setImageDrawable(drawable==null ? caution : drawable);
             cover.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
             backdrop.setImageDrawable(drawable==null ? caution : drawable);
             backdrop.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
         });
-        info.setText(createText(info.getContext(),manga,full));
-        ratingBar.setRating(manga.getRating(),true);
-        genres.setSubtitle(manga.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null))));
+        info.setText(createText(info.getContext(), book,full));
+        ratingBar.setRating(book.getRating(),true);
+        genres.setSubtitle(book.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null))));
 
-        averageTime.setSubtitle(full ? calculateTime(itemView.getResources(), manga.getChapters().size()) : averageTime.getResources().getString(R.string.calculating));
-        description.setSubtitle(full ? (manga.isUpdated() || manga.getDescription()!=null ? manga.getDescription(Html.FROM_HTML_MODE_COMPACT,description.getResources().getString(R.string.no_description)) : description.getResources().getString(R.string.error_has_occurred)) : description.getResources().getString(R.string.loading));
-        if(manga.getHistory()!=null && manga.getNumChapterHistory()>=0){read.setText(R.string.CONTINUE);}
-        read.setOnClickListener(v -> v.getContext().startActivity(new Intent(v.getContext(),ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true)));
-        read.setEnabled(manga.getChapters().size()>0);
-        favorite.setOnClickListener(v -> createDialog(v.getContext(),manga).show());
-        similar.replace(MangaService.replaceIfExists(manga.getSimilar(),MangaService.getAll()));
-        final String source=manga.getSource(),url_web=manga.getUrl_WEB();
+        averageTime.setSubtitle(full ? calculateTime(itemView.getResources(), book.getChapters().size()) : averageTime.getResources().getString(R.string.calculating));
+        description.setSubtitle(full ? (book.isUpdated() || book.getDescription()!=null ? book.getDescription(Html.FROM_HTML_MODE_COMPACT,description.getResources().getString(R.string.no_description)) : description.getResources().getString(R.string.error_has_occurred)) : description.getResources().getString(R.string.loading));
+        if(book.getHistory()!=null && book.getNumChapterHistory()>=0){read.setText(R.string.CONTINUE);}
+        read.setOnClickListener(v -> v.getContext().startActivity(new Intent(v.getContext(),ReaderActivity.class).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.history,true)));
+        read.setEnabled(book.getChapters().size()>0);
+        favorite.setOnClickListener(v -> createDialog(v.getContext(), book).show());
+        similar.replace(BookService.replaceIfExists(book.getSimilar(), BookService.getAll()));
+        final String source= book.getSource(),url_web= book.getUrl_WEB();
         web_dialog.setCallback(web->{
             web.setWebViewClient(new WebViewClient(){
                 @Override
@@ -176,7 +176,7 @@ public class PreviewPage extends PreviewHolder {
                     super.onPageFinished(view, url);
                     web_dialog.setOnCloseListener(()->{
                         Catalogs.updateCookies(view.getContext(),source,CookieManager.getInstance().getCookie(url));
-                        manga.update(update->{
+                        book.update(update->{
                             if(itemView.getParent() instanceof View v && v.getContext() instanceof PreviewActivity pa){
                                 pa.updateContent();
                             }
@@ -208,29 +208,32 @@ public class PreviewPage extends PreviewHolder {
             }
         }
     }
-    public static CharSequence createText(Context context, Manga manga, boolean count_known){
+    public static CharSequence createText(Context context, Book book, boolean count_known){
         SpannableStringBuilder builder=new SpannableStringBuilder();
         builder.append(context.getString(R.string.Chapters), new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        builder.append(count_known ? manga.getChapters().size()+"" : "?");
-        if(manga.getAuthor() instanceof Map<?,?> map){
+        builder.append(count_known ? book.getChapters().size()+"" : "?");
+        if(book.getAuthor() instanceof Map<?,?> map){
             builder.append("\n");
             AtomicInteger count=new AtomicInteger();
             map.entrySet().stream().filter(entry-> entry.getKey() instanceof String && entry.getValue() instanceof String).forEach(entry->{
                 if(count.getAndIncrement()>0){
                     builder.append(", ");
                 }
-                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog,manga.getSource()).putExtra(Constants.author,(String)entry.getKey()).putExtra(Constants.author_url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.author,(String)entry.getKey()).putExtra(Constants.author_url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             });
-        }else if(manga.getAuthor() instanceof String str){
+        }else if(book.getAuthor() instanceof String str){
             builder.append("\n");
             builder.append(str);
         }
         builder.append("\n");
         builder.append(context.getString(R.string.Source_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        builder.append(manga.getSource());
+        builder.append(book.getSource());
+        builder.append("\n");
+        builder.append(context.getString(R.string.Type_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        builder.append(book.getType());
         builder.append("\n");
         builder.append(context.getString(R.string.Status_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        builder.append(manga.getStatus(context));
+        builder.append(book.getStatus(context));
         return builder;
     }
 

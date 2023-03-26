@@ -20,22 +20,21 @@ import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import okhttp3.Cookie;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
-import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -90,7 +89,7 @@ public class Catalogs extends Fragment implements MenuProvider {
 
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
-        menu.findItem(R.id.action_find_manga).setVisible(true);
+        menu.findItem(R.id.action_find_book).setVisible(true);
         menu.findItem(R.id.check_for_updates).setVisible(false);
         menu.findItem(R.id.action_add_source).setVisible(true);
         menu.findItem(R.id.full).setVisible(false);
@@ -113,7 +112,7 @@ public class Catalogs extends Fragment implements MenuProvider {
 
     public static ArrayList<Container> getCatalogs(SharedPreferences prefs){
         LinkedHashMap<String,Container> map=new LinkedHashMap<>();
-        Hashtable<String,Script> scripts=Manga_Scripted.getScripts();
+        Hashtable<String,Script> scripts= Book_Scripted.getScripts();
         boolean exist=prefs.contains(Constants.source_order);
         if(exist){
             for(Container container:Container.fromJSON(prefs.getString(Constants.source_order, ""))){
@@ -126,7 +125,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         return new ArrayList<>(exist?map.values():map.values().stream().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
     public static List<String> default_order=Arrays.asList("Desu","MangaLib","Remanga","ReadManga","MintManga","SelfManga","MangaChan","HentaiChan");
-    public static Hashtable<String,Script> getMangaScripts(File dir){
+    public static Hashtable<String,Script> getBookScripts(File dir){
         Hashtable<String,Script> table=new Hashtable<>(); File[] files;
         if(dir!=null && dir.isDirectory() && (files=dir.listFiles(File::isFile))!=null){
             for(File file:files){
@@ -172,9 +171,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         }
         public static Container fromJSON(JSON.Object json){
             try{
-                return new Container(Manga_Scripted.getScript(json.getString("source"), json.getString("script").replace('\\',File.separatorChar)),json.get("enable", true),json.getString("cookies"));
-            }catch (JSONException e){
-                return null;
+                return new Container(Book_Scripted.getScript(json.getString("source"), json.getString("script").replace('\\',File.separatorChar)),json.get("enable", true),json.getString("cookies"));
             }catch (Throwable e){
                 Logs.saveLog(e);
                 return null;
@@ -231,7 +228,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         if(cookies_original==null){return null;}
         String[] cookies=cookies_original.split("; ");
         StringBuilder save=new StringBuilder();
-        String[] tokens=Manga_Scripted.getScript(source).get("auth_tokens",String[].class);
+        String[] tokens= Book_Scripted.getScript(source).get("auth_tokens",String[].class);
         for (String cookie : cookies) {
             String[] nv = cookie.split("=", 2);
             for (String token : tokens) {
@@ -288,7 +285,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         public String getSource(int pos){return list.get(pos).source;}
         public class CatalogHolder extends RecyclerView.ViewHolder{
             AppCompatCheckBox checkBox;
-            TextView name,description;
+            TextView name,type,description;
             ImageView reorder,login;
             Container container;
 
@@ -298,6 +295,7 @@ public class Catalogs extends Fragment implements MenuProvider {
                 checkBox=itemView.findViewById(R.id.checkbox);
                 checkBox.setOnCheckedChangeListener((buttonView, isChecked)->{if(container!=null){container.enable=isChecked;}});
                 name=itemView.findViewById(R.id.source);
+                type=itemView.findViewById(R.id.type);
                 description=itemView.findViewById(R.id.description);
                 reorder=itemView.findViewById(R.id.reorder);
                 login=itemView.findViewById(R.id.login);
@@ -312,8 +310,9 @@ public class Catalogs extends Fragment implements MenuProvider {
                 container=catalog;
                 Utils.loadToView(checkBox,container.icon_url,container.domain,null);
                 name.setText(catalog.source);
+                type.setText(catalog.script.getString(Constants.Type,null));
                 checkBox.setChecked(catalog.enable);
-                description.setText(Manga.getSourceDescription(catalog.source));
+                description.setText(Book.getSourceDescription(catalog.source));
                 login.getDrawable().setTint(container.cookies!=null? Color.GREEN:Color.RED);
             }
         }

@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 11:22
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="desu.me"
 source="Desu"
+Type="Manga"
 description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
 host="https://"..domain
 auth_tokens={"xf_user","xf_session"}

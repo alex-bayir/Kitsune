@@ -19,7 +19,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.main.MainActivity;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.logs.LogsActivity;
@@ -117,7 +117,7 @@ public class SettingsActivity extends AppCompatActivity {
             setPreferencesFromResource(type.getXml_id(), rootKey);
             if(type==Type.General){
                 setChangeListener(Constants.saved_path,(preference, newValue) -> {
-                    MangaService.init(newValue.toString());
+                    BookService.init(newValue.toString());
                     MainActivity.shouldUpdate=true;
                     return false;
                 });

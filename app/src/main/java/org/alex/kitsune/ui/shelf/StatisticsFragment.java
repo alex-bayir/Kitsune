@@ -22,11 +22,11 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.Manga_Scripted;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -119,7 +119,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
 
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
-        menu.findItem(R.id.action_find_manga).setVisible(false);
+        menu.findItem(R.id.action_find_book).setVisible(false);
         menu.findItem(R.id.full).setVisible(true);
         menu.findItem(R.id.check_for_updates).setVisible(false);
         menu.findItem(R.id.action_add_source).setVisible(false);
@@ -137,21 +137,21 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
 
     public static class Statistics {
 
-        public static TreeMap<String, Set<Integer>> byGenres(Set<String> genres, Set<Manga> mangas, boolean all){
-            return applyByGenres(new TreeMap<>(String.CASE_INSENSITIVE_ORDER.reversed()),genres,mangas,all);
+        public static TreeMap<String, Set<Integer>> byGenres(Set<String> genres, Set<Book> books, boolean all){
+            return applyByGenres(new TreeMap<>(String.CASE_INSENSITIVE_ORDER.reversed()),genres, books,all);
         }
-        public static <T extends Map<String, Set<Integer>>> T applyByGenres(T map, Set<String> genres, Set<Manga> mangas, boolean all){
+        public static <T extends Map<String, Set<Integer>>> T applyByGenres(T map, Set<String> genres, Set<Book> books, boolean all){
             if(all){for(String key:genres){map.putIfAbsent(key,new ArraySet<>());}}
-            mangas.removeIf(manga -> {
-                int hashCode=manga.hashCode();
+            books.removeIf(book -> {
+                int hashCode=book.hashCode();
                 for(Set<Integer> set:map.values()){if(set.contains(hashCode)){return true;}}
                 return false;
             });
-            for(Manga manga:mangas){
+            for(Book book : books){
                 for(String word:genres){
                     if(word==null || word.length()==0){continue;}
-                    if(Pattern.compile(word.replaceAll("[\\\\\\.\\*\\+\\-\\?\\^\\$\\|\\(\\)\\[\\]\\{\\}]","\\\\W"), Pattern.CASE_INSENSITIVE).matcher(manga.getGenres()).find()){
-                        map.computeIfAbsent(word, k -> new ArraySet<>()).add(manga.hashCode());
+                    if(Pattern.compile(word.replaceAll("[\\\\\\.\\*\\+\\-\\?\\^\\$\\|\\(\\)\\[\\]\\{\\}]","\\\\W"), Pattern.CASE_INSENSITIVE).matcher(book.getGenres()).find()){
+                        map.computeIfAbsent(word, k -> new ArraySet<>()).add(book.hashCode());
                     }
                 }
             }
@@ -184,14 +184,14 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             return save ? saveGenresStatistics(path,loadGenresStatistics(path, all)):loadGenresStatistics(path, all);
         }
         public static TreeMap<String, Set<Integer>> loadGenresStatistics(String path, boolean all){
-            return loadGenresStatistics(path, Manga_Scripted.getAllGenres(), MangaService.getSet(MangaService.Type.History),all);
+            return loadGenresStatistics(path, Book_Scripted.getAllGenres(), BookService.getSet(BookService.Type.History),all);
         }
-        public static TreeMap<String, Set<Integer>> loadGenresStatistics(String path, Set<String> genres, Set<Manga> mangas, boolean all){
+        public static TreeMap<String, Set<Integer>> loadGenresStatistics(String path, Set<String> genres, Set<Book> books, boolean all){
             try{
-                return applyByGenres(fromJSON(Utils.File.readFile(new File(path)),all),genres,mangas,all);
+                return applyByGenres(fromJSON(Utils.File.readFile(new File(path)),all),genres, books,all);
             }catch (IOException e){
                 e.printStackTrace();
-                return byGenres(genres,mangas,all);
+                return byGenres(genres, books,all);
             }
         }
 

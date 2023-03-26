@@ -3,15 +3,11 @@
 --- Created by Аlex Bayir.
 --- DateTime: 09.01.2022 19:08
 ---
-Chapter=luajava.bindClass("org.alex.kitsune.manga.Chapter")
-Page=luajava.bindClass("org.alex.kitsune.manga.Page")
-Options=luajava.bindClass("org.alex.kitsune.manga.search.Options")
-JSONObject=luajava.bindClass("org.alex.json.JSON$Object")
-JSONArray=luajava.bindClass("org.alex.json.JSON$Array")
 
 version="1.4"
 domain="mintmanga.live"
 source="MintManga"
+Type="Manga"
 description="Источник манги для взрослых. Присутствует яой. Пожалуйста отключите этот источник если вам меньше 18. Также рекомендуется его отключить,если в рекомендациях попадается яой манга."
 host="https://"..domain
 auth_tokens={"JSESSIONID"}

@@ -3,18 +3,18 @@ package org.alex.kitsune.ui.preview;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.annotation.NonNull;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
 import org.jetbrains.annotations.NotNull;
 import org.alex.kitsune.R;
 
 public class PreviewPagerAdapter extends RecyclerView.Adapter<PreviewHolder> {
     private static final int[] TAB_TITLES_IDS = new int[]{R.string.DESCRIPTION, R.string.CHAPTERS,R.string.BOOKMARKS};
-    private final Manga manga;
+    private final Book book;
     private PreviewPage previewPage;
     private ChaptersPage chaptersPage;
     private BookMarksPage bookMarksPage;
-    public PreviewPagerAdapter(Manga manga) {
-        this.manga=manga;
+    public PreviewPagerAdapter(Book book) {
+        this.book = book;
     }
     public int getTitle(int position){return TAB_TITLES_IDS[position];}
     @NonNull
@@ -29,7 +29,7 @@ public class PreviewPagerAdapter extends RecyclerView.Adapter<PreviewHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull PreviewHolder holder, int position){holder.bind(manga);}
+    public void onBindViewHolder(@NonNull @NotNull PreviewHolder holder, int position){holder.bind(book);}
 
     @Override
     public int getItemCount(){return TAB_TITLES_IDS.length;}

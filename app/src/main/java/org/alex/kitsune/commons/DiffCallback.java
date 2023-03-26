@@ -35,15 +35,15 @@ public class DiffCallback<E> extends DiffUtil.Callback{
 
     public DiffUtil.DiffResult calculateDiff(){return DiffUtil.calculateDiff(this);}
     public DiffUtil.DiffResult calculateDiff(boolean detectMoves){return DiffUtil.calculateDiff(this, detectMoves);}
-    public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter adapter){
+    public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter<? extends RecyclerView.ViewHolder> adapter){
         calculateDiff().dispatchUpdatesTo(adapter);
         return this;
     }
-    public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter adapter, boolean detectMoves){
+    public DiffCallback<E> notifyUpdate(final RecyclerView.Adapter<? extends RecyclerView.ViewHolder> adapter, boolean detectMoves){
         calculateDiff(detectMoves).dispatchUpdatesTo(adapter);
         return this;
     }
-    public void updateAfter(Runnable before, RecyclerView.Adapter adapter){
+    public void updateAfter(Runnable before, RecyclerView.Adapter<? extends RecyclerView.ViewHolder> adapter){
         if(before!=null){before.run();}
         notifyUpdate(adapter,true);
     }

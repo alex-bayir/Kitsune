@@ -19,12 +19,12 @@ import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HttpStatusException;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -40,9 +40,9 @@ public class SearchActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     RecyclerView rv;
-    MangaAdapter adapter;
-    HashMap<String,ArrayList<Manga>> map=new HashMap<>();
-    Manga updateOnReturn=null;
+    BookAdapter adapter;
+    HashMap<String,ArrayList<Book>> map=new HashMap<>();
+    Book updateOnReturn=null;
     ArrayList<Catalogs.Container> catalogs;
     CircularProgressBar progressBar;
     TextView nothingFound;
@@ -65,9 +65,9 @@ public class SearchActivity extends AppCompatActivity {
         toolbar.setTitle(query);
         rv=findViewById(R.id.rv_list);
 
-        adapter=new MangaAdapter(null, MangaAdapter.Mode.LIST, manga -> {
-            adapter.add(updateOnReturn=MangaService.getOrPutNewWithDir(manga));
-            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()));
+        adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
+            adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
+            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
         });
         adapter.setShowSource(true);
         adapter.initRV(rv,1);
@@ -106,7 +106,7 @@ public class SearchActivity extends AppCompatActivity {
     public void search(String query){
         if(NetworkUtils.isNetworkAvailable(this)){
             int i=0;
-            for(Catalogs.Container container:catalogs){if(container.enable){i++; searchManga(container.source, query,0, this::add, nothingFound);}}
+            for(Catalogs.Container container:catalogs){if(container.enable){i++; searchBook(container.source, query,0, this::add, nothingFound);}}
             if(i==0){
                 nothingFound.setText(R.string.no_catalogs_selected);
                 nothingFound.setVisibility(View.VISIBLE);
@@ -119,11 +119,11 @@ public class SearchActivity extends AppCompatActivity {
         }
 
     }
-    public static void searchManga(String source, String query, int order, Callback<Collection<Manga>> callback, TextView out_error){
+    public static void searchBook(String source, String query, int order, Callback<Collection<Book>> callback, TextView out_error){
         if(callback!=null){
             new Thread(()->{
                 try{
-                    List<Manga> list= Manga_Scripted.query(source,query,0,order);
+                    List<Book> list= Book_Scripted.query(source,query,0,order);
                     new Handler(Looper.getMainLooper()).post(()->{
                         callback.call(list);
                     });
@@ -137,12 +137,12 @@ public class SearchActivity extends AppCompatActivity {
         }
     }
 
-    private synchronized void add(Collection<Manga> mangas){
+    private synchronized void add(Collection<Book> books){
         sourcesFind++;
-        if(mangas!=null && mangas.size()>0){
-            mangas=mangas instanceof List ? mangas : new ArrayList<>(mangas);
-            MangaService.setCacheDirIfNull((List<Manga>)mangas);
-            adapter.addAll(mangas,Manga.SourceComparator(Catalogs.Container.sources(catalogs)));
+        if(books !=null && books.size()>0){
+            books = books instanceof List ? books : new ArrayList<>(books);
+            BookService.setCacheDirIfNull((List<Book>) books);
+            adapter.addAll(books, Book.SourceComparator(Catalogs.Container.sources(catalogs)));
             progressBar.setVisibility(View.GONE);
         }
         if(sourcesFind==Catalogs.Container.countEnabled(catalogs) && adapter.getItemCount()==0){

@@ -15,10 +15,10 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
-import org.alex.kitsune.manga.search.FilterSortAdapter;
+import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
@@ -66,7 +66,7 @@ public class CompilerActivity extends AppCompatActivity {
                     try {
                         Utils.File.writeFile(file,editor.getText().toString(),false);
                         Script script=Script.getInstance(file);
-                        Manga_Scripted.getScripts().put(script.getName(),script);
+                        Book_Scripted.getScripts().put(script.getName(),script);
                         script.setSTDOUT(new PrintStream(out));
                         script.setSTDERR(new PrintStream(out));
                         switch (mode){
@@ -93,13 +93,13 @@ public class CompilerActivity extends AppCompatActivity {
     }
 
     private void f1(Script script) throws Exception {
-        Manga manga=Manga_Scripted.query(script,"Tower",0).get(0);
-        manga.update();
-        manga.getPages(0);
+        Book book = Book_Scripted.query(script,"Tower",0).get(0);
+        book.update();
+        book.getPages(0);
     }
     private void f2(Script script) throws Exception{
-        FilterSortAdapter adapter=Manga_Scripted.createAdvancedSearchAdapter(script);
-        Manga_Scripted.query(script,"Tower",0,(Object[]) adapter.getOptions());
+        FilterSortAdapter adapter= Book_Scripted.createAdvancedSearchAdapter(script);
+        Book_Scripted.query(script,"Tower",0,(Object[]) adapter.getOptions());
     }
 
     @Override

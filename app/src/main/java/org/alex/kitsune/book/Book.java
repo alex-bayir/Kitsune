@@ -1,4 +1,4 @@
-package org.alex.kitsune.manga;
+package org.alex.kitsune.book;
 
 import android.content.Context;
 import android.content.Intent;
@@ -10,25 +10,24 @@ import android.text.Html;
 import androidx.annotation.Nullable;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.ClickSpan;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.ListSet;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.search.FilterSortAdapter;
+import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.services.LoadService;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
-import org.json.JSONException;
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public abstract class Manga {
+public abstract class Book {
     protected JSON.Object info;
 
-    protected final ListSet<Manga> similar=new ListSet<>(new ArrayList<>(10));
+    protected final ListSet<Book> similar=new ListSet<>(new ArrayList<>(10));
     private boolean updated=false;
-    public Manga(JSON.Object json){
+    public Book(JSON.Object json){
         this(
                 json,
                 Chapter.fromJSON(JSON.filter(json.getArray("chapters"),JSON.Object.class)),
@@ -36,7 +35,7 @@ public abstract class Manga {
                 BookMark.fromJSON(json.getObject("history"))
         );
     }
-    public Manga(JSON.Object info,List<Chapter> chapters, List<BookMark> bookMarks, BookMark history){
+    public Book(JSON.Object info, List<Chapter> chapters, List<BookMark> bookMarks, BookMark history){
         this.info=info; if(info==null){throw new IllegalArgumentException("Json info cannot be null");}
         if(getUrl_WEB()==null){set("url_web",getUrl());}
         this.info.put("chapters",chapters!=null ? chapters : new ArrayList<>());
@@ -45,15 +44,16 @@ public abstract class Manga {
         set("lastSize",get("lastSize",getChapters().size()));
     }
 
-    public static Manga newInstance(JSON.Object json){
-        return Manga_Scripted.newInstance(json);
+    public static Book newInstance(JSON.Object json){
+        return Book_Scripted.newInstance(json);
     }
-    public static Manga newInstance(Map<String,?> map){
+    public static Book newInstance(Map<String,?> map){
         return newInstance(new JSON.Object(map));
     }
 
     public abstract String getDomain();
     public abstract String getSource();
+    public abstract String getType();
     public final String getStatus(){return getStatus(getString("status"));}
     public final String getStatus(Context context){return getStatus(getStatus(getString("status")),context);}
     private static String getStatus(String status,Context context){
@@ -80,19 +80,19 @@ public abstract class Manga {
     }
     public abstract boolean update() throws Exception;
 
-    public final List<Page> getPages(int chapter) throws IOException, JSONException{
+    public final List<Page> getPages(int chapter) throws IOException{
         return getPages(getChapters().get(chapter));
     }
-    public abstract List<Page> getPages(Chapter chapter) throws IOException, JSONException;
-    protected final void updateSimilar(Set<Manga> mangas){
-        mangas.removeAll(Collections.singleton(null));
-        if(mangas.size()!=0){
+    public abstract List<Page> getPages(Chapter chapter) throws IOException;
+    protected final void updateSimilar(Set<Book> books){
+        books.removeAll(Collections.singleton(null));
+        if(books.size()!=0){
             similar.clear();
-            similar.addAll(mangas);
+            similar.addAll(books);
         }
     }
-    protected abstract Set<Manga> loadSimilar() throws Exception;
-    public final void loadSimilar(Callback<Set<Manga>> callback,Callback<Throwable> error){
+    protected abstract Set<Book> loadSimilar() throws Exception;
+    public final void loadSimilar(Callback<Set<Book>> callback, Callback<Throwable> error){
         if(similar.size()==0){
             new Thread(() -> {
                 try{
@@ -124,10 +124,10 @@ public abstract class Manga {
     public final BookMark getHistory(){return (BookMark)get("history");}
     public final List<Chapter> getChapters(){return (List<Chapter>)get("chapters");}
     public final List<BookMark> getBookMarks(){return (List<BookMark>)get("bookmarks");}
-    public final ListSet<Manga> getSimilar(){return similar;}
+    public final ListSet<Book> getSimilar(){return similar;}
     public final int getLastSize(){return get("lastSize",0);}
     @Override public final int hashCode(){return getUrl().hashCode();}
-    @Override public final boolean equals(@Nullable Object obj){return obj instanceof Manga && hashCode()==obj.hashCode();}
+    @Override public final boolean equals(@Nullable Object obj){return obj instanceof Book && hashCode()==obj.hashCode();}
 
     public final String setDir(String dir){set("dir",dir+(dir.endsWith(File.separator) ? "" :File.separator)+hashCode()); return getDir();}
     public final String getDir(){return getString("dir");}
@@ -144,6 +144,33 @@ public abstract class Manga {
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
     }
     public Drawable getPage(Chapter chapter,int page){return Drawable.createFromPath(getPagePath(chapter,page));}
+    public final boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,NetworkUtils.Callback2<Long,Long> process,Callback<Throwable> onBreak){
+        if(page==null){return false;}
+        File save=getPage(chapter, page);
+        if(page.getUrl()!=null){
+            if(NetworkUtils.load(page.getUrl(),getDomain(),save,cancel_flag,process,onBreak,false)){
+                done.call(save);
+                return true;
+            }
+        }else if(page.getText()!=null){
+            try{
+                Utils.File.writeFile(save,page.getText(),false);
+                done.call(save);
+                return true;
+            }catch (IOException e){
+                if(onBreak!=null){onBreak.call(e);}
+            }
+        }else{
+            try{
+                int index=chapter.getPages().indexOf(page);
+                getPages(chapter);
+                return loadPage(chapter,chapter.getPage(index),done,cancel_flag,process,onBreak);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        return false;
+    }
     public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
     public static void loadThumbnail(String path,String url,Callback<Drawable> callback){
@@ -176,36 +203,37 @@ public abstract class Manga {
     @Override
     public final String toString(){return this.toJSON().toString();}
 
-    public static Manga fromJSON(String json){
+    public static Book fromJSON(String json){
         return json!=null && json.length()>0 ? fromJSON(new StringReader(json)):null;
     }
-    public static Manga fromJSON(Reader reader){
-        Manga manga=null;
+    public static Book fromJSON(Reader reader){
+        Book book =null;
         try{
-            manga=fromJSON(JSON.Object.create(reader));
+            book =fromJSON(JSON.Object.create(reader));
             reader.close();
         }catch(IOException e){
             e.printStackTrace();
         }
-        return manga;
+        return book;
     }
-    public static Manga fromJSON(JSON.Object json){
+    public static Book fromJSON(JSON.Object json){
         return newInstance(json);
     }
-    public static Manga loadFromStorage(String filePath){
+    public static Book loadFromStorage(String filePath){
         return loadFromStorage(new File(filePath));
     }
-    public static Manga loadFromStorage(File file){
-        Manga manga=null;
+    public static Book loadFromStorage(File file){
+        Book book =null;
         if(file.exists()){
             try{
-                manga=Manga.fromJSON(new FileReader(file));
-                if(manga!=null){manga.set("dir",file.getParent());}
+                book = Book.fromJSON(new FileReader(file));
+                if(book !=null){
+                    book.set("dir",file.getParent());}
             }catch(IOException e){
                 Logs.saveLog(e);
             }
         }
-        return manga;
+        return book;
     }
 
     public final void save(){
@@ -254,15 +282,15 @@ public abstract class Manga {
     public final int getNumChapterHistory(){return getNumChapter(getHistory());}
 
     public final boolean updateDetails(){return updateDetails(loadFromStorage(getInfoPath()));}
-    public final boolean updateDetails(Manga manga){
-        if(manga!=null && this.hashCode()==manga.hashCode()){
-            updateChapters(manga.getChapters());
-            updateBookMarks(manga.getBookMarks());
-            set("history",manga.getHistory());
-            set("lastSize",manga.getLastSize());
-            set("lastTimeSave",manga.getLastTimeSave());
-            set("CategoryFavorite",manga.getCategoryFavorite());
-            set("lastTimeFavorite",manga.getLastTimeFavorite());
+    public final boolean updateDetails(Book book){
+        if(book !=null && this.hashCode()== book.hashCode()){
+            updateChapters(book.getChapters());
+            updateBookMarks(book.getBookMarks());
+            set("history", book.getHistory());
+            set("lastSize", book.getLastSize());
+            set("lastTimeSave", book.getLastTimeSave());
+            set("CategoryFavorite", book.getCategoryFavorite());
+            set("lastTimeFavorite", book.getLastTimeFavorite());
             return true;
         }
         return false;
@@ -383,25 +411,25 @@ public abstract class Manga {
     public long getImagesSize(){return ImagesSize<0 ? recalculateImagesSize() : ImagesSize;}
 
     public static CharSequence getSourceDescription(String source){
-        return Manga_Scripted.getSourceDescription(source);
+        return Book_Scripted.getSourceDescription(source);
     }
     public static FilterSortAdapter getFilterSortAdapter(String source){
-        return Manga_Scripted.createAdvancedSearchAdapter(source);
+        return Book_Scripted.createAdvancedSearchAdapter(source);
     }
 
     public CharSequence getGenres(ClickSpan.SpanClickListener listener){
-        FilterSortAdapter adapter=Manga.getFilterSortAdapter(getSource());
+        FilterSortAdapter adapter= Book.getFilterSortAdapter(getSource());
         return adapter!=null && getGenres()!=null ? adapter.getClickableSpans(getGenres(), listener) : getGenres();
     }
 
-    public static final Comparator<Manga> HistoryComparator=(o1,o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
-    public static final Comparator<Manga> SavingTimeComparator=(o1,o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
-    public static final Comparator<Manga> FavoriteTimeComparator=(o1,o2)->Long.compare(o2.getLastTimeFavorite(),o1.getLastTimeFavorite());
-    public static final Comparator<Manga> AlphabeticalComparatorEn=(o1,o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(true),""));
-    public static final Comparator<Manga> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
-    public static final Comparator<Manga> ImagesSizesComparator=(o1,o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
-    public static final Comparator<Manga> RatingComparator=Comparator.comparingDouble(Manga::getRating);
-    public static Comparator<Manga> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}
+    public static final Comparator<Book> HistoryComparator=(o1, o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
+    public static final Comparator<Book> SavingTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
+    public static final Comparator<Book> FavoriteTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeFavorite(),o1.getLastTimeFavorite());
+    public static final Comparator<Book> AlphabeticalComparatorEn=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(true),""));
+    public static final Comparator<Book> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
+    public static final Comparator<Book> ImagesSizesComparator=(o1, o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
+    public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating);
+    public static Comparator<Book> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}
 
     public final void set(String key,Object value){
         info.put(key,value);

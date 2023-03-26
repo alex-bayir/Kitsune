@@ -1,6 +1,7 @@
 package org.alex.kitsune.ui.reader;
 
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
@@ -10,19 +11,18 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import com.vlad1m1r.lemniscate.base.BaseCurveProgressView;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.Page;
+import org.alex.kitsune.book.Chapter;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Page;
 import org.alex.kitsune.ocr.OCRImageView;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -50,12 +50,12 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         }
     }
 
-    OCRImageView imageView;
-    Manga manga;
+    OCRImageView image;
+    Book book;
     Chapter chapter;
     Page page;
     File file;
-    TextView progress,text_faces, text_info;
+    TextView text,progress,text_faces, text_info;
     BaseCurveProgressView progressBar;
     Button retry, change_url;
     View load_info,retry_layout;
@@ -69,17 +69,19 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     final Dialog dialog; TextView input;
     private boolean showTranslated=false;
 
-    ReaderPageHolder(ViewGroup parent, boolean vertical, Manga manga, View.OnClickListener centerClick,View.OnClickListener leftClick,View.OnClickListener rightClick){
+    @SuppressLint("ClickableViewAccessibility")
+    ReaderPageHolder(ViewGroup parent, boolean vertical, Book book, View.OnClickListener centerClick, View.OnClickListener leftClick, View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
-        imageView=itemView.findViewById(R.id.image);
-        imageView.setMaximumScale(10);
-        imageView.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
+        image=itemView.findViewById(R.id.image);
+        text=itemView.findViewById(R.id.text);
+        image.setMaximumScale(10);
+        image.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
             proportion=(bottom-top)/(float)(right-left);
         });
 
-        imageView.setOnViewTapListener((view, x, y) -> {
+        image.setOnViewTapListener((view, x, y) -> {
             int width=view.getWidth(),length=width/3;
-            if(!imageView.showDialogTranslateIfTextExists(x,y)){
+            if(!image.showDialogTranslateIfTextExists(x,y)){
                 if(x<length){
                     leftClick.onClick(view);
                 }else{
@@ -89,6 +91,30 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                         centerClick.onClick(view);
                     }
                 }
+            }
+        });
+
+        text.setOnTouchListener(new View.OnTouchListener() {
+            final GestureDetector detector=new GestureDetector(text.getContext(),new GestureDetector.SimpleOnGestureListener(){
+                @Override
+                public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+                    float x=e.getX(),y=e.getY(); View view=text;
+                    int width=view.getWidth(),length=width/3;
+                    if(x<length){
+                        leftClick.onClick(view);
+                    }else{
+                        if(x>width-length){
+                            rightClick.onClick(view);
+                        }else{
+                            centerClick.onClick(view);
+                        }
+                    }
+                    return true;
+                }
+            });
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+                return detector.onTouchEvent(event);
             }
         });
         View view=LayoutInflater.from(itemView.getContext()).inflate(R.layout.dialog_input_url, null);
@@ -111,10 +137,10 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         retry_layout=itemView.findViewById(R.id.retry_layout);
         load_info.setVisibility(View.GONE);
         retry_layout.setVisibility(View.GONE);
-        this.manga=manga;
+        this.book = book;
         this.vertical=vertical;
         itemView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
-        imageView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        image.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
     }
 
     private void retry(){
@@ -129,15 +155,16 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             this.chapter=chapter;
             this.showTranslated=showTranslate;
             if(this.chapter!=null){
-                file=manga.getPage(this.chapter,page=this.chapter.getPage(position));
+                file= book.getPage(this.chapter,page=this.chapter.getPage(position));
                 draw(page.getUrl(),scaleType,vertical,showTranslate);
-            }else{imageView.setImageDrawable(null);}
+            }else{
+                image.setImageDrawable(null);}
         }else if(this.showTranslated!=showTranslate){
             this.showTranslated=showTranslate;
             if(showTranslate){
-                imageView.show();
+                image.show();
             }else{
-                imageView.hide();
+                image.hide();
             }
         }
     }
@@ -146,25 +173,43 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
     public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
         if(file.exists()){
-            imageView.setAdjustViewBounds(true);
+            image.setAdjustViewBounds(true);
             Drawable drawable=loadDrawable(file);
-            imageView.setImageDrawable(drawable,file);
+            image.setImageDrawable(drawable,file);
             if(drawable instanceof Animatable animatable){
                 animatable.start();
             }
             setScaleType(scaleType,vertical);
             if(showTranslate){
-                imageView.show();
+                image.show();
             }else{
-                imageView.hide();
+                image.hide();
+            }
+            if(drawable==null){
+                try{
+                    text.setText(Utils.File.readFile(file));
+                    text.setVisibility(View.VISIBLE);
+                    image.setVisibility(View.GONE);
+                }catch (Exception ignored){}
+            }else{
+                text.setVisibility(View.GONE);
+                image.setVisibility(View.VISIBLE);
             }
         }else{
-            imageView.setImageDrawable(null);
+            image.setImageDrawable(null);
             load_info.setVisibility(View.VISIBLE);
             retry_layout.setVisibility(View.GONE);
             progress.setText(R.string.loading);
             new Thread(()->{
-                boolean loaded=NetworkUtils.load(url,manga.getDomain(),file,null,(read, length)->{
+                book.loadPage(chapter,page, f->{
+                    NetworkUtils.getMainHandler().post(()->{
+                        load_info.setVisibility(View.GONE);
+                        retry_layout.setVisibility(View.GONE);
+                        book.setLastTimeSave();
+                        itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.load));
+                        draw(url,scaleType,vertical,showTranslate);
+                    });
+                },null,(read, length)->{
                     float p = read / (float)length;
                     NetworkUtils.getMainHandler().post(()->{
                         if(0<p && p<=1){
@@ -184,16 +229,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                     text_info.setText(String.format(Locale.getDefault(),"%s",e!=null?Utils.getRootCause(e,2).getMessage():"Failed to load resource"));
                     input.setText(url);
                     retry_layout.setVisibility(View.VISIBLE);
-                }),false);
-                if(loaded){
-                    NetworkUtils.getMainHandler().post(()->{
-                        load_info.setVisibility(View.GONE);
-                        retry_layout.setVisibility(View.GONE);
-                        manga.setLastTimeSave();
-                        itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.option,Constants.load));
-                        draw(url,scaleType,vertical,showTranslate);
-                    });
-                }
+                }));
             }).start();
         }
     }
@@ -227,7 +263,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
 
     public void setScaleType(ScaleType scaleType,boolean vertical){
-        Drawable drawable=imageView.getDrawable();
+        Drawable drawable= image.getDrawable();
         if(drawable!=null){
             switch (scaleType!=null ? scaleType : ScaleType.FIT_X) {
                 case CENTER -> setScaleType(false, ImageView.ScaleType.CENTER);
@@ -238,8 +274,8 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         }
     }
     private void setScaleType(boolean adjustViewBounds,ImageView.ScaleType scaleType){
-        imageView.setScaleType(scaleType);
-        imageView.setAdjustViewBounds(adjustViewBounds);
+        image.setScaleType(scaleType);
+        image.setAdjustViewBounds(adjustViewBounds);
     }
 
     private int getColor(float progress){

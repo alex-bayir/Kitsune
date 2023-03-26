@@ -1,7 +1,7 @@
 package org.alex.kitsune.commons;
 
 import androidx.annotation.NonNull;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.jetbrains.annotations.NotNull;
 import java.net.URLEncoder;
 import java.util.*;

@@ -9,7 +9,7 @@ import com.bumptech.glide.load.model.GlideUrl;
 import com.bumptech.glide.load.model.LazyHeaders;
 import okhttp3.*;
 import okio.Buffer;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.logs.Logs;
@@ -76,8 +76,8 @@ public class NetworkUtils {
         response.close();
         if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
         return answer;}
-    public static JSON.Object getJSONObject(String url) throws IOException {
-        return JSON.Object.create(getString(url));
+    public static JSON getJSON(String url) throws IOException {
+        return JSON.json(getString(url));
     }
 
     public static Document getDocument(String url) throws IOException {
@@ -152,13 +152,13 @@ public class NetworkUtils {
     public static boolean load(String url, String domain, File file){
         return load(url,domain,file,null);
     }
-    public static boolean load(String url, String domain, File file, LoadService.Task task){
+    public static boolean load(String url, String domain, File file, Boolean task){
         return load(url,domain,file,task,null);
     }
-    public static boolean load(String url, String domain, File file, LoadService.Task task, Callback2<Long,Long> listener){
+    public static boolean load(String url, String domain, File file, Boolean task, Callback2<Long,Long> listener){
         return load(url,domain,file,task,listener,null,false);
     }
-    public static boolean load(String url, String domain, File file, LoadService.Task task, Callback2<Long,Long> listener, Callback<Throwable> onBreak, boolean withSkip){
+    public static boolean load(String url, String domain, File file, Boolean cancel_flag, Callback2<Long,Long> listener, Callback<Throwable> onBreak, boolean withSkip){
         InputStream in=null;
         OutputStream out=null;
         try{
@@ -171,20 +171,20 @@ public class NetworkUtils {
                 in=response.body().byteStream();
                 byte[] arr=new byte[0x400]; long i=0; int read;
                 if(withSkip){i=in.skip(downloadedSize);}
-                if(task==null){
+                if(cancel_flag==null){
                     while((read=in.read(arr))>0){
                         out.write(arr,0,read);
                         if(listener!=null){i+=read; listener.call(i,length);}
                     }
                 }else{
-                    while((read=in.read(arr))>0 && !task.isCanceled()){
+                    while((read=in.read(arr))>0 && !cancel_flag){
                         out.write(arr,0,read);
                         if(listener!=null){i+=read; listener.call(i,length);}
                     }
                 }
                 out.close();
                 in.close();
-                if(task!=null && task.isCanceled()){return false;}
+                if(cancel_flag!=null && cancel_flag){return false;}
             }else{throw new HttpStatusException(response.code(),response.request().url().toString());}
         }catch(Exception e){
             e.printStackTrace();

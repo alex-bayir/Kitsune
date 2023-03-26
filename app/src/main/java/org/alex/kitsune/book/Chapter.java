@@ -1,31 +1,49 @@
-package org.alex.kitsune.manga;
+package org.alex.kitsune.book;
 
 import android.content.Context;
 import org.alex.kitsune.R;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import static org.alex.json.JSON.filter;
+import static com.alex.json.java.JSON.filter;
 
 public class Chapter{
     JSON.Object info;
-    public Chapter(JSON.Object info,List<Page> pages){
+    private Chapter(JSON.Object info,List<Page> pages){
         this.info=info.put("pages",pages);
     }
-    public Chapter(int vol,float num,String name,long date,List<Page> pages,Map<String,Object> additional){
-        info=new JSON.Object();
-        if(additional!=null){info.putAll(additional);}
-        info.put("vol",vol);
-        info.put("num",num);
-        info.put("name",Utils.unescape_unicodes((name==null || "null".equals(name)) ? "" : name));
-        info.put("date",date);
-        info.put("pages",pages);
+    public Chapter(int vol,float num,String name,long date,Map<String,Object> additional,List<Page> pages){
+        this(
+                new JSON.Object(additional)
+                        .put("vol",vol)
+                        .put("num",num)
+                        .put("name",Utils.unescape_unicodes(name))
+                        .put("date",date)
+                ,pages
+        );
     }
-    public Chapter(int vol,float num,String name,long date,Map<String,Object> additional){
-        this(vol,num,name,date,null,additional);
+    public Chapter(int vol,String num,String name,long date,Map<String,Object> additional,List<Page> pages){
+        this(
+                new JSON.Object(additional)
+                        .put("vol",vol)
+                        .put("num",num)
+                        .put("name",Utils.unescape_unicodes(name))
+                        .put("date",date)
+                ,pages
+        );
+    }
+    public Chapter(String vol,String num,String name,long date,Map<String,Object> additional,List<Page> pages){
+        this(
+                new JSON.Object(additional)
+                        .put("vol",vol)
+                        .put("num",num)
+                        .put("name",Utils.unescape_unicodes(name))
+                        .put("date",date)
+                ,pages
+        );
     }
     public Page getPage(int page){
         return getPage(page,getPages());

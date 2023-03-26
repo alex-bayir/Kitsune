@@ -9,10 +9,10 @@ import android.widget.TextView;
 import androidx.recyclerview.widget.*;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.commons.HolderMenuItemClickListener;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.BookMark;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.BookMark;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.utils.Utils;
 
@@ -33,13 +33,13 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
     }
 
     @Override
-    public void bind(Manga manga) {
-        adapter.setManga(manga);
+    public void bind(Book book) {
+        adapter.setBook(book);
     }
 
     @Override
     public void onItemClick(View v, int index) {
-        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,adapter.manga.hashCode()).putExtra(Constants.bookmark, index));
+        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.bookmark, index));
     }
 
     @Override
@@ -48,7 +48,7 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
     @Override
     public boolean onMenuItemClick(int position, MenuItem item) {
         switch (item.getItemId()){
-            case BookMarkHolder.REMOVE: adapter.manga.removeBookMark(adapter.getList().remove(position)); adapter.notifyItemRemoved(position); break;
+            case BookMarkHolder.REMOVE: adapter.book.removeBookMark(adapter.getList().remove(position)); adapter.notifyItemRemoved(position); break;
         }
         return false;
     }

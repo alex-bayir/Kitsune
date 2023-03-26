@@ -10,8 +10,8 @@ import androidx.appcompat.widget.PopupMenu;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.commons.HolderMenuItemClickListener;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.BookMark;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.BookMark;
 import org.alex.kitsune.R;
 
 public class BookMarkHolder extends RecyclerView.ViewHolder{
@@ -21,9 +21,9 @@ public class BookMarkHolder extends RecyclerView.ViewHolder{
     private final AppCompatImageView menu;
     private final Drawable caution;
     private final PopupMenu popupMenu;
-    protected Manga manga;
+    protected Book book;
 
-    public BookMarkHolder(ViewGroup parent, int layout,HolderListener listener, Manga manga, HolderMenuItemClickListener menuListener){
+    public BookMarkHolder(ViewGroup parent, int layout, HolderListener listener, Book book, HolderMenuItemClickListener menuListener){
         super(LayoutInflater.from(parent.getContext()).inflate(layout,parent,false));
         if(listener!=null){itemView.setOnClickListener(v -> listener.onItemClick(v,getBindingAdapterPosition()));}
         if(listener!=null){itemView.setOnLongClickListener(v -> listener.onItemLongClick(v,getBindingAdapterPosition()));}
@@ -36,13 +36,13 @@ public class BookMarkHolder extends RecyclerView.ViewHolder{
         popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getBindingAdapterPosition(),item));
         popupMenu.setForceShowIcon(true);
         menu.setOnClickListener(v -> {if(v==menu){popupMenu.show();}});
-        this.manga=manga;
+        this.book = book;
     }
 
 
     public void bind(BookMark bookMark){
         image.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        image.setImageDrawable(manga.getPage(bookMark.getChapter(),bookMark.getPage()));
+        image.setImageDrawable(book.getPage(bookMark.getChapter(),bookMark.getPage()));
         if(image.getDrawable()==null){image.setImageDrawable(caution); image.setScaleType(ImageView.ScaleType.CENTER);}
         date.setText(getRelativeTime(bookMark.getDate()));
     }

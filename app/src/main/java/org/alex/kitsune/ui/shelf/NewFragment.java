@@ -9,20 +9,20 @@ import androidx.core.view.MenuProvider;
 import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.main.MainActivity;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.SwipeRemoveHelper;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.jetbrains.annotations.NotNull;
 
 public class NewFragment extends Fragment implements MenuProvider {
     RecyclerView rv;
-    MangaAdapter adapter;
+    BookAdapter adapter;
     SharedPreferences prefs;
     View root;
     MainActivity mainActivity;
@@ -34,9 +34,9 @@ public class NewFragment extends Fragment implements MenuProvider {
         root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
         rv=root.findViewById(R.id.rv_list);
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
-        adapter=new MangaAdapter(null, MangaAdapter.Mode.LIST,
-                manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
-                manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+        adapter=new BookAdapter(null, BookAdapter.Mode.LIST,
+                book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
+                book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
         );
         adapter.setShowSource(false);
         adapter.setShowCheckedNew(false);
@@ -47,15 +47,15 @@ public class NewFragment extends Fragment implements MenuProvider {
         requireContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                Manga manga=MangaService.get(intent.getIntExtra(Constants.hash,-1));
-                if(manga!=null && adapter!=null){
+                Book book=BookService.get(intent.getIntExtra(Constants.hash,-1));
+                if(book!=null && adapter!=null){
                     if(Constants.action_Update_New.equals(intent.getAction())){
-                        adapter.add(manga);
+                        adapter.add(book);
                         mainActivity.setNew(adapter.getItemCount());
                     }else if(Constants.action_Update.equals(intent.getAction())){
                         String tmp=intent.getStringExtra(Constants.option);
                         switch(tmp!=null ? tmp : ""){
-                            case Constants.load, Constants.delete -> adapter.update(manga);
+                            case Constants.load, Constants.delete -> adapter.update(book);
                         }
                     }
                 }
@@ -63,10 +63,10 @@ public class NewFragment extends Fragment implements MenuProvider {
         }, filter);
         bind();
         SwipeRemoveHelper.setup(rv,new SwipeRemoveHelper(requireContext(),R.color.checked,R.drawable.ic_done_all_white,24, i -> {
-            Manga manga=adapter.remove(i);
-            manga.checkedNew();
+            Book book=adapter.remove(i);
+            book.checkedNew();
             mainActivity.setNew(adapter.getItemCount());
-            requireContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()));
+            requireContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()));
         }));
         requireContext().registerReceiver(new BroadcastReceiver() {
             @Override
@@ -78,7 +78,7 @@ public class NewFragment extends Fragment implements MenuProvider {
     }
 
     public void bind(){
-        adapter.replace(MangaService.getWithNew());
+        adapter.replace(BookService.getWithNew());
         mainActivity.setNew(adapter.getItemCount());
     }
 
@@ -91,8 +91,8 @@ public class NewFragment extends Fragment implements MenuProvider {
 
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
-        menu.findItem(R.id.action_find_manga).setVisible(true);
-        menu.findItem(R.id.check_for_updates).setVisible(!MangaService.isAllUpdated()).setEnabled(!MangaService.isUpdating);
+        menu.findItem(R.id.action_find_book).setVisible(true);
+        menu.findItem(R.id.check_for_updates).setVisible(!BookService.isAllUpdated()).setEnabled(!BookService.isUpdating);
         menu.findItem(R.id.action_add_source).setVisible(false);
         menu.findItem(R.id.full).setVisible(false);
         menu.findItem(R.id.action_update_sctips).setVisible(false);

@@ -3,11 +3,11 @@ package org.alex.kitsune.ui.reader;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.*;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Chapter;
 
 public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
-    Manga manga;
+    Book book;
     Chapter chapter=null;
     private ReaderPageHolder.ScaleType scaleType=ReaderPageHolder.ScaleType.FIT_X;
     final View.OnClickListener visibleUIListener,leftClick,rightClick;
@@ -17,8 +17,8 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
     private boolean showTranslate=false;
 
 
-    public ReaderPageAdapter(Manga manga, RecyclerView rv, View.OnClickListener visibleUIListener,View.OnClickListener leftClick,View.OnClickListener rightClick) {
-        this.manga=manga;
+    public ReaderPageAdapter(Book book, RecyclerView rv, View.OnClickListener visibleUIListener, View.OnClickListener leftClick, View.OnClickListener rightClick) {
+        this.book = book;
         this.visibleUIListener=visibleUIListener;
         this.leftClick=leftClick;
         this.rightClick=rightClick;
@@ -29,7 +29,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
         this.rv.setAdapter(this);
     }
     public LinearLayoutManager getLayoutManager(){return layoutManager;}
-    public void setChapter(int chapter){this.chapter=manga.getChapters().get(chapter); notifyDataSetChanged();}
+    public void setChapter(int chapter){this.chapter= book.getChapters().get(chapter); notifyDataSetChanged();}
     public ReaderPageHolder.ScaleType getScaleType(){return scaleType;}
     public boolean isReverse(){return rv.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL;}
     public int getOrientation(){return layoutManager.getOrientation();}
@@ -64,7 +64,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
 
     @Override
     public ReaderPageHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ReaderPageHolder(parent,viewType==RecyclerView.VERTICAL,manga,visibleUIListener,leftClick,rightClick);
+        return new ReaderPageHolder(parent,viewType==RecyclerView.VERTICAL, book,visibleUIListener,leftClick,rightClick);
     }
 
     @Override

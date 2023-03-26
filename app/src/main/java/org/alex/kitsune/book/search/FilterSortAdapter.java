@@ -1,4 +1,4 @@
-package org.alex.kitsune.manga.search;
+package org.alex.kitsune.book.search;
 
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -12,10 +12,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.ClickSpan;
+import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.commons.HolderClickListener;
 import com.alex.threestates.ThreeStatesTextView;
 import org.alex.kitsune.scripts.Script;
-import org.alex.kitsune.manga.search.Options.StringPair;
+import org.alex.kitsune.book.search.Options.StringPair;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -38,9 +39,17 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     }
 
     public void update_pairs(){
-        pairs.clear();
-        for(Options option: options){if(option!=null){pairs.add(option.title); if(option.title.getValue()==0){pairs.addAll(Arrays.asList(option.values));}}}
-        //notifyDataSetChanged();
+        new DiffCallback<>(pairs,()->{
+            pairs.clear();
+            for(Options option: options){
+                if(option!=null){
+                    pairs.add(option.title);
+                    if(option.title.getValue()==0){
+                        pairs.addAll(Arrays.asList(option.values));
+                    }
+                }
+            }
+        }).notifyUpdate(this,true);
     }
     public Options[] getOptions(){return options;}
     private Options getOptions(int index){

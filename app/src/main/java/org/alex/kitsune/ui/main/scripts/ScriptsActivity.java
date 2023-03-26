@@ -16,7 +16,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.AppBarStateChangeListener;
 import org.alex.kitsune.commons.CustomSnackbar;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.commons.HolderListener;
@@ -62,7 +62,7 @@ public class ScriptsActivity extends AppCompatActivity {
         noScripts.setText(R.string.no_scripts);
         rv=findViewById(R.id.rv_list);
 
-        adapter=new ScriptsAdapter(dir=getExternalFilesDir(Constants.manga_scripts), new View.OnFocusChangeListener() {
+        adapter=new ScriptsAdapter(dir=getExternalFilesDir(Constants.scripts), new View.OnFocusChangeListener() {
             File last;
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -72,7 +72,7 @@ public class ScriptsActivity extends AppCompatActivity {
                         String newname=((TextView)v).getText().toString();
                         if(last!=null && Script.checkSuffix(newname) && getFileByName(adapter.getFiles(),newname)==null){
                             adapter.update(last,new File(dir.getAbsolutePath()+"/"+newname));
-                            Manga_Scripted.setScripts(Catalogs.getMangaScripts(getExternalFilesDir(Constants.manga_scripts)));
+                            Book_Scripted.setScripts(Catalogs.getBookScripts(getExternalFilesDir(Constants.scripts)));
                         }
                         last=null;
                     }
@@ -92,7 +92,7 @@ public class ScriptsActivity extends AppCompatActivity {
             switch (item.getItemId()) {
                 case ScriptHolder.REMOVE:
                     adapter.delete(position);
-                    Manga_Scripted.setScripts(Catalogs.getMangaScripts(getExternalFilesDir(Constants.manga_scripts)));
+                    Book_Scripted.setScripts(Catalogs.getBookScripts(getExternalFilesDir(Constants.scripts)));
                     break;
             }
             return false;

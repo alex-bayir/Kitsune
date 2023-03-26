@@ -18,11 +18,11 @@ import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.DiffCallback;
-import org.alex.kitsune.manga.views.MangaHolder;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.views.BookHolder;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.main.MainActivity;
-import org.alex.kitsune.services.MangaService;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
@@ -85,8 +85,8 @@ public class Shelf extends Fragment implements MenuProvider {
 
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
-        menu.findItem(R.id.action_find_manga).setVisible(true);
-        menu.findItem(R.id.check_for_updates).setVisible(!MangaService.isAllUpdated()).setEnabled(!MangaService.isUpdating);
+        menu.findItem(R.id.action_find_book).setVisible(true);
+        menu.findItem(R.id.check_for_updates).setVisible(!BookService.isAllUpdated()).setEnabled(!BookService.isUpdating);
         menu.findItem(R.id.action_add_source).setVisible(false);
         menu.findItem(R.id.full).setVisible(false);
         menu.findItem(R.id.action_update_sctips).setVisible(false);
@@ -98,22 +98,22 @@ public class Shelf extends Fragment implements MenuProvider {
             p=0;
             //progress.setSmoothProgressDrawableColor(0);
             progress.progressiveStart();
-            final int size=MangaService.getMap(MangaService.Type.All).values().size();
+            final int size= BookService.getMap(BookService.Type.All).values().size();
             //ProgressDrawable pr=new ProgressDrawable().setMax(size);
             if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-            MangaService.isUpdating=true;
-            for(Manga manga : MangaService.getMap(MangaService.Type.All).values()){
-                if(!manga.isUpdated()){
-                    manga.update((updated)->{
+            BookService.isUpdating=true;
+            for(Book book : BookService.getMap(BookService.Type.All).values()){
+                if(!book.isUpdated()){
+                    book.update((updated)->{
                         if(updated){
-                            MangaService.setCacheDirIfNull(manga.getSimilar());
-                            adapter.update(manga);
-                            if(manga.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash,manga.hashCode()));}
-                            if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
+                            BookService.setCacheDirIfNull(book.getSimilar());
+                            adapter.update(book);
+                            if(book.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash, book.hashCode()));}
+                            if(++p==size){progress.progressiveStop(); BookService.isUpdating=false; mainActivity.setNew(BookService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
                             //pr.setProgress(p).setOnView(progress);
                         }
                     },throwable->{
-                        if(++p==size){progress.progressiveStop(); MangaService.isUpdating=false; mainActivity.setNew(MangaService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
+                        if(++p==size){progress.progressiveStop(); BookService.isUpdating=false; mainActivity.setNew(BookService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
                         //pr.setProgress(p).setOnView(progress);
                     });
                 }else{++p;}
@@ -130,7 +130,7 @@ public class Shelf extends Fragment implements MenuProvider {
         while(tasks.size()>0){
             tasks.removeFirst().run();
         }
-        if(prefs.getBoolean(Constants.update_on_start,true) && !MangaService.isAllUpdated()){
+        if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated()){
             check_for_updates();
         }
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
@@ -152,26 +152,26 @@ public class Shelf extends Fragment implements MenuProvider {
             case History-> new Wrapper(
                     key,
                     v->v.getContext().startActivity(new Intent(v.getContext(), HistoryActivity.class)),
-                    MangaService.getSorted(MangaService.Type.History),4,value.count,value.first
+                    BookService.getSorted(BookService.Type.History),4,value.count,value.first
             ).init(
-                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
-                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
+                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
             case Saved  -> new Wrapper(
                     key,
                     v->v.getContext().startActivity(new Intent(v.getContext(), SavedActivity.class)),
-                    MangaService.getSorted(MangaService.Type.Saved),4,value.count,value.first
+                    BookService.getSorted(BookService.Type.Saved),4,value.count,value.first
             ).init(
-                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
-                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
+                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
             default     -> new Wrapper(
                     key,
                     v->v.getContext().startActivity(new Intent(v.getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),
-                    MangaService.getFavorites(key),3,value.count,value.first
+                    BookService.getFavorites(key),3,value.count,value.first
             ).init(
-                    manga -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode())),
-                    manga -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.history,true))
+                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
+                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
         };
     }
@@ -260,20 +260,20 @@ public class Shelf extends Fragment implements MenuProvider {
                             Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max))
             ).collect(Collectors.toList());
         }
-        public List<Manga> getList(String key){
+        public List<Book> getList(String key){
             return all.stream().filter(wrap->wrap.title.equals(key)).map(wrap->wrap.list).findFirst().orElse(null);
         }
-        public void update(String key, Callback<List<Manga>> callback){
-            List<Manga> list=getList(key);
+        public void update(String key, Callback<List<Book>> callback){
+            List<Book> list=getList(key);
             if(list!=null){
                 callback.call(list);
                 update();
             }
         }
-        public void update(Manga manga){
-            if(manga!=null){
+        public void update(Book book){
+            if(book !=null){
                 for(int i=0;i<objects.size();i++){
-                    if(objects.get(i).equals(manga)){
+                    if(objects.get(i).equals(book)){
                         notifyItemChanged(i);
                     }
                 }
@@ -292,7 +292,7 @@ public class Shelf extends Fragment implements MenuProvider {
         @Override
         public int getItemViewType(int position) {
             Object obj=objects.get(position);
-            boolean full=obj instanceof Manga && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
+            boolean full=obj instanceof Book && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
             return obj instanceof Wrapper ? 0 : (full?1:2);
         }
 
@@ -302,8 +302,8 @@ public class Shelf extends Fragment implements MenuProvider {
         public RecyclerView.ViewHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
             return switch (viewType){
                 case 0->new TitleHolder(parent);
-                case 2->new MangaHolder(parent,null,null,false,false);
-                case 1->new MangaHolder(parent,null,null,true,false);
+                case 2->new BookHolder(parent,null,null,false,false);
+                case 1->new BookHolder(parent,null,null,true,false);
                 default -> throw new IllegalArgumentException("ViewHolder can not be null");
             };
         }
@@ -312,13 +312,13 @@ public class Shelf extends Fragment implements MenuProvider {
             Object obj=objects.get(position);
             if(holder instanceof TitleHolder th && obj instanceof Wrapper wrap){
                 th.bind(wrap);
-            }else if(holder instanceof MangaHolder mh && obj instanceof Manga manga){
+            }else if(holder instanceof BookHolder mh && obj instanceof Book book){
                 Wrapper wrap=getWrapper(position);
                 mh.setOnClickListeners(
-                        wrap.item!=null? (v, p) -> wrap.item.call(manga):null,
-                        wrap.button!=null? (v, p)-> wrap.button.call(manga):null
+                        wrap.item!=null? (v, p) -> wrap.item.call(book):null,
+                        wrap.button!=null? (v, p)-> wrap.button.call(book):null
                 );
-                mh.bind(manga,false,true,0);
+                mh.bind(book,false,true,0);
             }
         }
 
@@ -344,14 +344,14 @@ public class Shelf extends Fragment implements MenuProvider {
     static class Wrapper{
         String title;
         View.OnClickListener more;
-        List<Manga> list;
+        List<Book> list;
         int max;
         int columns;
         boolean mixed;
-        Callback<Manga> item;
-        Callback<Manga> button;
+        Callback<Book> item;
+        Callback<Book> button;
 
-        public Wrapper(String title, View.OnClickListener more, List<Manga> list, int columns, int max_rows, boolean first_full){
+        public Wrapper(String title, View.OnClickListener more, List<Book> list, int columns, int max_rows, boolean first_full){
             this.title=title;
             this.more = more;
             this.list=list;
@@ -359,7 +359,7 @@ public class Shelf extends Fragment implements MenuProvider {
             this.columns=columns;
             max=mixed ? columns*(max_rows-1)+1 : columns*max_rows;
         }
-        public Wrapper init(Callback<Manga> item,Callback<Manga> item_button){
+        public Wrapper init(Callback<Book> item, Callback<Book> item_button){
             this.item=item;
             this.button=item_button;
             return this;

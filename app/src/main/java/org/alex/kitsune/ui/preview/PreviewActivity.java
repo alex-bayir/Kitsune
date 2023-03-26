@@ -30,11 +30,12 @@ import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.manga.Manga;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.util.List;
@@ -46,11 +47,11 @@ public class PreviewActivity extends AppCompatActivity{
     ViewPager2 pager;
     Toolbar bottomBar;
     Toolbar toolbar;
-    Manga manga;
+    Book book;
     Throwable throwable=null;
     long throwableTime=0;
     SharedPreferences prefs;
-    private static int hashManga=-1;
+    private static int hash=-1;
     static final int PERMISSION_REQUEST_CODE=1;
     static final int CALL_FILE_STORE=2;
     private Runnable scrollToHistory=()->{adapter.getChaptersPage().scrollToHistory(); scrollToHistory=null;};
@@ -66,19 +67,20 @@ public class PreviewActivity extends AppCompatActivity{
         invalidateOptionsMenu();
     };
     private final Callback<Boolean> updateCallback=(updated) -> {
-        toolbar.setTitle(manga.getName());
-        toolbar.setSubtitle(manga.getNameAlt());
+        toolbar.setTitle(book.getName());
+        toolbar.setSubtitle(book.getNameAlt());
         if(updated){
             progressBar.progressiveStop();
-            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,manga.hashCode()));
-            manga.loadSimilar(obj -> {MangaService.setCacheDirIfNull((List<Manga>) obj); adapter.bindPages();},errorCallback);
+            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()));
+            book.loadSimilar(obj -> {
+                BookService.setCacheDirIfNull((List<Book>) obj); adapter.bindPages();},errorCallback);
             invalidateOptionsMenu();
         }
         adapter.bindPages();
-        Utils.Activity.clippingToolbarTexts(toolbar,v->{createDialog(this,manga).show(); return true;});
+        Utils.Activity.clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
     };
     public void updateContent(){
-        updateCallback.call(manga.isUpdated());
+        updateCallback.call(book.isUpdated());
     }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,22 +113,23 @@ public class PreviewActivity extends AppCompatActivity{
         bottomBar.setBackgroundColor(ContextCompat.getColor(this,R.color.black_overlay));
         Utils.Activity.setColorBars(this,getWindow().getStatusBarColor(),Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
 
-        if(!MangaService.isInited()){
-            MangaService.init(this);
-            hashManga=-1;
+        if(!BookService.isInited()){
+            BookService.init(this);
+            hash =-1;
         }
-        manga=MangaService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash,hashManga),getIntent().getStringExtra(Constants.manga));
-        hashManga=manga!=null ? manga.hashCode() : -1;
-        if(manga==null){finish();}
-        if(!manga.getDir().startsWith(MangaService.getDir())){manga.moveTo(MangaService.getDir());}
+        book = BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
+        hash = book !=null ? book.hashCode() : -1;
+        if(book ==null){finish();}
+        if(!book.getDir().startsWith(BookService.getDir())){
+            book.moveTo(BookService.getDir());}
 
-        adapter=new PreviewPagerAdapter(manga);
+        adapter=new PreviewPagerAdapter(book);
         pager=findViewById(R.id.pager);
         pager.setAdapter(adapter);
         progressBar.progressiveStart();
         updateContent();
         if(NetworkUtils.isNetworkAvailable(this)){
-            manga.update(updateCallback, errorCallback);
+            book.update(updateCallback, errorCallback);
         }else{errorCallback.call(null);}
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(adapter.getTitle(position))).attach();
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
@@ -163,7 +166,7 @@ public class PreviewActivity extends AppCompatActivity{
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_preview_activity,menu);
         menu.findItem(R.id.show_log).setVisible(throwableTime !=0);
-        Utils.Menu.buildIntentSubmenu(this,new Intent(Intent.ACTION_VIEW, Uri.parse(manga.getUrl_WEB())),menu.addSubMenu(R.string.action_open_in).setIcon(R.drawable.ic_earth));
+        Utils.Menu.buildIntentSubmenu(this,new Intent(Intent.ACTION_VIEW, Uri.parse(book.getUrl_WEB())),menu.addSubMenu(R.string.action_open_in).setIcon(R.drawable.ic_earth));
         if(throwable!=null){menu.findItem(R.id.show_log).setVisible(throwable!=null);}
         if(menu instanceof MenuBuilder){((MenuBuilder)menu).setOptionalIconsVisible(true);}
         return super.onCreateOptionsMenu(menu);
@@ -184,9 +187,9 @@ public class PreviewActivity extends AppCompatActivity{
                 yield z;
             }
             case (R.id.show_log) -> {Logs.createDialog(this, throwable, throwableTime).show(); yield true;}
-            case (R.id.action_share) -> {startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, manga.getUrl()).setType("text/plain").putExtra(Intent.EXTRA_TITLE, manga.getAnyName()).putExtra(Intent.EXTRA_SUBJECT, manga.getAnyName()), null)); yield true;}
+            case (R.id.action_share) -> {startActivity(Intent.createChooser(new Intent(Intent.ACTION_SEND).putExtra(Intent.EXTRA_TEXT, book.getUrl()).setType("text/plain").putExtra(Intent.EXTRA_TITLE, book.getAnyName()).putExtra(Intent.EXTRA_SUBJECT, book.getAnyName()), null)); yield true;}
             case (R.id.action_create_shortcut) -> {
-                if (createShortCutManga(manga)) {
+                if (createShortCutBook(book)) {
                     CustomSnackbar.makeSnackbar(findViewById(android.R.id.content), Snackbar.LENGTH_LONG).setGravity(Gravity.TOP | Gravity.CENTER_VERTICAL).setText(R.string.if_shortcut_did_not_created).setIcon(R.drawable.ic_caution_yellow).setAction(R.string.settings, v -> Utils.App.callPermissionsScreen(this, Settings.ACTION_APPLICATION_DETAILS_SETTINGS)).setBackgroundAlpha(200).show();
                 } else {
                     Toast.makeText(this, R.string.unable_create_shortcut, Toast.LENGTH_LONG).show();
@@ -217,7 +220,7 @@ public class PreviewActivity extends AppCompatActivity{
             case PERMISSION_REQUEST_CODE: break;
             case CALL_FILE_STORE:
                 if(resultCode==RESULT_OK){
-                    try{Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(manga.getCoverPath()));}catch(Exception e){e.printStackTrace();}
+                    try{Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(book.getCoverPath()));}catch(Exception e){e.printStackTrace();}
                     updateContent();
                 }
                 break;
@@ -230,16 +233,16 @@ public class PreviewActivity extends AppCompatActivity{
         menu.findItem(R.id.action_chapter_save_all).setVisible(!select_mode);
         menu.findItem(R.id.action_chapter_save_selected).setVisible(select_mode);
     }
-    public boolean createShortCutManga(Manga manga){
-        return Utils.createShortCutPreview(this,manga.hashCode(),manga.getAnyName(),manga.getCoverPath(),new Intent(Intent.ACTION_VIEW,null,this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()).putExtra(Constants.manga,manga.toString()));
+    public boolean createShortCutBook(Book book){
+        return Utils.createShortCutPreview(this, book.hashCode(), book.getAnyName(), book.getCoverPath(),new Intent(Intent.ACTION_VIEW,null,this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.book, book.toString()));
     }
-    private Dialog createDialog(Context context, Manga manga){
+    private Dialog createDialog(Context context, Book book){
         View view=LayoutInflater.from(context).inflate(R.layout.dialog_edit_names,null);
         Dialog changeNames=new AlertDialog.Builder(context).setView(view).create();
         EditText name=view.findViewById(R.id.input_name);
         EditText name_alt=view.findViewById(R.id.input_name_alt);
-        name.setText(manga.getName());
-        name_alt.setText(manga.getNameAlt());
+        name.setText(book.getName());
+        name_alt.setText(book.getNameAlt());
         ((TextInputLayout) view.findViewById(R.id.input_name_layout)).setEndIconOnClickListener(v -> {
             Utils.setClipboard(v.getContext(),name.getText().toString());
             Toast.makeText(v.getContext(),name.getText().toString(),Toast.LENGTH_SHORT).show();
@@ -258,13 +261,13 @@ public class PreviewActivity extends AppCompatActivity{
                 name_alt.setError("Length must more than zero"); canSave=false;
             }
             if(canSave){
-                manga.setNames(name.getText().toString(),name_alt.getText().toString());
+                book.setNames(name.getText().toString(),name_alt.getText().toString());
                 changeNames.cancel();
                 updateContent();
             }
         });
         view.findViewById(R.id.discard).setOnClickListener(v->{
-            manga.setEdited(false);
+            book.setEdited(false);
             changeNames.cancel();
         });
         return changeNames;

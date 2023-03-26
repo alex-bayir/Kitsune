@@ -28,7 +28,7 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent"/>
-            <View android:background="@drawable/manga_info_gradient"
+            <View android:background="@drawable/info_gradient"
                   android:layout_width="match_parent"
                   android:layout_height="88.0dip"
                   app:layout_constraintBottom_toBottomOf="@id/backdrop" android:id="@+id/view"/>

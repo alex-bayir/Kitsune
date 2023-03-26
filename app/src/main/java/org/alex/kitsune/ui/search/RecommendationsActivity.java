@@ -15,10 +15,10 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -32,7 +32,7 @@ public class RecommendationsActivity extends AppCompatActivity {
     Toolbar toolbar;
     ViewPager2 pager;
     Adapter adapter;
-    Manga updateOnReturn=null;
+    Book updateOnReturn=null;
 
     int[] stringIds={R.string.sort_popular,R.string.sort_latest,R.string.sort_updated};
     ArrayList<Catalogs.Container> catalogs;
@@ -59,7 +59,7 @@ public class RecommendationsActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        adapter.updateManga(updateOnReturn);
+        adapter.updateBook(updateOnReturn);
         updateOnReturn=null;
     }
 
@@ -87,11 +87,11 @@ public class RecommendationsActivity extends AppCompatActivity {
         boolean showSource=true;
         int spanCount=1;
         int[] orders;
-        ArrayList<MangaAdapter> adapters=new ArrayList<>();
+        ArrayList<BookAdapter> adapters=new ArrayList<>();
         public Adapter(int[] orders){this.orders=orders;}
-        public void setShowSource(boolean showSource){this.showSource=showSource; for(MangaAdapter adapter:adapters){adapter.setShowSource(this.showSource);}}
+        public void setShowSource(boolean showSource){this.showSource=showSource; for(BookAdapter adapter:adapters){adapter.setShowSource(this.showSource);}}
         public boolean isShowSource(){return showSource;}
-        public void setSpanCount(int spanCount){this.spanCount=spanCount; for(MangaAdapter adapter:adapters){adapter.setSpanCount(spanCount);}}
+        public void setSpanCount(int spanCount){this.spanCount=spanCount; for(BookAdapter adapter:adapters){adapter.setSpanCount(spanCount);}}
 
         @Override
         public int getItemViewType(int position){return position+1;}
@@ -110,10 +110,10 @@ public class RecommendationsActivity extends AppCompatActivity {
 
         @Override public int getItemCount(){return orders.length;}
 
-        public void updateManga(Manga manga){for(MangaAdapter adapter:adapters){adapter.update(manga);}}
+        public void updateBook(Book book){for(BookAdapter adapter:adapters){adapter.update(book);}}
 
         public class Holder extends RecyclerView.ViewHolder{
-            MangaAdapter adapter;
+            BookAdapter adapter;
             TextView nothingFound;
             CircularProgressBar progressBar;
             private int loaded=0;
@@ -123,15 +123,15 @@ public class RecommendationsActivity extends AppCompatActivity {
                 progressBar=itemView.findViewById(R.id.progress);
                 progressBar.setIndeterminateDrawable(new CircularProgressDrawable.Builder(itemView.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).style(CircularProgressDrawable.STYLE_ROUNDED).strokeWidth(8f).sweepInterpolator(new AccelerateDecelerateInterpolator()).build());
 
-                adapter=new MangaAdapter(null, MangaAdapter.Mode.LIST, manga -> {
-                    adapter.add(updateOnReturn=MangaService.getOrPutNewWithDir(manga));
-                    parent.getContext().startActivity(new Intent(parent.getContext(), PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()));
+                adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
+                    adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
+                    parent.getContext().startActivity(new Intent(parent.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
                 });
                 adapter.setShowSource(showSource);
                 adapter.initRV(itemView.findViewById(R.id.rv_list),spanCount);
                 if(NetworkUtils.isNetworkAvailable(itemView.getContext())){
                     progressBar.setVisibility(View.VISIBLE); int i=0;
-                    for(Catalogs.Container container:catalogs){if(container.enable){i++; SearchActivity.searchManga(container.source, null, order, this::add, nothingFound);}}
+                    for(Catalogs.Container container:catalogs){if(container.enable){i++; SearchActivity.searchBook(container.source, null, order, this::add, nothingFound);}}
                     if(i==0){
                         nothingFound.setText(R.string.no_catalogs_selected);
                         nothingFound.setVisibility(View.VISIBLE);
@@ -144,13 +144,13 @@ public class RecommendationsActivity extends AppCompatActivity {
                 }
             }
 
-            public MangaAdapter getAdapter(){return adapter;}
+            public BookAdapter getAdapter(){return adapter;}
 
-            private synchronized void add(Collection<Manga> mangas){
-                if(mangas!=null && mangas.size()>0){
-                    mangas=mangas instanceof List ? mangas : new ArrayList<>(mangas);
-                    MangaService.setCacheDirIfNull((List<Manga>)mangas);
-                    adapter.addAll(mangas,Manga.SourceComparator(Catalogs.Container.sources(catalogs)));
+            private synchronized void add(Collection<Book> books){
+                if(books !=null && books.size()>0){
+                    books = books instanceof List ? books : new ArrayList<>(books);
+                    BookService.setCacheDirIfNull((List<Book>) books);
+                    adapter.addAll(books, Book.SourceComparator(Catalogs.Container.sources(catalogs)));
                     progressBar.setVisibility(View.GONE);
                 }
                 if(++loaded==Catalogs.Container.countEnabled(catalogs)){

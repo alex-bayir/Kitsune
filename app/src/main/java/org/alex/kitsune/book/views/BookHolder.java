@@ -1,4 +1,4 @@
-package org.alex.kitsune.manga.views;
+package org.alex.kitsune.book.views;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
@@ -14,12 +14,12 @@ import com.alex.ratingbar.RatingBar;
 import org.alex.kitsune.commons.AspectRatioImageView;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.ProgressDrawable;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.utils.Utils;
 import java.util.Random;
 
 
-public class MangaHolder extends RecyclerView.ViewHolder{
+public class BookHolder extends RecyclerView.ViewHolder{
 
     private final MaterialCardView root;
     private final RelativeLayout full;
@@ -33,8 +33,8 @@ public class MangaHolder extends RecyclerView.ViewHolder{
     private static final Random r=new Random();
     private final ProgressDrawable progress_drawable=new ProgressDrawable(Color.HSVToColor(new float[]{r.nextFloat()*360,1,1}));
 
-    public MangaHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton){
-        super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_manga,parent,false));
+    public BookHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton){
+        super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_book,parent,false));
         root=(MaterialCardView)itemView;
         cover=root.findViewById(R.id.cover);
         caution=cover.getDrawable();
@@ -63,26 +63,26 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         }
         cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
     }
-    public MangaHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton, boolean fullContent, boolean horizontal){
+    public BookHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton, boolean fullContent, boolean horizontal){
         this(parent,onItem,onItemButton);
         setFullContent(fullContent,horizontal);
     }
 
-    public void bind(Manga manga, boolean showSource, boolean showCheckedNew, long fullSize){
-        setCover(manga);
-        setTitle(manga.getName());
-        setSubtitle(manga.getNameAlt());
-        setGenres(manga.getGenres());
-        setSize(manga.getImagesSize(),fullSize);
-        setRating(manga.getRating());
-        setNumSaved(manga.countSaved());
-        setNumNew(showCheckedNew ? manga.getCheckedNew() : manga.getNotCheckedNew());
-        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? manga.getSource() : manga.getStatus()), !button.hasOnClickListeners() || (manga.getNumChapterHistory()>=0));
-        setVisibleMarkNew(manga.getNotCheckedNew()>0);
+    public void bind(Book book, boolean showSource, boolean showCheckedNew, long fullSize){
+        setCover(book);
+        setTitle(book.getName());
+        setSubtitle(book.getNameAlt());
+        setGenres(book.getGenres());
+        setSize(book.getImagesSize(),fullSize);
+        setRating(book.getRating());
+        setNumSaved(book.countSaved());
+        setNumNew(showCheckedNew ? book.getCheckedNew() : book.getNotCheckedNew());
+        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? book.getSource() : book.getStatus()), !button.hasOnClickListeners() || (book.getNumChapterHistory()>=0));
+        setVisibleMarkNew(book.getNotCheckedNew()>0);
     }
-    public void bind(Manga manga, boolean showSource, boolean showUpdated, long fullSize, boolean full_content, int orientation){
+    public void bind(Book book, boolean showSource, boolean showUpdated, long fullSize, boolean full_content, int orientation){
         setFullContent(full_content,orientation==RecyclerView.HORIZONTAL);
-        bind(manga,showSource,showUpdated,fullSize);
+        bind(book,showSource,showUpdated,fullSize);
     }
 
     public final void setFullContent(boolean full,boolean horizontal){
@@ -98,8 +98,8 @@ public class MangaHolder extends RecyclerView.ViewHolder{
         this.cover.setScaleType(d==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
         this.cover.setImageDrawable(d==null ? caution : d);
     }
-    public final void setCover(Manga manga){
-        manga.loadThumbnail(this::setCover);
+    public final void setCover(Book book){
+        book.loadThumbnail(this::setCover);
     }
     public final void setTitle(String title){
         this.titleShort.setText(title);

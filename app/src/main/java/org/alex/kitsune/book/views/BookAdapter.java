@@ -1,4 +1,4 @@
-package org.alex.kitsune.manga.views;
+package org.alex.kitsune.book.views;
 
 import android.view.ViewGroup;
 import org.alex.kitsune.commons.DiffCallback;
@@ -7,29 +7,29 @@ import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.ListSet;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Book;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 
-public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
+public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     public enum Mode{
         LIST,
         GRID,
         MIXED;
         Mode(){}
     }
-    protected final ListSet<Manga> list=new ListSet<>(new ArrayList<>());
+    protected final ListSet<Book> list=new ListSet<>(new ArrayList<>());
     private final HolderClickListener listener,buttonListener;
     private Mode mode;
     private boolean showSource;
     private boolean showCheckedNew=true;
     private long full_size;
-    public MangaAdapter(Collection<Manga> mangas, Mode mode, Callback<Manga> clickListener){this(mangas,mode,clickListener,null);}
-    public MangaAdapter(Collection<Manga> mangas, Mode mode, Callback<Manga> mangaListener, Callback<Manga> mangaButtonListener){
-        if(mangas!=null){this.list.addAll(mangas);}
+    public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> clickListener){this(books,mode,clickListener,null);}
+    public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> holder, Callback<Book> button){
+        if(books !=null){this.list.addAll(books);}
         this.mode=mode;
-        this.listener=(v,position) -> mangaListener.call(list.get(position));
-        this.buttonListener=mangaButtonListener!=null ? (v,position) -> mangaButtonListener.call(list.get(position)) : null;
+        this.listener=(v,position) -> holder.call(list.get(position));
+        this.buttonListener=button!=null ? (v,position) -> button.call(list.get(position)) : null;
     }
     private GridLayoutManager grid;
     public void setLayoutManager(GridLayoutManager grid){this.grid=grid; if(grid!=null){setOrientation(grid.getOrientation()); if(this.mode!=Mode.MIXED && grid.getOrientation()==RecyclerView.VERTICAL){setSpanCount(grid.getSpanCount());}}}
@@ -63,48 +63,48 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
 
     @NotNull
     @Override
-    public MangaHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
-        return new MangaHolder(parent,listener,buttonListener,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
+    public BookHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
+        return new BookHolder(parent,listener,buttonListener,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
     }
 
     @Override
-    public void onBindViewHolder(MangaHolder holder, int position) {
+    public void onBindViewHolder(BookHolder holder, int position) {
         holder.bind(list.get(position),showSource, showCheckedNew, full_size);
     }
 
     @Override
     public int getItemCount(){return list.size();}
 
-    public void sort(Comparator<Manga> comparator){sort(comparator,false);}
-    public void sort(Comparator<Manga> comparator, boolean update){
+    public void sort(Comparator<Book> comparator){sort(comparator,false);}
+    public void sort(Comparator<Book> comparator, boolean update){
         if(update){
             new DiffCallback<>(list, ()-> list.sort(comparator)).notifyUpdate(this);
         }else{
             list.sort(comparator);
         }
     }
-    public void sort(Comparator<Manga> comparator, int spanCount){
+    public void sort(Comparator<Book> comparator, int spanCount){
         setSpanCount(spanCount,false);
         sort(comparator,true);
     }
     public void setShowCheckedNew(boolean showCheckedNew){this.showCheckedNew=showCheckedNew;}
     public boolean isShowCheckedNew(){return showCheckedNew;}
-    public List<Manga> getList(){return this.list;}
-    public Manga get(int index){return list.get(index);}
-    public int get(Manga manga){return list.indexOf(manga);}
-    public void replace(List<Manga> list, Comparator<Manga> comparator,boolean recalculateSize){
+    public List<Book> getList(){return this.list;}
+    public Book get(int index){return list.get(index);}
+    public int get(Book book){return list.indexOf(book);}
+    public void replace(List<Book> list, Comparator<Book> comparator, boolean recalculateSize){
         if(comparator!=null){list.sort(comparator);}
         replace(list,recalculateSize);
     }
-    public void replace(List<Manga> list){replace(list,false);}
-    public void replace(List<Manga> list,boolean recalculateSize){
+    public void replace(List<Book> list){replace(list,false);}
+    public void replace(List<Book> list, boolean recalculateSize){
         new DiffCallback<>(this.list, () -> {this.list.clear(); this.list.addAll(list); if(recalculateSize){recalculateFullSize();}}).notifyUpdate(this);
     }
-    public final boolean add(Manga manga){return add(list.size(),manga,false);}
-    public boolean add(int pos,Manga manga){return add(pos,manga,true);}
-    public boolean add(Manga manga, Comparator<Manga> comparator){return manga!=null && add(getPositionToInsert(list.listIterator(), comparator, manga),manga,true);}
-    public boolean add(int pos,Manga manga,boolean moveIfExist){
-        return manga!=null && notifyOnAddMoveChange(list.add(pos,manga,moveIfExist),pos,moveIfExist);
+    public final boolean add(Book book){return add(list.size(), book,false);}
+    public boolean add(int pos, Book book){return add(pos, book,true);}
+    public boolean add(Book book, Comparator<Book> comparator){return book!=null && add(getPositionToInsert(list.listIterator(), comparator, book), book,true);}
+    public boolean add(int pos, Book book, boolean moveIfExist){
+        return book!=null && notifyOnAddMoveChange(list.add(pos, book,moveIfExist),pos,moveIfExist);
     }
     public <E> int getPositionToInsert(ListIterator<E> iterator, Comparator<E> comparator, E e){
         boolean f=false;
@@ -116,7 +116,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
                 f=true;
             }
         }
-        return iterator.nextIndex();
+        return iterator.nextIndex()-(f ? 1:0);
     }
 
     protected boolean notifyOnAddMoveChange(int old, int pos, boolean moveIfExist){
@@ -129,7 +129,7 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         }
         return old!=pos && moveIfExist;
     }
-    public boolean addAll(Collection<Manga> collection){
+    public boolean addAll(Collection<Book> collection){
         int last=list.size();
         if(list.addAll(collection)){
             notifyItemRangeChanged(last,list.size()-last);
@@ -137,40 +137,40 @@ public class MangaAdapter extends RecyclerView.Adapter<MangaHolder> {
         }
         return false;
     }
-    public boolean addAll(Collection<Manga> collection, Comparator<Manga> comparator){
+    public boolean addAll(Collection<Book> collection, Comparator<Book> comparator){
         return new DiffCallback<>(list, ()-> {
             list.addAll(collection);
             list.sort(comparator);
         }).notifyUpdate(this).getOldListSize()!=list.size();
     }
-    public int update(Manga manga){
-        int index=manga!=null ? get(manga) : -1;
+    public int update(Book book){
+        int index= book !=null ? get(book) : -1;
         if(index!=-1){notifyItemChanged(index);}
         return index;
     }
 
-    public Manga remove(int index){
+    public Book remove(int index){
         if(index>=0 && index<list.size()){
-            Manga manga=list.remove(index);
+            Book book =list.remove(index);
             notifyItemRemoved(index);
-            return manga;
+            return book;
         }else{
             return null;
         }
     }
-    public Manga remove(Manga manga){
-        return remove(get(manga));
+    public Book remove(Book book){
+        return remove(get(book));
     }
     public void clear(){
         notifyItemRangeRemoved(0,list.size());
         list.clear();
     }
 
-    public void recalculateFullSize(){full_size=0; for(Manga manga:list){full_size+=manga.recalculateImagesSize();}}
-    public void calculateFullSize(long offset){full_size=offset; for(Manga manga:list){full_size+=manga.getImagesSize();}}
-    public void addBySize(Manga manga){
-        calculateFullSize(manga.recalculateImagesSize());
-        add(manga,Manga.ImagesSizesComparator);
+    public void recalculateFullSize(){full_size=0; for(Book book :list){full_size+= book.recalculateImagesSize();}}
+    public void calculateFullSize(long offset){full_size=offset; for(Book book :list){full_size+= book.getImagesSize();}}
+    public void addBySize(Book book){
+        calculateFullSize(book.recalculateImagesSize());
+        add(book, Book.ImagesSizesComparator);
         notifyAllChanged();
     }
     public void notifyAllChanged(){notifyItemRangeChanged(0,getItemCount());}

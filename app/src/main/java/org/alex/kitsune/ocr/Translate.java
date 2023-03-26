@@ -2,7 +2,7 @@ package org.alex.kitsune.ocr;
 
 import android.os.Handler;
 import android.os.Looper;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.utils.NetworkUtils;

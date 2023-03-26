@@ -29,13 +29,13 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.commons.Callback;
-import org.alex.kitsune.manga.Manga_Scripted;
+import org.alex.kitsune.book.Book;
+import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
-import org.alex.kitsune.manga.search.FilterSortAdapter;
-import org.alex.kitsune.manga.Manga;
-import org.alex.kitsune.manga.views.MangaAdapter;
+import org.alex.kitsune.book.search.FilterSortAdapter;
+import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
@@ -47,8 +47,8 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
     Toolbar toolbar;
     FilterDialogFragment filters;
     RecyclerView rv;
-    MangaAdapter adapter;
-    Manga updateOnReturn=null;
+    BookAdapter adapter;
+    Book updateOnReturn=null;
     FilterSortAdapter sortAdapter;
     String queryName=null;
     String source;
@@ -77,7 +77,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         nothingFound.setText(R.string.nothing_found);
         source=getIntent().getStringExtra(Constants.catalog);
         toolbar.setTitle(source);
-        sortAdapter=Manga.getFilterSortAdapter(source);
+        sortAdapter= Book.getFilterSortAdapter(source);
         if(getIntent().getStringExtra(Constants.author)!=null){
             toolbar.setTitle(getIntent().getStringExtra(Constants.author));
         }
@@ -99,9 +99,9 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             filters.show(getSupportFragmentManager(), "");
         });
         rv=findViewById(R.id.rv_list);
-        adapter=new MangaAdapter(null, MangaAdapter.Mode.LIST, manga -> {
-            adapter.add(updateOnReturn=MangaService.getOrPutNewWithDir(manga));
-            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,manga.hashCode()));
+        adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
+            adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
+            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
         });
         adapter.initRV(rv,1);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -130,17 +130,17 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             progressBar.startNestedScroll(0);
             new Thread(()->{
                 try {
-                    List<Manga> mangas=sortAdapter!=null ?
+                    List<Book> books =sortAdapter!=null ?
                             Utils.isUrl(query)?
-                                    Manga_Scripted.query(sortAdapter.getScript(), query, page)
+                                    Book_Scripted.query(sortAdapter.getScript(), query, page)
                                     :
-                                    Manga_Scripted.query(sortAdapter.getScript(), query, page, (Object[]) sortAdapter.getOptions())
+                                    Book_Scripted.query(sortAdapter.getScript(), query, page, (Object[]) sortAdapter.getOptions())
                             :
                             null;
                     NetworkUtils.getMainHandler().post(()->{
-                        if(mangas!=null){
-                            MangaService.setCacheDirIfNull(mangas);
-                            if(adapter.addAll(mangas)){
+                        if(books !=null){
+                            BookService.setCacheDirIfNull(books);
+                            if(adapter.addAll(books)){
                                 nothingFound.setVisibility(View.GONE);
                                 page++;
                                 enableLoadMore=true;
@@ -179,7 +179,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         getMenuInflater().inflate(R.menu.options_search, menu);
         menu.findItem(adapter.isShowSource() ? R.id.source : R.id.status).setChecked(true);
         SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        MenuItem searchItem=menu.findItem(R.id.action_find_manga);
+        MenuItem searchItem=menu.findItem(R.id.action_find_book);
         searchItem.setVisible(true);
         SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));

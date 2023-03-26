@@ -11,18 +11,16 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 import androidx.recyclerview.selection.Selection;
 import org.alex.kitsune.logs.Logs;
+import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.manga.Page;
-import org.alex.kitsune.manga.Chapter;
-import org.alex.kitsune.manga.Manga;
+import org.alex.kitsune.book.Page;
+import org.alex.kitsune.book.Chapter;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-
-import static org.alex.kitsune.utils.NetworkUtils.load;
 
 
 public class LoadService extends Service {
@@ -56,8 +54,15 @@ public class LoadService extends Service {
         super();
     }
 
-    private List<Page> getPages(Manga manga,Chapter chapter){
-        try{return manga.getPages(chapter);}catch(Exception e){Logs.saveLog(e); return null;}
+    private List<Page> getPages(Book book, Chapter chapter){
+        try{return book.getPages(chapter);}catch(Exception e){Logs.saveLog(e); return null;}
+    }
+    private static void sleep(long millis){
+        try {
+            Thread.sleep(millis);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -74,21 +79,17 @@ public class LoadService extends Service {
                         Task task = currentTask;
                         int tmp = download;
                         for (int i : task.indexes) {
-                            Chapter chapter = task.manga.getChapters().get(i);
+                            Chapter chapter = task.book.getChapters().get(i);
                             Bundle bundle = createBundle(task);
                             bundle.putString(text, "getting urls...");
                             bundle.putInt(max, 1);
                             publicProgress(bundle);
-                            while (getPages(task.manga,chapter) == null) {
+                            while (getPages(task.book,chapter) == null) {
                                 if (task.isCanceled()) {
                                     task.clearCancel();
                                     finish(download); return;
                                 }
-                                try {
-                                    Thread.sleep(1000);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
+                                sleep(1000);
                             }
                             bundle = createBundle(task);
                             bundle.putString(text, chapter.text(context));
@@ -97,17 +98,13 @@ public class LoadService extends Service {
                             publicProgress(bundle);
                             int pages = 0;
                             for (Page page : chapter.getPages()) {
-                                while (!load(page.getUrl(), task.manga.getDomain(), task.manga.getPage(chapter, page), task)) {
+                                while (!task.book.loadPage(chapter,page, f->{},task.isCanceled(),null,null)) {
                                     if (task.isCanceled()) {
                                         task.clearCancel();
-                                        sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.manga.hashCode()).putExtra(Constants.option, Constants.load));
+                                        sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.book.hashCode()).putExtra(Constants.option, Constants.load));
                                         finish(download); return;
                                     }
-                                    try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
-                                    }
+                                    sleep(1000);
                                 }
                                 bundle = createBundle(task);
                                 bundle.putString(text, chapter.text(context));
@@ -116,14 +113,14 @@ public class LoadService extends Service {
                                 bundle.putBoolean(indeterminate, false);
                                 publicProgress(bundle);
                             }
-                            task.manga.setLastTimeSave();
-                            task.manga.save();
-                            MangaService.allocate(task.manga,false);
-                            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.manga.hashCode()).putExtra(Constants.option, Constants.load));
+                            task.book.setLastTimeSave();
+                            task.book.save();
+                            BookService.allocate(task.book,false);
+                            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.book.hashCode()).putExtra(Constants.option, Constants.load));
                             download++;
                         }
-                        if (task.manga != null) {
-                            style.addLine(task.manga.getName() + ": " + Math.max(Math.min(download - tmp, task.indexes.size()), 0) + " saved");
+                        if (task.book != null) {
+                            style.addLine(task.book.getName() + ": " + Math.max(Math.min(download - tmp, task.indexes.size()), 0) + " saved");
                             Bundle bundle = createBundle(task);
                             bundle.putBoolean(close, true);
                             publicProgress(bundle);
@@ -183,7 +180,7 @@ public class LoadService extends Service {
             if(download>0){
                 Notification notification=new NotificationCompat.Builder(context,channelID)
                         .setSmallIcon(android.R.drawable.stat_sys_download_done)
-                        .setContentTitle("Manga")
+                        .setContentTitle("Kitsune")
                         .setContentText(download+" chapters saved")
                         .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                         .setCategory(NotificationCompat.CATEGORY_PROGRESS)
@@ -199,9 +196,9 @@ public class LoadService extends Service {
 
     private Bundle createBundle(Task task){
         Bundle bundle=new Bundle();
-        bundle.putString(name,task.manga.getName());
-        bundle.putInt(id,task.manga.hashCode());
-        bundle.putString(cover,task.manga.getCoverPath());
+        bundle.putString(name,task.book.getName());
+        bundle.putInt(id,task.book.hashCode());
+        bundle.putString(cover,task.book.getCoverPath());
     return bundle;}
 
     @Override
@@ -216,31 +213,31 @@ public class LoadService extends Service {
         return null;
     }
     public static class Task{
-        final Manga manga;
+        final Book book;
         ArrayList<Integer> indexes;
-        private boolean canceled=false;
-        public Task(Manga manga,int start,int end){
-            this.manga=manga;
+        private Boolean canceled=false;
+        public Task(Book book, int start, int end){
+            this.book = book;
             indexes=IntStream.rangeClosed(start, end).boxed().collect(Collectors.toCollection(ArrayList::new));
         }
-        public Task(Manga manga, Selection<Long> selection){
-            this(manga,Utils.convert(selection));
+        public Task(Book book, Selection<Long> selection){
+            this(book,Utils.convert(selection));
         }
-        public Task(Manga manga, ArrayList<Integer> indexes){
-            this.manga=manga;
+        public Task(Book book, ArrayList<Integer> indexes){
+            this.book = book;
             this.indexes=indexes;
         }
 
         public void clearCancel(){canceled=false;}
         public void cancel(){canceled=true;}
-        public boolean isCanceled(){return canceled;}
+        public Boolean isCanceled(){return canceled;}
 
         public Intent toIntent(Intent intent){
-            return intent!=null ? intent.putExtra(Constants.hash,manga.hashCode()).putIntegerArrayListExtra("indexes",indexes) : null;
+            return intent!=null ? intent.putExtra(Constants.hash, book.hashCode()).putIntegerArrayListExtra("indexes",indexes) : null;
         }
 
         public static Task fromIntent(Intent intent){
-            return new Task(MangaService.get(intent.getIntExtra(Constants.hash,-1)),intent.getIntegerArrayListExtra("indexes"));
+            return new Task(BookService.get(intent.getIntExtra(Constants.hash,-1)),intent.getIntegerArrayListExtra("indexes"));
         }
     }
 }

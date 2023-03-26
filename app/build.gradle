@@ -6,7 +6,7 @@ android {
         minSdkVersion 24
         targetSdkVersion 33
         versionCode 16
-        versionName "1.8.0"
+        versionName "1.8.1"
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""
@@ -31,7 +31,7 @@ dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.google.android.material:material:1.9.0-alpha02'
+    implementation 'com.google.android.material:material:1.9.0-beta01'
     implementation 'androidx.recyclerview:recyclerview-selection:1.1.0'
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
@@ -45,7 +45,7 @@ dependencies {
     implementation 'com.github.castorflex.smoothprogressbar:library:1.1.0'
     implementation 'com.github.castorflex.smoothprogressbar:library-circular:1.3.0'
     implementation 'me.zhanghai.android.fastscroll:library:1.2.0'
-    implementation 'androidx.webkit:webkit:1.6.0'
+    implementation 'androidx.webkit:webkit:1.6.1'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'org.jsoup:jsoup:1.15.3'
     implementation 'com.github.VladimirWrites:Lemniscate:2.0.2'
@@ -60,6 +60,7 @@ dependencies {
     implementation project(path: ':EditTextCode')
     implementation project(path: ':ListItemView')
     implementation project(path: ':NestedScrollWebView')
+    implementation project(path: ':JSON')
     implementation 'org.luaj:luaj-jse:3.0.1'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'

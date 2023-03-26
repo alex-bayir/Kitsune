@@ -1,7 +1,7 @@
-package org.alex.json;
+package com.alex.json.java;
 
-import androidx.annotation.NonNull;
 import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -11,9 +11,9 @@ public interface JSON {
     boolean isArray();
     Object object();
     Array<?> array();
-    Writer json(Writer writer,int spaces) throws IOException;
+    Writer json(Writer writer, int spaces) throws IOException;
     String json(int spaces) throws IOException;
-    File json(File file,int spaces) throws IOException;
+    File json(File file, int spaces) throws IOException;
     final class Object extends TreeMap<String, java.lang.Object> implements JSON {
         public Object(){}
         public Object(Map<String,?> map){
@@ -30,7 +30,7 @@ public interface JSON {
         public static Object create(Reader reader) throws IOException {
             return JSON.json(reader).object();
         }
-        @NonNull
+        @NotNull
         @Override public Object put(String key, java.lang.Object value){
             if(key!=null){
                 if(value!=null){
@@ -41,8 +41,8 @@ public interface JSON {
             }
             return this;
         }
-        @Override public void putAll(@NonNull Map<? extends String, ?> m) {
-            for(Entry<? extends String, ?> entry:m.entrySet()){
+        @Override public void putAll(@NotNull Map<? extends String, ?> m) {
+            for(Map.Entry<? extends String, ?> entry:m.entrySet()){
                 put(entry.getKey(),entry.getValue());
             }
         }
@@ -124,7 +124,7 @@ public interface JSON {
                 writer.write(entry.getKey());
                 writer.write('"');
                 writer.write(':');
-                JSON.json(writer,entry.getValue(),spaces);
+                JSON.json(writer,entry.getValue(),spaces>0?spaces+1:0);
                 delimiter=true;
             }
             writer.write(line);
@@ -152,7 +152,7 @@ public interface JSON {
             return null;
         }
 
-        @NonNull
+        @NotNull
         @Override
         public String toString() {
             return json(0);
@@ -161,7 +161,7 @@ public interface JSON {
             return JSON.filter(this,String.class, c);
         }
     }
-    private static String escape(String s){
+    static String escape(String s){
         return s.replace("\\", "\\\\")
                 .replace("\t", "\\t")
                 .replace("\b", "\\b")
@@ -267,7 +267,7 @@ public interface JSON {
             for(java.lang.Object value:this){
                 if(delimiter){writer.write(',');}
                 writer.write(tab);
-                JSON.json(writer,value,spaces);
+                JSON.json(writer,value,spaces>0?spaces+1:0);
                 delimiter=true;
             }
             writer.write(line);
@@ -291,7 +291,6 @@ public interface JSON {
         public Array<?> array() {
             return this;
         }
-        @NonNull
         @NotNull
         @Override
         public String toString() {
@@ -311,13 +310,13 @@ public interface JSON {
             return JSON.filter(this,c);
         }
     }
-    static <E,T> List<E> filter(List<T> list,Class<E> c){
+    static <E,T> List<E> filter(List<T> list, Class<E> c){
         return list==null ? null : list.stream().filter(c::isInstance).map(c::cast).collect(Collectors.toList());
     }
-    static <T> Map<String,T> filter(Map<?,?> map,Class<T> c){
+    static <T> Map<String,T> filter(Map<?, ?> map, Class<T> c){
         return JSON.filter(map,String.class, c);
     }
-    static <K,V> Map<K,V> filter(Map<?,?> map,Class<K> k,Class<V> v){
+    static <K,V> Map<K,V> filter(Map<?, ?> map, Class<K> k, Class<V> v){
         return map==null ? null : map.entrySet().stream().filter(e->k.isInstance(e.getKey()) && v.isInstance(e.getValue())).collect(Collectors.toMap(e->(K)e.getKey(),e->(V)e.getValue()));
     }
     static JSON json(String json) throws IOException{
@@ -329,12 +328,11 @@ public interface JSON {
     static JSON json(Reader reader) throws IOException{
         return json(reader,null);
     }
-    private static JSON json(Reader reader,JSON o) throws IOException {
+    static JSON json(Reader reader, JSON o) throws IOException {
         char c;
         boolean rs=false;
         boolean rv=o instanceof Array<?>;
         boolean vs=false;
-        boolean vd=false;
         StringBuilder buffer=new StringBuilder();
         String key=null;
         while ((c=(char)reader.read())!=(char)-1){
@@ -395,75 +393,48 @@ public interface JSON {
                             }
                     );
                 }
-                case '.'->{if(rv){vd=true;} buffer.append(c);}
                 case ','->{
                     if(rs){
                         buffer.append(c);
-                    }else if(buffer.length()>0 || vs){
-                        if(vs){
-                            if(o instanceof Object obj){
-                                obj.put(key,buffer.toString());
-                            }else if(o instanceof Array arr){
-                                arr.add(buffer.toString());
-                            }
-                        }else{
-                            java.lang.Object value; String buf=buffer.toString();
-                            switch (buf){
-                                case "null"->value=null;
-                                case "false"->value=false;
-                                case "true"->value=true;
-                                default -> {
-                                    if(vd){
-                                        value=Double.parseDouble(buf);
-                                    }else{
-                                        value=Long.parseLong(buf);
-                                        if(Integer.MIN_VALUE<=(Long)value && (Long)value<=Integer.MAX_VALUE){
-                                            value=Integer.parseInt(buf);
-                                        }
-                                    }
+                    }else{
+                        if(vs || buffer.length()>0){
+                            if(vs){
+                                if(o instanceof Object obj){
+                                    obj.put(key,buffer.toString());
+                                }else if(o instanceof Array arr){
+                                    arr.add(buffer.toString());
+                                }
+                            }else{
+                                java.lang.Object value=parse_primitive(buffer.toString());
+                                if(o instanceof Object obj){
+                                    obj.put(key,value);
+                                }else if(o instanceof Array arr){
+                                    arr.add(value);
                                 }
                             }
-                            if(o instanceof Object obj){
-                                obj.put(key,value);
-                            }else if(o instanceof Array arr){
-                                arr.add(value);
-                            }
+                            rv=o instanceof Array; vs=false; key=null;
+                            buffer.delete(0,buffer.length()); // clear
                         }
-                        rv=o instanceof Array; vs=false; vd=false; key=null;
-                        buffer.delete(0,buffer.length()); // clear
                     }
                 }
                 case '}',']'-> {
                     if(rs){
                         buffer.append(c);
                     }else{
-                        if(vs){
-                            if(o instanceof Object obj){
-                                obj.put(key,buffer.toString());
-                            }else if(o instanceof Array arr){
-                                arr.add(buffer.toString());
-                            }
-                        }else if(buffer.length()>0 || vs){
-                            java.lang.Object value; String buf=buffer.toString();
-                            switch (buf){
-                                case "null"->value=null;
-                                case "false"->value=false;
-                                case "true"->value=true;
-                                default -> {
-                                    if(vd){
-                                        value=Double.parseDouble(buf);
-                                    }else{
-                                        value=Long.parseLong(buf);
-                                        if(Integer.MIN_VALUE<=(Long)value && (Long)value<=Integer.MAX_VALUE){
-                                            value=Integer.parseInt(buf);
-                                        }
-                                    }
+                        if(vs || buffer.length()>0){
+                            if(vs){
+                                if(o instanceof Object obj){
+                                    obj.put(key,buffer.toString());
+                                }else if(o instanceof Array arr){
+                                    arr.add(buffer.toString());
                                 }
-                            }
-                            if(o instanceof Object obj){
-                                obj.put(key,value);
-                            }else if(o instanceof Array arr){
-                                arr.add(value);
+                            }else{
+                                java.lang.Object value=parse_primitive(buffer.toString());
+                                if(o instanceof Object obj){
+                                    obj.put(key,value);
+                                }else if(o instanceof Array arr){
+                                    arr.add(value);
+                                }
                             }
                         }
                         return o;
@@ -475,44 +446,67 @@ public interface JSON {
         }
         throw new IllegalArgumentException("No ending tag found");
     }
-    private static void json(Writer writer, java.lang.Object value, int spaces) throws IOException {
+    static java.lang.Object parse_primitive(String buf){
+        return switch (buf){
+            case "null"->null;
+            case "false"->false;
+            case "true"->true;
+            default -> {
+                double num=Double.parseDouble(buf);
+                if(num==(long)num){
+                    if(num==(int)num){
+                        yield (int)num;
+                    }else{
+                        yield (long)num;
+                    }
+                }else{
+                    yield num;
+                }
+            }
+        };
+    }
+    static void json(Writer writer, java.lang.Object value, int spaces) throws IOException {
         if(value instanceof JSON json){
-            json.json(writer,spaces>0?spaces+1:0);
+            json.json(writer,spaces);
         }else if(value instanceof Number || value instanceof Boolean){
             writer.write(String.valueOf(value));
         }else if(value instanceof Map<?,?> map){
-            new Object(JSON.filter(map,String.class)).json(writer,spaces>0?spaces+1:0);
+            new Object(JSON.filter(map,java.lang.Object.class)).json(writer,spaces);
         }else if(value instanceof Collection<?> arr){
-            new Array<>(arr).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof java.lang.Object[] arr){
-            new Array<>(arr).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof int[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof long[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof double[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof float[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof boolean[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof char[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof byte[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
-        }else if(value instanceof short[] arr){
-            new Array<>(toObject(arr)).json(writer,spaces>0?spaces+1:0);
+            new Array<>(arr).json(writer,spaces);
         }else if(value!=null){
-            writer.write('\"');
-            writer.write(escape(String.valueOf(value)));
-            writer.write('\"');
+            if(value.getClass().isArray()){
+                if(value instanceof java.lang.Object[] arr){
+                    new Array<>(arr).json(writer,spaces);
+                }else if(value instanceof int[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof long[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof double[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof float[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof boolean[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof char[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof byte[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }else if(value instanceof short[] arr){
+                    new Array<>(toObject(arr)).json(writer,spaces);
+                }
+            }else{
+                writer.write('\"');
+                writer.write(escape(String.valueOf(value)));
+                writer.write('\"');
+            }
         }else{
             writer.write("null");
         }
     }
 
 
-    private static Boolean[] toObject(final boolean[] array) {
+    static Boolean[] toObject(final boolean[] array) {
         if (array == null) {return null;}
         final Boolean[] result = new Boolean[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -520,7 +514,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Byte[] toObject(final byte[] array) {
+    static Byte[] toObject(final byte[] array) {
         if (array == null) {return null;}
         final Byte[] result = new Byte[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -528,7 +522,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Character[] toObject(final char[] array) {
+    static Character[] toObject(final char[] array) {
         if (array == null) {return null;}
         final Character[] result = new Character[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -536,7 +530,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Double[] toObject(final double[] array) {
+    static Double[] toObject(final double[] array) {
         if (array == null) {return null;}
         final Double[] result = new Double[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -544,7 +538,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Float[] toObject(final float[] array) {
+    static Float[] toObject(final float[] array) {
         if (array == null) {return null;}
         final Float[] result = new Float[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -552,7 +546,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Integer[] toObject(final int[] array) {
+    static Integer[] toObject(final int[] array) {
         if (array == null) {return null;}
         final Integer[] result = new Integer[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -560,7 +554,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Long[] toObject(final long[] array) {
+    static Long[] toObject(final long[] array) {
         if (array == null) {return null;}
         final Long[] result = new Long[array.length];
         for (int i = 0; i < array.length; i++) {
@@ -568,7 +562,7 @@ public interface JSON {
         }
         return result;
     }
-    private static Short[] toObject(final short[] array) {
+    static Short[] toObject(final short[] array) {
         if (array == null) {return null;}
         final Short[] result = new Short[array.length];
         for (int i = 0; i < array.length; i++) {

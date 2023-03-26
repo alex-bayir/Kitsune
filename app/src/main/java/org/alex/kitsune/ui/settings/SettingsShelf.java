@@ -17,9 +17,9 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import org.alex.json.JSON;
+import com.alex.json.java.JSON;
 import org.alex.kitsune.R;
-import org.alex.kitsune.services.MangaService;
+import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.main.Constants;
 import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
@@ -64,7 +64,7 @@ public class SettingsShelf  extends Fragment {
         for(Container container: Container.fromJSON(prefs.getString(Constants.shelf_order, ""))){
             if(container!=null && container.name!=null){map.put(container.name, container);}
         }
-        Set<String> set=new HashSet<>(MangaService.getCategories());
+        Set<String> set=new HashSet<>(BookService.getCategories());
         map.putIfAbsent(Constants.history, new Container(Constants.history,4,true));
         for(String category:set){
             map.putIfAbsent(category, new Container(category,4,false));
