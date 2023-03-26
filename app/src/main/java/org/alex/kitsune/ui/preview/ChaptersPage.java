@@ -90,7 +90,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
     }
     public void action(int action){action(itemView.getContext(),adapter.book,action,adapter);}
     public static void action(Context context, Book book, int action, CustomAdapter<Chapter> adapter){
-        if(book ==null){return;}
+        if(book==null){return;}
         new Thread(()->{
             Handler handler=new Handler(Looper.getMainLooper());
             boolean deleted=false;

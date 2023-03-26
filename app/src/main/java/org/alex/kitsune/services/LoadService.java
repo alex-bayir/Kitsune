@@ -217,14 +217,14 @@ public class LoadService extends Service {
         ArrayList<Integer> indexes;
         private Boolean canceled=false;
         public Task(Book book, int start, int end){
-            this.book = book;
+            this.book=book;
             indexes=IntStream.rangeClosed(start, end).boxed().collect(Collectors.toCollection(ArrayList::new));
         }
         public Task(Book book, Selection<Long> selection){
             this(book,Utils.convert(selection));
         }
         public Task(Book book, ArrayList<Integer> indexes){
-            this.book = book;
+            this.book=book;
             this.indexes=indexes;
         }
 

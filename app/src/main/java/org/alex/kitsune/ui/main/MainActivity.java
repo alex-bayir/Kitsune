@@ -63,7 +63,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 int start=query.lastIndexOf("http"),end=query.indexOf('?',start+1);
                 if(start>=0){
                     query=URLDecoder.decode(query.substring(start,end!=-1?end:query.length()));
-                    Book book = BookService.getOrPutNewWithDir(Book_Scripted.determinate(query.trim()));
+                    Book book=BookService.getOrPutNewWithDir(Book_Scripted.determinate(query.trim()));
                     if(book !=null){
                         startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()));
                     }else{

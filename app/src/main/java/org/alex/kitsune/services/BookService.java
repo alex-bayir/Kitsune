@@ -80,8 +80,8 @@ public class BookService {
     public static int putNew(Book book){if(book !=null){
         book.setDir(cacheDir);} return put(map, book);}
     public static Book getOrPutNewWithDir(int hash, String json){
-        Book book =get(hash);
-        if(book ==null && (book = Book.fromJSON(json))!=null){
+        Book book=get(hash);
+        if(book==null && (book= Book.fromJSON(json))!=null){
             book.moveTo(dir);
             put(map, book);
         }
@@ -128,8 +128,8 @@ public class BookService {
         categories.add(defFavoriteCategory);
         LinkedList<Integer> remove_list=new LinkedList<>();
         for(Map.Entry<Integer, Book> entry: map.entrySet()){
-            Book book =entry.getValue();
-            if(book ==null || allocate(book,true)){
+            Book book=entry.getValue();
+            if(book==null || allocate(book,true)){
                 remove_list.add(entry.getKey());
             }
         }

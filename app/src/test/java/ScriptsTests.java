@@ -57,8 +57,8 @@ public class ScriptsTests {
     @Test
     public void f1() throws Throwable {
         Script script=Script.getInstance(new File("C:\\Games\\Kitsune\\app\\src\\main\\assets\\scripts\\ReadManga.lua"));
-        List<Book> list= Book_Scripted.query(script,"ванпанчмен",0);
-        Book book =list.get(0);
+        List<Book> list=Book_Scripted.query(script,"ванпанчмен",0);
+        Book book=list.get(0);
         book.update();
         book.loadSimilar(obj -> {}, obj -> {});
         Chapter chapter= book.getChapters().get(0);
@@ -69,8 +69,8 @@ public class ScriptsTests {
     public void f2() throws Throwable {
         Script script=Script.getInstance(new File("C:\\Games\\Kitsune\\app\\src\\main\\assets\\scripts\\HentaiChan.lua"));
         FilterSortAdapter adapter= Book_Scripted.createAdvancedSearchAdapter(script);
-        List<Book> list= Book_Scripted.query(script,"hello",0,(Object[])adapter.getOptions());
-        Book book =list.get(1);
+        List<Book> list=Book_Scripted.query(script,"hello",0,(Object[])adapter.getOptions());
+        Book book=list.get(1);
         book.update();
         println("end");
     }

@@ -14,7 +14,7 @@ public class PreviewPagerAdapter extends RecyclerView.Adapter<PreviewHolder> {
     private ChaptersPage chaptersPage;
     private BookMarksPage bookMarksPage;
     public PreviewPagerAdapter(Book book) {
-        this.book = book;
+        this.book=book;
     }
     public int getTitle(int position){return TAB_TITLES_IDS[position];}
     @NonNull

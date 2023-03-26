@@ -18,7 +18,7 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
 
 
     public ReaderPageAdapter(Book book, RecyclerView rv, View.OnClickListener visibleUIListener, View.OnClickListener leftClick, View.OnClickListener rightClick) {
-        this.book = book;
+        this.book=book;
         this.visibleUIListener=visibleUIListener;
         this.leftClick=leftClick;
         this.rightClick=rightClick;

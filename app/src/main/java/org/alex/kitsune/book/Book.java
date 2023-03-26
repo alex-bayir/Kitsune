@@ -207,9 +207,9 @@ public abstract class Book {
         return json!=null && json.length()>0 ? fromJSON(new StringReader(json)):null;
     }
     public static Book fromJSON(Reader reader){
-        Book book =null;
+        Book book=null;
         try{
-            book =fromJSON(JSON.Object.create(reader));
+            book=fromJSON(JSON.Object.create(reader));
             reader.close();
         }catch(IOException e){
             e.printStackTrace();
@@ -223,10 +223,10 @@ public abstract class Book {
         return loadFromStorage(new File(filePath));
     }
     public static Book loadFromStorage(File file){
-        Book book =null;
+        Book book=null;
         if(file.exists()){
             try{
-                book = Book.fromJSON(new FileReader(file));
+                book= Book.fromJSON(new FileReader(file));
                 if(book !=null){
                     book.set("dir",file.getParent());}
             }catch(IOException e){

@@ -27,7 +27,7 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         download=itemView.findViewById(R.id.download_text);
         play=itemView.findViewById(R.id.chapter_play);
         markNew=itemView.findViewById(R.id.mark_new);
-        this.book = book;
+        this.book=book;
     }
     public void bind(Chapter chapter, boolean selected){
         title.setText(chapter.text(title.getContext()));

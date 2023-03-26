@@ -93,7 +93,7 @@ public class CompilerActivity extends AppCompatActivity {
     }
 
     private void f1(Script script) throws Exception {
-        Book book = Book_Scripted.query(script,"Tower",0).get(0);
+        Book book=Book_Scripted.query(script,"Tower",0).get(0);
         book.update();
         book.getPages(0);
     }

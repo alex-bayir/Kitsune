@@ -86,7 +86,7 @@ public class SavedActivity extends AppCompatActivity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(Constants.action_Update.equals(intent.getAction())){
-                    Book book = BookService.get(intent.getIntExtra(Constants.hash,-1));
+                    Book book=BookService.get(intent.getIntExtra(Constants.hash,-1));
                     if(Constants.load.equals(intent.getStringExtra(Constants.option)) || Constants.delete.equals(intent.getStringExtra(Constants.option))){
                         if(book.countSaved()>0){
                             switch (currentSort) {

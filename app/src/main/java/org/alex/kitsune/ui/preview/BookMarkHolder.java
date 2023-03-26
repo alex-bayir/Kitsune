@@ -36,7 +36,7 @@ public class BookMarkHolder extends RecyclerView.ViewHolder{
         popupMenu.setOnMenuItemClickListener(item -> menuListener!=null && menuListener.onMenuItemClick(getBindingAdapterPosition(),item));
         popupMenu.setForceShowIcon(true);
         menu.setOnClickListener(v -> {if(v==menu){popupMenu.show();}});
-        this.book = book;
+        this.book=book;
     }
 
 

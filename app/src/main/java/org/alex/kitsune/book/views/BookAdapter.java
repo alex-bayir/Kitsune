@@ -151,7 +151,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
 
     public Book remove(int index){
         if(index>=0 && index<list.size()){
-            Book book =list.remove(index);
+            Book book=list.remove(index);
             notifyItemRemoved(index);
             return book;
         }else{

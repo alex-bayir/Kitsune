@@ -117,9 +117,9 @@ public class PreviewActivity extends AppCompatActivity{
             BookService.init(this);
             hash =-1;
         }
-        book = BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
-        hash = book !=null ? book.hashCode() : -1;
-        if(book ==null){finish();}
+        book=BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
+        hash=book!=null ? book.hashCode() : -1;
+        if(book==null){finish();}
         if(!book.getDir().startsWith(BookService.getDir())){
             book.moveTo(BookService.getDir());}
 

@@ -63,7 +63,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     }
 
     public void setBook(Book book){
-        setList(getItems.apply(this.book = book));
+        setList(getItems.apply(this.book=book));
     }
     private void setList(List<T> list){
         new DiffCallback<>(items, list).updateAfter(()->items=new ArrayList<>(list),this);

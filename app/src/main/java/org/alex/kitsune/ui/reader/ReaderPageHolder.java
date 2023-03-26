@@ -137,7 +137,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         retry_layout=itemView.findViewById(R.id.retry_layout);
         load_info.setVisibility(View.GONE);
         retry_layout.setVisibility(View.GONE);
-        this.book = book;
+        this.book=book;
         this.vertical=vertical;
         itemView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
         image.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;

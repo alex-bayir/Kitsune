@@ -101,7 +101,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         lastBrightness=getBrightness();
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
         Intent intent=getIntent();
-        book = BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
+        book=BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
         translate.setOnTouchListener((v, event) -> {
             switch (event.getAction()) {
