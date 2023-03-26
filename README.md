@@ -7,7 +7,7 @@
         <img src="https://img.shields.io/badge/android-7.0+-yellow">
 	</p>
     <h1>Kitsune</h1>
-    <p>Universal scripted book and ranobe reader with the ability to save chapters.</p>
+    <p>Universal scripted manga and ranobe reader with the ability to save chapters.</p>
     <p align="left">Restarting the <a href="https://4pda.to/forum/index.php?showtopic=961133">Kitsune(Yotsuba)</a> project.</p>
     <p align="left">
         Features of Kitsune:<br/>
@@ -22,14 +22,14 @@
         <a href="https://mangalib.me">MangaLib</a>,
         <a href="https://v1.hentailib.org/?section=home-updates">HentaiLib</a>,
         <a href="https://remanga.org">Remanga</a>,
-        <a href="https://book-chan.me">MangaChan</a>,
+        <a href="https://manga-chan.me">MangaChan</a>,
         <a href="https://xxxxx.hentaichan.live">HentaiChan</a>,
         <a href="https://www.mangaread.org">MangaRead</a>,
         <a href="https://ranobelib.me">RanobeLib</a>
         directories (and others if there are scripts that you can write yourself in lua, look for the api in the application or look at the examples of scripts of the
         above directories)<br/>
         - Quick translator call<br/>
-        - Check book for new chapters and more
+        - Check manga and ranobe for new chapters and more
     </p>
     <p align="left">The application is still under development, so there may be errors in the application and changes in the api.</p>
     <p align="left"><strong>DISCLAIMER OF LIABILITY:</strong> All copyrights and trademarks belong to their authors. All the content presented in the application is taken from open sources on the Internet.</p>
