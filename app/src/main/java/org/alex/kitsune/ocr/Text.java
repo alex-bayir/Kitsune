@@ -106,7 +106,7 @@ public class Text {
         }
 
         public static String getText(List<com.google.mlkit.vision.text.Text.TextBlock> blocks){
-            return blocks.stream().map(com.google.mlkit.vision.text.Text.TextBlock::getText).collect(Collectors.joining(" "));
+            return blocks.stream().map(com.google.mlkit.vision.text.Text.TextBlock::getText).collect(Collectors.joining(" ")).replace("\n"," ");
         }
         public static Rect calculateRect(List<com.google.mlkit.vision.text.Text.TextBlock> blocks){
             Rect rect=new Rect(blocks.get(0).getBoundingBox());
