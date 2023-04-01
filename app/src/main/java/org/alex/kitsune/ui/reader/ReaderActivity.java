@@ -39,7 +39,7 @@ import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.utils.*;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
-import java.util.Map;
+import java.util.List;
 
 public class ReaderActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,SeekBar.OnSeekBarChangeListener{
 
@@ -119,18 +119,18 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             return false;
         });
         translate.setOnLongClickListener(v ->{
-            Map<String, ResolveInfo> table=Translator.getTranslators(ReaderActivity.this);
-            if(table.size()>1){
+            List<ResolveInfo> list=Translator.getTranslators(ReaderActivity.this);
+            if(list.size()>1){
                 PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
-                for(Map.Entry<String,ResolveInfo> entry:table.entrySet()){
-                    popupMenu.getMenu().add(entry.getValue().loadLabel(getPackageManager())).setIcon(entry.getValue().loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
-                        new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),entry.getValue().activityInfo)).start(); return false;
+                for(ResolveInfo info:list){
+                    popupMenu.getMenu().add(info.loadLabel(getPackageManager())).setIcon(info.loadIcon(getPackageManager())).setOnMenuItemClickListener(item -> {
+                        new Thread(()->Translator.callTranslator(ReaderActivity.this,Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG,new File(getExternalCacheDir()+File.separator+"tmp.jpg")),info.activityInfo)).start(); return false;
                     });
                 }
                 popupMenu.setForceShowIcon(true);
                 popupMenu.show();
             }else {
-                new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), table)).start();
+                new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), list)).start();
             }
             return true;
         });

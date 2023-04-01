@@ -46,6 +46,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 public class Utils {
@@ -62,7 +63,7 @@ public class Utils {
         public static boolean callTranslator(Context context, java.io.File file){
             return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file));
         }
-        public static boolean callTranslator(Context context, java.io.File file, Map<String,ResolveInfo> translators){
+        public static boolean callTranslator(Context context, java.io.File file, List<ResolveInfo> translators){
             return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file),translators);
         }
 
@@ -87,22 +88,24 @@ public class Utils {
         public static Intent getTranslatorsIntent(Uri uri){return new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);}
         public static Intent getIntent(Uri uri, String packageName, String activityName){return new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_STREAM,uri).setComponent(new ComponentName(packageName,activityName)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);}
         public static Intent getIntent(Uri uri, ActivityInfo activityInfo){return getIntent(uri, activityInfo.packageName, activityInfo.name);}
-        public static Hashtable<String,ResolveInfo> getTranslators(Context context){
-            Hashtable<String,ResolveInfo> hashtable=new Hashtable<>();
-            for(ResolveInfo resolveInfo:context.getPackageManager().queryIntentActivities(new Intent(Intent.ACTION_SEND).setType("image/*"),0)){
-                if(resolveInfo.activityInfo.packageName.contains("translat")){
-                    hashtable.put(resolveInfo.activityInfo.packageName,resolveInfo);
-                }
-            }
-            return hashtable;
+        public static List<ResolveInfo> getTranslators(Context context){
+            return getTranslators(context,Intent.ACTION_SEND,"image/*");
+        }
+        public static List<ResolveInfo> getTranslators(Context context,String action,String type){
+            return context.getPackageManager().queryIntentActivities(new Intent(action).setType(type),0)
+                    .stream().filter(resolveInfo -> resolveInfo.activityInfo.packageName.contains("translat"))
+                    .collect(Collectors.toList());
+        }
+        public static List<ResolveInfo> getTextTranslators(Context context){
+            return getTranslators(context,Intent.ACTION_PROCESS_TEXT,"text/plain");
         }
         public static boolean callAnyTranslator(Context context,Uri uri){
             return callAnyTranslator(context,uri,getTranslators(context));
         }
-        public static boolean callAnyTranslator(Context context, Uri uri, Map<String,ResolveInfo> translators){
+        public static boolean callAnyTranslator(Context context, Uri uri, List<ResolveInfo> translators){
             if(!callTranslator(context,uri,"ru.yandex.translate",translators.size()==0)){
                 if(translators.size()>0){
-                    context.startActivity(getIntent(uri,translators.entrySet().iterator().next().getValue().activityInfo));
+                    context.startActivity(getIntent(uri,translators.iterator().next().activityInfo));
                     return true;
                 }
             }

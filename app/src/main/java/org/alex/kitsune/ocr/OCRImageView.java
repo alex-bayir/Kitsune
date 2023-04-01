@@ -1,7 +1,10 @@
 package org.alex.kitsune.ocr;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -21,11 +24,13 @@ import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions;
 import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.utils.Utils;
 import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 public class OCRImageView extends PhotoView {
@@ -225,7 +230,19 @@ public class OCRImageView extends PhotoView {
     public boolean showDialogTranslateIfTextExists(float x,float y){
         org.alex.kitsune.ocr.Text.Group group=getTextBlock(x,y);
         if(group!=null){
-            new DialogTranslate(getContext()).init(group.getText(),group.getTranslated()).show();
+            Intent intent=null;
+            for(ActivityInfo info:Utils.Translator.getTextTranslators(getContext()).stream().map(resolveInfo -> resolveInfo.activityInfo).collect(Collectors.toList())){
+                intent=new Intent(Intent.ACTION_PROCESS_TEXT)
+                        .setComponent(new ComponentName(info.packageName,info.name))
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_PROCESS_TEXT,group.getText())
+                        .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY,true);
+            }
+            if(intent==null){
+                new DialogTranslate(getContext()).init(group.getText(),group.getTranslated()).show();
+            }else{
+                getContext().startActivity(intent);
+            }
             return true;
         }
         return false;
