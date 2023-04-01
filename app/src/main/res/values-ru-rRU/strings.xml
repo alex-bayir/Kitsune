@@ -149,4 +149,5 @@
     <string name="access_denial">Отказ доступа</string>
     <string name="auth_help_info">Для некоторых тайтлов требуется авторизация, попробуйте авторизоваться через WebView.</string>
     <string name="average_reading_time_per_day">Среднее время чтения в день</string>
+    <string name="target_lang">Целевой язык перевода</string>
 </resources>

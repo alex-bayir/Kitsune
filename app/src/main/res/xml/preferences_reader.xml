@@ -62,6 +62,15 @@
             android:dependency="custom_background"
             android:icon="@drawable/ic_background_color"
         />
+        <org.alex.kitsune.commons.ListPreference
+                android:key="target_lang"
+                android:title="@string/target_lang"
+                android:dialogTitle="@string/target_lang"
+                android:entries="@array/target_langs_entries"
+                android:entryValues="@array/target_langs_values"
+                android:defaultValue="ru"
+                android:icon="@drawable/ic_translate_yandex_transparent"
+        />
 
     </PreferenceCategory>
 

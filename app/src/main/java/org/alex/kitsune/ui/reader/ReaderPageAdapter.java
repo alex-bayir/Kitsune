@@ -76,4 +76,8 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
     public int getItemCount(){return ((chapter!=null && chapter.getPages()!=null) ? chapter.getPages().size() : 0);}
 
     public Chapter getChapter(){return chapter;}
+
+    public void notifyAllChanged(){
+        notifyItemRangeChanged(0,getItemCount());
+    }
 }

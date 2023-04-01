@@ -134,6 +134,7 @@
     <string name="common_parameters">Common parameters</string>
     <string name="update_on_start">Check new chapters on start app</string>
     <string name="update_scripts_automatically">Update scripts automatically</string>
+    <string name="target_lang">Target translate language</string>
     <string name="scripts_sources">Scripts/Sources</string>
     <string name="Export_Import" translatable="false">Export/Import</string>
     <string name="Export" translatable="false">Export</string>

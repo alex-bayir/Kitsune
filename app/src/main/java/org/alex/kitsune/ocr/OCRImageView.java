@@ -25,14 +25,21 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 
 public class OCRImageView extends PhotoView {
     static TextRecognizer recognizer;
     private File save;
-    public static String target_lang="ru";
-
     static HashMap<File,org.alex.kitsune.ocr.Text> texts=new HashMap<>();
+    static String last_lang=null;
+    private String getTarget_lang(){
+        String lang=Translate.getTarget_lang(getContext());
+        if(!Objects.equals(lang,last_lang)){
+            texts.clear();
+        }
+        return last_lang=lang;
+    }
 
     public static void init(){
         if(recognizer==null){
@@ -67,7 +74,7 @@ public class OCRImageView extends PhotoView {
     Paint error=new Paint(Paint.ANTI_ALIAS_FLAG);
     private void initPaints(){
         paint.setColor(0xFF000000);
-        paint.setTextSize(11 * getResources().getDisplayMetrics().density);
+        paint.setTextSize(8 * getResources().getDisplayMetrics().density);
         paint.setTextAlign(Paint.Align.CENTER);
         ok.setColor(0x9FFFFFFF);
         error.setColor(0x3FFF0000);
@@ -157,6 +164,7 @@ public class OCRImageView extends PhotoView {
     }
 
     private void translate(org.alex.kitsune.ocr.Text text){
+        String target_lang=getTarget_lang();
         if(!text.isTranslated()){
             count=0;
             for(org.alex.kitsune.ocr.Text.Group group:text.getGroups()){

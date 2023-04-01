@@ -17,12 +17,15 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
     private CustomSnackbar(ViewGroup parent, View content, ContentViewCallback contentViewCallback){
         super(parent,content,contentViewCallback);
     }
+    private CustomSnackbar(ViewGroup parent, View content){
+        this(parent,content,new ContentViewCallback(parent));
+    }
     public static CustomSnackbar makeSnackbar(ViewGroup parent, @Duration int duration){
         return makeSnackbar(parent,duration, R.drawable.bg_snackbar);
     }
     public static CustomSnackbar makeSnackbar(ViewGroup parent, @Duration int duration, int background){
         View root=LayoutInflater.from(parent.getContext()).inflate(R.layout.snackbar_update,parent,false);
-        return new CustomSnackbar(parent,root,new ContentViewCallback(root)).setBackground(background).setDuration(duration);
+        return new CustomSnackbar(parent,root).setBackground(background).setDuration(duration);
     }
 
     public CustomSnackbar setText(CharSequence text){
@@ -60,18 +63,18 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
         getView().getBackground().setAlpha(alpha); return this;
     }
     public CustomSnackbar setGravity(int gravity){
-        if(getView().getLayoutParams() instanceof CoordinatorLayout.LayoutParams){
-            ((CoordinatorLayout.LayoutParams)getView().getLayoutParams()).gravity=gravity;
-        }else if(getView().getLayoutParams() instanceof FrameLayout.LayoutParams){
-            ((FrameLayout.LayoutParams)getView().getLayoutParams()).gravity=gravity;
+        if(getView().getLayoutParams() instanceof CoordinatorLayout.LayoutParams params){
+            params.gravity=gravity;
+        }else if(getView().getLayoutParams() instanceof FrameLayout.LayoutParams params){
+            params.gravity=gravity;
         }
         return this;
     }
     public CustomSnackbar setMargins(int left, int top, int right, int bottom){
-        if(getView().getLayoutParams() instanceof ViewGroup.MarginLayoutParams){
-            ((ViewGroup.MarginLayoutParams)getView().getLayoutParams()).setMargins(left, top, right, bottom);
-            ((ViewGroup.MarginLayoutParams)getView().getLayoutParams()).setMarginStart(left);
-            ((ViewGroup.MarginLayoutParams)getView().getLayoutParams()).setMarginEnd(right);
+        if(getView().getLayoutParams() instanceof ViewGroup.MarginLayoutParams params){
+            params.setMargins(left, top, right, bottom);
+            params.setMarginStart(left);
+            params.setMarginEnd(right);
         }
         return this;
     }

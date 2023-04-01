@@ -22,6 +22,7 @@ import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.BookService;
@@ -65,6 +66,11 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     Throwable lastThrowable;
     long start_read_time;
     TextView error_info;
+    private static CustomSnackbar snackbar;
+
+    public static CustomSnackbar getSnackbar(){
+        return snackbar;
+    }
 
     private void setData(int num_chapter){
         chapter= book.getChapters().get(num_chapter);
@@ -100,6 +106,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         setContentView(R.layout.activity_reader);
         lastBrightness=getBrightness();
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
+        snackbar=CustomSnackbar.makeSnackbar(findViewById(R.id.frame),CustomSnackbar.LENGTH_INDEFINITE).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,24,0,0);
         Intent intent=getIntent();
         book=BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
@@ -294,6 +301,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         reader.setKeepScreenOn(prefs.getBoolean(Constants.keep_screen_on,false));
         setBrightness(!prefs.getBoolean(Constants.adjust_brightness,false),prefs.getInt(Constants.adjust_brightness_value,50));
         start_read_time=System.currentTimeMillis();
+        adapter.notifyAllChanged();
     }
 
     @Override

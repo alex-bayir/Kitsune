@@ -1,16 +1,23 @@
 package org.alex.kitsune.ocr;
 
+import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
+import androidx.preference.PreferenceManager;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.utils.NetworkUtils;
 import java.util.LinkedList;
 import java.io.IOException;
+import java.util.Objects;
 
 public class Translate {
     public static final String[] default_langs=new String[]{"Russian","English","Korean","Japanese","Chinese"};
+    public static final String[] default_langs_codes=new String[]{"ru","en","ko","ja","zh-CN"};
+    public static String getTarget_lang(Context context){
+        return PreferenceManager.getDefaultSharedPreferences(context).getString("target_lang","ru");
+    }
     public static String convert(String lang){
         return lang==null ? null : switch (lang){
             case "Russian","ru"->"ru";
@@ -80,34 +87,31 @@ public class Translate {
     }
 
     private static String getSourceLanguage(String text){
-        int[] lang=new int[4]; // en, ko, ja, zh-CN
+        int[] lang=new int[5]; // default_langs_codes
         text.chars().forEach(v -> {
-            if(in('A','Z',v) || in('a','z',v)){
+            if(in('А','Я',v) || in('а','я',v)){
                 lang[0]++;
-            } else if (in(0xAC00,0xD7A3,v) || in(0x1100,0x11FF,v) || in(0x3130,0x318F,v) || in(0xA960,0xA97F,v) || in(0xD7B0,0xD7FF,v)) {
+            }else if(in('A','Z',v) || in('a','z',v)){
                 lang[1]++;
-            } else if (in(0x3000,0x303f,v) || in(0x3040,0x309f,v) || in(0x30a0,0x30ff,v) || in(0xff00,0xffef,v) || in(0x4e00,0x9faf,v)) {
+            } else if (in(0xAC00,0xD7A3,v) || in(0x1100,0x11FF,v) || in(0x3130,0x318F,v) || in(0xA960,0xA97F,v) || in(0xD7B0,0xD7FF,v)) {
                 lang[2]++;
-            } else if (in(0x04E00,0x09FFF,v) || in(0x03400,0x04DBF,v) || in(0x20000,0x2A6DF,v) || in(0x2A700,0x2B73F,v) || in(0x2B740,0x2B81F,v) || in(0x2B820,0x2CEAF,v) || in(0x2CEB0,0x2EBEF,v) || in(0x30000,0x3134F,v) || in(0x31350,0x323AF,v) || in(0x0F900,0x0FAFF,v) || in(0x2F800,0x2FA1F,v) || in(0x02F00,0x02FDF,v) || in(0x02E80,0x02EFF,v)) {
+            } else if (in(0x3000,0x303f,v) || in(0x3040,0x309f,v) || in(0x30a0,0x30ff,v) || in(0xff00,0xffef,v) || in(0x4e00,0x9faf,v)) {
                 lang[3]++;
+            } else if (in(0x04E00,0x09FFF,v) || in(0x03400,0x04DBF,v) || in(0x20000,0x2A6DF,v) || in(0x2A700,0x2B73F,v) || in(0x2B740,0x2B81F,v) || in(0x2B820,0x2CEAF,v) || in(0x2CEB0,0x2EBEF,v) || in(0x30000,0x3134F,v) || in(0x31350,0x323AF,v) || in(0x0F900,0x0FAFF,v) || in(0x2F800,0x2FA1F,v) || in(0x02F00,0x02FDF,v) || in(0x02E80,0x02EFF,v)) {
+                lang[4]++;
             }
         });
         int max=0,l=0;
         for(int i=0;i<lang.length;i++){
             if(lang[i]>max){max=lang[l=i];}
         }
-        return switch (l){
-            case 1->"ko";
-            case 2->"ja";
-            case 3->"zh";
-            default->"en";
-        };
+        return default_langs_codes[l];
     }
 
     private static boolean in(int start,int end,int value){
         return start<=value && value<=end;
     }
-    static class Task{
+    public static class Task{
         final String source_lang;
         final String target_lang;
         final String text;
@@ -117,6 +121,9 @@ public class Translate {
             this.source_lang=source_lang!=null?source_lang:getSourceLanguage(text);
             this.target_lang=target_lang;
             this.text=text;
+            if(Objects.equals(source_lang, target_lang)){
+                translated=text;
+            }
         }
         public String getText(){
             return text;
@@ -135,19 +142,21 @@ public class Translate {
             return error;
         }
         public boolean isSuccess(){
-            return error==null && text!=null;
+            return error==null && translated!=null || text==null;
         }
         public void translate(){
-            try{
-                JSON.Array<?> json=JSON.Array.create(Translate.translate(source_lang,target_lang,text));
-                json=json.getArray(0);
-                StringBuilder builder=new StringBuilder();
-                for(int i=0;i<json.size();i++){
-                    builder.append('\n').append(json.getArray(i).getString(0));
+            if(!isSuccess()){
+                try{
+                    JSON.Array<?> json=JSON.Array.create(Translate.translate(source_lang,target_lang,text));
+                    json=json.getArray(0);
+                    StringBuilder builder=new StringBuilder();
+                    for(int i=0;i<json.size();i++){
+                        builder.append(json.getArray(i).getString(0));
+                    }
+                    translated=builder.toString();
+                } catch (IOException e) {
+                    error=e;
                 }
-                translated=builder.substring(1);
-            } catch (IOException e) {
-                error=e;
             }
         }
     }

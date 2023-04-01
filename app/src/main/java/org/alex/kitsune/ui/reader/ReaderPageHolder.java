@@ -11,11 +11,15 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.LocaleList;
 import android.view.*;
+import android.view.textclassifier.*;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import com.vlad1m1r.lemniscate.base.BaseCurveProgressView;
@@ -23,7 +27,10 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.book.Chapter;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Page;
+import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.ocr.OCRImageView;
+import org.alex.kitsune.ocr.Translate;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
@@ -117,6 +124,25 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                 return detector.onTouchEvent(event);
             }
         });
+        if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
+            CustomSnackbar snackbar=ReaderActivity.getSnackbar();
+            text.setTextClassifier(new Classifier(
+                    text->{
+                        if(text!=null){
+                            String target_lang=Translate.getTarget_lang(itemView.getContext());
+                            new Translate(target_lang).addOnCompleteListener(task->{
+                                if(task.isSuccess()){
+                                    snackbar.setText(task.getTranslated()).show();
+                                }else{
+                                    snackbar.dismiss();
+                                }
+                            }).translate(text.toString());
+                        }else{
+                            snackbar.dismiss();
+                        }
+                    })
+            );
+        }
         View view=LayoutInflater.from(itemView.getContext()).inflate(R.layout.dialog_input_url, null);
         dialog=new AlertDialog.Builder(itemView.getContext()).setView(view).create();
         input=view.findViewById(R.id.input);
@@ -283,5 +309,37 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         float k=1f/(maxI); int pos=1;
         while (pos<maxI && progress>k*pos){pos++;}
         return ColorUtils.blendARGB(colors[pos-1],colors[pos],(progress-k*(pos-1))*maxI);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    private static class Classifier implements TextClassifier {
+        Callback<CharSequence> callback;
+        public Classifier(Callback<CharSequence> callback){
+            this.callback=callback;
+        }
+        @RequiresApi(api = Build.VERSION_CODES.P)
+        @NonNull
+        @Override
+        public TextClassification classifyText(@NonNull TextClassification.Request request) {
+            callback.call(request.getText().subSequence(request.getStartIndex(),request.getEndIndex()));
+            return TextClassifier.super.classifyText(request);
+        }
+        @NonNull
+        @Override
+        public TextClassification classifyText(@NonNull CharSequence text, int startIndex, int endIndex, @Nullable LocaleList defaultLocales) {
+            callback.call(text.subSequence(startIndex,endIndex));
+            return TextClassifier.super.classifyText(text, startIndex, endIndex, defaultLocales);
+        }
+        @RequiresApi(api = Build.VERSION_CODES.P)
+        @Override
+        public boolean isDestroyed() {
+            return TextClassifier.super.isDestroyed();
+        }
+        @RequiresApi(api = Build.VERSION_CODES.P)
+        @Override
+        public void destroy() {
+            TextClassifier.super.destroy();
+            callback.call(null);
+        }
     }
 }
