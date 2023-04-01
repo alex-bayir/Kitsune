@@ -14,8 +14,9 @@
             android:layout_width="0.0dip"
             android:layout_height="match_parent"
             android:layout_weight="1.0"
-            android:padding="8sp"
             android:gravity="center"
+            android:maxLines="4"
+            android:ellipsize="end"
             style="?android:textAppearance"
     />
     <com.google.android.material.button.MaterialButton

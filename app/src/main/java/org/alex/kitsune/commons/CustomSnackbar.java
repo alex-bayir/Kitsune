@@ -65,8 +65,10 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
     public CustomSnackbar setGravity(int gravity){
         if(getView().getLayoutParams() instanceof CoordinatorLayout.LayoutParams params){
             params.gravity=gravity;
+            getView().setLayoutParams(params);
         }else if(getView().getLayoutParams() instanceof FrameLayout.LayoutParams params){
             params.gravity=gravity;
+            getView().setLayoutParams(params);
         }
         return this;
     }
@@ -75,6 +77,7 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
             params.setMargins(left, top, right, bottom);
             params.setMarginStart(left);
             params.setMarginEnd(right);
+            getView().setLayoutParams(params);
         }
         return this;
     }

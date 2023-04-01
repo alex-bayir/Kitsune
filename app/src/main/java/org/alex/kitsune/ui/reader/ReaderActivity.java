@@ -106,7 +106,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         setContentView(R.layout.activity_reader);
         lastBrightness=getBrightness();
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
-        snackbar=CustomSnackbar.makeSnackbar(findViewById(R.id.frame),CustomSnackbar.LENGTH_INDEFINITE).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,24,0,0);
+        snackbar=CustomSnackbar.makeSnackbar(findViewById(R.id.frame),CustomSnackbar.LENGTH_INDEFINITE).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
         Intent intent=getIntent();
         book=BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
