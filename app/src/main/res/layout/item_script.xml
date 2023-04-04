@@ -19,7 +19,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:minWidth="120sp"
+                android:minWidth="160sp"
                 android:layout_toEndOf="@+id/img"
                 android:layout_alignParentTop="true"
                 android:paddingStart="8sp"

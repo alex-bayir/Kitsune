@@ -13,7 +13,6 @@ import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.logs.Logs;
-import org.alex.kitsune.services.LoadService;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
@@ -45,6 +44,10 @@ public class NetworkUtils {
             return list!=null ? list : new LinkedList<>();
         }
     }).readTimeout(60,TimeUnit.SECONDS).build();
+    public static final OkHttpClient scrambledClient=sHttpClient.newBuilder().addInterceptor(new ScrambledInterceptor()).build();
+    public static OkHttpClient getClient(boolean descramble){
+        return descramble ? scrambledClient : sHttpClient;
+    }
     private static void printCookies(List<Cookie> cookies){if(cookies!=null)for(Cookie cookie:cookies){android.util.Log.e("Cookie",cookie.toString());}}
     public static void updateCookies(String domain,List<Cookie> cookies){
         NetworkUtils.cookies.put(domain,cookies);
@@ -159,10 +162,13 @@ public class NetworkUtils {
         return load(url,domain,file,task,listener,null,false);
     }
     public static boolean load(String url, String domain, File file, Boolean cancel_flag, Callback2<Long,Long> listener, Callback<Throwable> onBreak, boolean withSkip){
+        return load(sHttpClient,url,domain,file,cancel_flag,listener,onBreak,withSkip);
+    }
+    public static boolean load(OkHttpClient client,String url, String domain, File file, Boolean cancel_flag, Callback2<Long,Long> listener, Callback<Throwable> onBreak, boolean withSkip){
         InputStream in=null;
         OutputStream out=null;
         try{
-            Response response=sHttpClient.newCall(new Request.Builder().url(url).headers(getHeadersDefault(domain,url)).get().build()).execute();
+            Response response=client.newCall(new Request.Builder().url(url).headers(getHeadersDefault(domain,url)).get().build()).execute();
             if(response.isSuccessful() && response.body()!=null){
                 long length=response.body().contentLength();
                 long downloadedSize=(!file.getParentFile().mkdirs() && !file.createNewFile()) ? file.length() : 0;

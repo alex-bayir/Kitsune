@@ -14,6 +14,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
+import org.jsoup.select.Elements;
 import org.junit.Test;
 
 public class ScriptsTests {
@@ -24,6 +25,7 @@ public class ScriptsTests {
     @Test
     public void tmp() throws Throwable {
         //println(Wrapper.loadDocument("https://vk.com/org.alex.kitsune").select("a.page_doc_title").toString());
+        /*
         String tmp=Utils.group(NetworkUtils.getDocument("https://v1.hentailib.org/manga-list").select("script").toString(),"window.__DATA = (\\{.*\\});");
         JSON.Object json=JSON.Object.create(tmp).getObject("filters");
         json.forEach((k,v)->{
@@ -37,19 +39,17 @@ public class ScriptsTests {
             }
             println("");
         });
-        //array.getJSONObject()
-        tmp="<div class=\"selectize-dropdown-content\" tabindex=\"-1\"><div class=\"option\" data-selectable=\"\" data-value=\"6612\">Спортивное тело</div><div class=\"option\" data-selectable=\"\" data-value=\"6611\">Спасение мира</div><div class=\"option\" data-selectable=\"\" data-value=\"6594\">Офисные Работники</div><div class=\"option\" data-selectable=\"\" data-value=\"6616\">Традиционные игры</div><div class=\"option\" data-selectable=\"\" data-value=\"6604\">Ранги силы</div><div class=\"option\" data-selectable=\"\" data-value=\"6551\">ГГ женщина</div><div class=\"option\" data-selectable=\"\" data-value=\"6639\">Остров</div><div class=\"option\" data-selectable=\"\" data-value=\"6603\">Разумные расы</div><div class=\"option\" data-selectable=\"\" data-value=\"6574\">Культивация</div><div class=\"option\" data-selectable=\"\" data-value=\"6529\">Ангелы</div><div class=\"option\" data-selectable=\"\" data-value=\"6560\">Демоны</div><div class=\"option\" data-selectable=\"\" data-value=\"6567\">Злые духи</div><div class=\"option\" data-selectable=\"\" data-value=\"6553\">ГГ мужчина</div><div class=\"option\" data-selectable=\"\" data-value=\"6552\">ГГ имба</div><div class=\"option\" data-selectable=\"\" data-value=\"6547\">Волшебники</div><div class=\"option\" data-selectable=\"\" data-value=\"6569\">Игровые элементы</div><div class=\"option\" data-selectable=\"\" data-value=\"6609\">Система</div><div class=\"option\" data-selectable=\"\" data-value=\"6624\">Якудза</div><div class=\"option\" data-selectable=\"\" data-value=\"6538\">Брат и сестра</div><div class=\"option\" data-selectable=\"\" data-value=\"6570\">Империи</div><div class=\"option\" data-selectable=\"\" data-value=\"6582\">Месть</div><div class=\"option\" data-selectable=\"\" data-value=\"6581\">Медицина</div><div class=\"option\" data-selectable=\"\" data-value=\"6580\">Мафия</div><div class=\"option\" data-selectable=\"\" data-value=\"6587\">Насилие</div><div class=\"option\" data-selectable=\"\" data-value=\"6602\">Путешествие во времени</div><div class=\"option\" data-selectable=\"\" data-value=\"6528\">Амнезия</div><div class=\"option\" data-selectable=\"\" data-value=\"6613\">Средневековье</div><div class=\"option\" data-selectable=\"\" data-value=\"6555\">Гильдии</div><div class=\"option\" data-selectable=\"\" data-value=\"6579\">Магия</div></div>";
-        /*
-        Elements elements=null;//Wrapper.loadDocument("https://manga-chan.me/catalog").select("li.sidetag");
+         */
+        Elements elements=NetworkUtils.getDocument("https://mangareader.to/filter").select("div.f-genre-item");//Wrapper.loadDocument("https://manga-chan.me/catalog").select("li.sidetag");
         //Elements elements= Jsoup.parse(tmp).select("li");
         println("");
-        println(""+elements.size());
+        println(elements.size());
         for(Element e:elements){
             //print(e.selectFirst("a").selectFirst("div.strong.title").attr("title"));
             //print(",[\""+capitalize(e.text())+"\"]=\""+e.selectFirst("input").attr("id")+"\"");
-            print(",[\""+e.text().substring(4)+"\"]=\""+e.text().substring(4).replace(" ","_")+"\"");
+            print(",[\""+e.text()+"\"]=\""+e.attr("data-id")+"\"");
         }
-         */
+        println("");
     }
     public static String capitalize(String str){
         return str==null? null : str.substring(0,1).toUpperCase()+str.substring(1);

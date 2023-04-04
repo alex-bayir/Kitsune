@@ -248,6 +248,9 @@ public class Lua extends Script{
         public static URLBuilder url_builder(String host){
             return new URLBuilder(host);
         }
+        public static Document parse(String html){
+            return Jsoup.parse(html);
+        }
     }
     public static class Utils{
         public static Map<?,?> to_map(LuaTable table){

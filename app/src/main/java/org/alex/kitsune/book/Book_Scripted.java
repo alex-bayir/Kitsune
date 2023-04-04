@@ -2,10 +2,13 @@ package org.alex.kitsune.book;
 
 import android.text.Html;
 import com.alex.json.java.JSON;
+import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,6 +110,35 @@ public class Book_Scripted extends Book {
     }
     private Set<Book> getSimilar(List<Map<String,?>> similar){
         return similar.stream().filter(Objects::nonNull).map(Book_Scripted::determinate).filter(Objects::nonNull).collect(Collectors.toSet());
+    }
+
+    @Override
+    public boolean loadPage(Chapter chapter, Page page, Callback<File> done, Boolean cancel_flag, NetworkUtils.Callback2<Long, Long> process, Callback<Throwable> onBreak) {
+        if(page==null){return false;}
+        File save=getPage(chapter, page);
+        if(page.getUrl()!=null){
+            if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),page.getUrl(),getDomain(),save,cancel_flag,process,onBreak,false)){
+                done.call(save);
+                return true;
+            }
+        }else if(page.getText()!=null){
+            try{
+                Utils.File.writeFile(save,page.getText(),false);
+                done.call(save);
+                return true;
+            }catch (IOException e){
+                if(onBreak!=null){onBreak.call(e);}
+            }
+        }else{
+            try{
+                int index=chapter.getPages().indexOf(page);
+                getPages(chapter);
+                return loadPage(chapter,chapter.getPage(index),done,cancel_flag,process,onBreak);
+            }catch (IOException e){
+                e.printStackTrace();
+            }
+        }
+        return false;
     }
 
     public static FilterSortAdapter createAdvancedSearchAdapter(String source){return createAdvancedSearchAdapter(getScript(source));}

@@ -46,7 +46,7 @@ function update(url)
 end
 
 function query(name,page,params)
-    local url=network:url_builder(host.."/search/advancedResults"):add("q",name):add("page",page+1)
+    local url=network:url_builder(host.."/search/advancedResults"):add("q",name):add("offset",page*50)
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
             url:add(params[1]:getSelected(),"in"):add(params[1]:getDeselected(),"ex")
@@ -62,7 +62,7 @@ function query(name,page,params)
 end
 
 function query_url(url,page)
-    if page then url=url:find("page=") and url:gsub("page=%d+","page="..tostring(page+1)) or url.."&page="..tostring(page+1) end
+    if page then url=url:find("offset=") and url:gsub("offset=%d+","offset="..tostring(page*50)) or url.."&offset="..tostring(page*50) end
     print(url)
     local selects=network:load_as_Document(url):select("div.tile")
     local list={}
