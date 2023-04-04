@@ -14,7 +14,7 @@
         - No advertising<br/>
         - Beautiful design<br/>
         - Downloading chapters and reading them without the Internet<br/>
-        - Works with the
+        - Sources of manga/manhwa:
         <a href="https://readmanga.live">Readmanga</a>,
         <a href="https://mintmanga.live">Mintmanga</a>,
         <a href="https://selfmanga.live">Selfmanga</a>,
@@ -25,9 +25,11 @@
         <a href="https://manga-chan.me">MangaChan</a>,
         <a href="https://xxxxx.hentaichan.live">HentaiChan</a>,
         <a href="https://www.mangaread.org">MangaRead</a>,
-        <a href="https://ranobelib.me">RanobeLib</a>
-        directories (and others if there are scripts that you can write yourself in lua, look for the api in the application or look at the examples of scripts of the
-        above directories)<br/>
+        <a href="https://mangareader.to/home">MangaReaderTo</a><br/>
+        - Sources of ranobe:
+        <a href="https://ranobelib.me">RanobeLib</a><br/>
+        - Support of other sources you can write yourself in lua, look for the api in the application or look at the examples of scripts of the above sources<br/>
+        - Integrated translator<br/>
         - Quick translator call<br/>
         - Check manga and ranobe for new chapters and more
     </p>
