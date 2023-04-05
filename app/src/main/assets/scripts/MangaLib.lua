@@ -53,7 +53,7 @@ function update(url)
         ["name_alt"]=jo:getString("rus_name"),
         ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
         ["genres"]=genres,
-        ["rating"]=num(container:selectFirst("div.media-rating__value"):text()),
+        ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
         ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
         ["chapters"]=utils:uniqueChapters(chapters,true),
