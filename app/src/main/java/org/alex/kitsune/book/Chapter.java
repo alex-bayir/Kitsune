@@ -82,6 +82,6 @@ public class Chapter{
     @NotNull
     public String toString(){return toJSON().toString();}
     private static final java.text.DecimalFormat f=new java.text.DecimalFormat("#.##");
-    public String text(Context context){return context.getString(R.string.Volume)+" "+getVol()+" "+context.getString(R.string.Chapter)+" "+f.format(getNum()).replace(',','.')+(getName().length()>0 ? " - "+getName() : "");}
+    public String text(Context context){return (getVol()>0?context.getString(R.string.Volume)+" "+getVol()+" ":"")+context.getString(R.string.Chapter)+" "+f.format(getNum()).replace(',','.')+(getName().length()>0 ? " - "+getName() : "");}
     public int countPages(){return getPages()==null ? 0: getPages().size();}
 }

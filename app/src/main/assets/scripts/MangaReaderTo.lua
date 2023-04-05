@@ -37,7 +37,7 @@ function update(url)
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
         local e=list:get(i);
-        chapters[last-i]=Chapter.new(0,num(e:attr("data-number")), e:select("a[title]"):text():match("Chapter %d*%.?%d+: (.*)"),0,utils:to_map({["lang"]=lang}))
+        chapters[last-i]=Chapter.new(0,num(e:attr("data-number")), e:select("a[title]"):attr("title"):match("Chapter %d*%.?%d+: (.*)"),0,utils:to_map({["lang"]=lang}))
     end
 
     local author={}; local authors=container:select("div.anisc-info"):select("a[href*=/author/]")
