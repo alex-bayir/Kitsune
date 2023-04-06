@@ -1,11 +1,15 @@
 package org.alex.kitsune.scripts;
 
 import com.alex.edittextcode.EditTextCode.SyntaxHighlightRule;
+import okhttp3.Cookie;
 import okhttp3.Headers;
+import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.alex.kitsune.R;
 import com.alex.json.java.JSON;
 import java.io.*;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import org.alex.kitsune.commons.HttpStatusException;
@@ -216,11 +220,26 @@ public class Lua extends Script{
         }
     }
     public static class Network{
+        public static String getCookie(String domain,String name){
+            return getCookie(NetworkUtils.getCookies(domain),name);
+        }
+        private static String getCookie(List<Cookie> cookies,String name){
+            return cookies==null? null:cookies.stream().filter(cookie -> cookie.name().equals(name)).map(Cookie::value).findAny().orElse(null);
+        }
+        public static String decode(String encoded){
+            return encoded==null? null:URLDecoder.decode(encoded);
+        }
+        public static String encode(String decoded){
+            return decoded==null? null:URLEncoder.encode(decoded);
+        }
         public static String load(String url, LuaTable headers) throws HttpStatusException {
             return load_as_String(url,headers,null);
         }
         public static String load_as_String(String url, LuaTable headers, LuaTable body) throws HttpStatusException {
             return load_as_String(url, Coercion.coerce(headers,Map.class), Coercion.coerce(body,Map.class));
+        }
+        public static String load_as_String(String url, LuaTable headers, String body,String type) throws HttpStatusException {
+            return load_as_String(url, extendHeaders(Coercion.coerce(headers,Map.class)), RequestBody.create(body, MediaType.parse(type)));
         }
         public static String load_as_String(String url, Map<String,String> headers, Map<String,String> body) throws HttpStatusException {
             return load_as_String(url,extendHeaders(headers),convertBody(body));
@@ -253,6 +272,9 @@ public class Lua extends Script{
         }
     }
     public static class Utils{
+        public static String unescape_unicodes(String escaped){
+            return org.alex.kitsune.utils.Utils.unescape_unicodes(escaped);
+        }
         public static Map<?,?> to_map(LuaTable table){
             return Coercion.coerce(table,Map.class);
         }

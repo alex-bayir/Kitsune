@@ -60,7 +60,10 @@ public class Chapter{
         info.put("pages",pages); return pages;
     }
     public JSON.Object getInfo(){return info;}
-    public String getTranslator(){return info.getString("translator");}
+    public String getTranslator(){return getTranslators()==null? null:getTranslators().keySet().stream().findFirst().orElse(null);}
+    public Map<String,String> getTranslators(){
+        return info.get("translators") instanceof Map<?,?> m ? (Map<String, String>) m: null;
+    }
 
     public JSON.Object toJSON(){
         return new JSON.Object(info).put("pages",Page.toJSON(getPages()));

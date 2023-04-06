@@ -77,13 +77,13 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         nothingFound.setText(R.string.nothing_found);
         source=getIntent().getStringExtra(Constants.catalog);
         toolbar.setTitle(source);
-        sortAdapter= Book.getFilterSortAdapter(source);
-        if(getIntent().getStringExtra(Constants.author)!=null){
-            toolbar.setTitle(getIntent().getStringExtra(Constants.author));
+        sortAdapter=Book.getFilterSortAdapter(source);
+        if(getIntent().getStringExtra(Constants.title)!=null){
+            toolbar.setTitle(getIntent().getStringExtra(Constants.title));
         }
         if(sortAdapter!=null){
             sortAdapter.selectOption(getIntent().getStringExtra(Constants.option));
-            queryName=getIntent().getStringExtra(Constants.author_url);
+            queryName=getIntent().getStringExtra(Constants.url);
             if(queryName!=null && queryName.length()==0){queryName=null;}
         }
         filters=new FilterDialogFragment(sortAdapter,this);

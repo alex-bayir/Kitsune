@@ -12,7 +12,6 @@ import okio.Buffer;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.HttpStatusException;
-import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.jetbrains.annotations.NotNull;
 import org.jsoup.Jsoup;
@@ -40,7 +39,7 @@ public class NetworkUtils {
         @NotNull
         @Override
         public List<Cookie> loadForRequest(@NotNull HttpUrl httpUrl) {
-            List<Cookie> list=Catalogs.getCookies(httpUrl.host(),cookies.get(httpUrl.host()));
+            List<Cookie> list=getCookies(httpUrl.host());
             return list!=null ? list : new LinkedList<>();
         }
     }).readTimeout(60,TimeUnit.SECONDS).build();
@@ -49,6 +48,9 @@ public class NetworkUtils {
         return descramble ? scrambledClient : sHttpClient;
     }
     private static void printCookies(List<Cookie> cookies){if(cookies!=null)for(Cookie cookie:cookies){android.util.Log.e("Cookie",cookie.toString());}}
+    public static List<Cookie> getCookies(String domain){
+        return Catalogs.getCookies(domain,cookies.get(domain));
+    }
     public static void updateCookies(String domain,List<Cookie> cookies){
         NetworkUtils.cookies.put(domain,cookies);
     }
@@ -66,16 +68,16 @@ public class NetworkUtils {
         String answer;
         Request request=new Request.Builder().url(url).headers(headers!=null ? headers : HEADERS_DEFAULT).cacheControl(CACHE_CONTROL_DEFAULT).get().build();
         Response response=sHttpClient.newCall(request).execute();
-        try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
+        answer=response.body()==null ? null:response.body().string();
         response.close();
         if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
     return answer;}
     public static String getString(String url, okhttp3.Headers headers,RequestBody body) throws IOException {
         String answer;
         Request request=new Request.Builder().url(url).headers(headers!=null ? headers : HEADERS_DEFAULT).cacheControl(CACHE_CONTROL_DEFAULT).post(body).build();
-        Logs.e(bodyToString(request.body()));
+        //System.out.println(toString(request));
         Response response=sHttpClient.newCall(request).execute();
-        try{answer=response.body().string();}catch (NullPointerException e){throw new IOException("ResponseBody is null");}
+        answer=response.body()==null ? null:response.body().string();
         response.close();
         if(response.code()!=200){throw new HttpStatusException(response.code(), url);}
         return answer;}
@@ -136,14 +138,18 @@ public class NetworkUtils {
         body.forEach(builder::add);
         return builder.build();
     }
-    public static String bodyToString(final RequestBody body){
-        try {
-            final Buffer buffer = new Buffer();
-            body.writeTo(buffer);
-            return buffer.readUtf8();
-        } catch (final IOException e) {
-            return "did not work";
+    public static String toString(Request request){
+        String str=request.toString();
+        if(request.body()!=null){
+            try {
+                final Buffer buffer = new Buffer();
+                request.body().writeTo(buffer);
+                str+=",body:"+buffer.readUtf8();
+            } catch (final IOException e) {
+                e.printStackTrace();
+            }
         }
+        return str;
     }
 
     private static final Handler main=new Handler(Looper.getMainLooper());

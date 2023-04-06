@@ -18,8 +18,8 @@ public class Constants {
     public static final String delete="delete";
     public static final String favorites="favorites";
     public static final String option="option";
-    public static final String author="author";
-    public static final String author_url="author url";
+    public static final String title="title";
+    public static final String url="url";
     public static final String source_order="source_order";
     public static final String shelf_order="shelf_order";
     public static final String category="category";

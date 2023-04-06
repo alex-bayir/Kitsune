@@ -10,7 +10,7 @@ source="RanobeLib"
 Type="Ranobe"
 description="Один из самых популярных источников ранобэ в СНГ."
 host="https://"..domain
-auth_tokens={"remember_web_59ba36addc2b2f9401580f014c7f58ea4e30989d"}
+auth_tokens={"mangalib_session","XSRF-TOKEN"}
 
 Sorts={["По рейтингу"]="rating_score", ["По количеству оценок"]="rate", ["По названию"]="name", ["По дате обновлениям"]="last_chapter_at",["По дате добавления"]="created_at",["По просмотрам"]="views",["По количеству глав"]="chap_count"}
 sorts={[1]="rate",[2]="created_at",[3]="last_chapter_at"}
@@ -36,13 +36,13 @@ function update(url)
     for i=0,(branches~=nil and branches:size() or 0)-1,1 do
         local teams=branches:getObject(i):getArray("teams")
         for j=0,(teams~=nil and teams:size() or 0)-1,1 do
-            local o=teams:getObject(j)
-            translators[o:getInt("branch_id")]=o:getString("name")
+            local o=teams:get(j)
+            translators[o:getInt("branch_id")]={[o:get("name")]=host.."/team/"..o:get("slug")}
         end
     end
     for i=list:size()-1,0,-1 do
         local o=list:getObject(i); local branch_id=o:get("branch_id",-1); if(branch_id==-1) then branch_id=nil end
-        chapters:add(Chapter.new(o:get("chapter_volume"),tostring(o:get("chapter_number")),o:get("chapter_name"),utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),utils:to_map({["translator"]=translators[branch_id], ["bid"]=branch_id, ["ui"]=ui})))
+        chapters:add(Chapter.new(o:get("chapter_volume"),tostring(o:get("chapter_number")),o:get("chapter_name"),utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),utils:to_map({["translators"]=translators[branch_id], ["bid"]=branch_id, ["ui"]=ui})))
     end
     local author=container:selectFirst("a[abs:href*=/people/]")
     return {
@@ -52,7 +52,7 @@ function update(url)
         ["name_alt"]=jo:getString("rus_name"),
         ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
         ["genres"]=genres,
-        ["rating"]=num(container:selectFirst("div.media-rating__value"):text()),
+        ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
         ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
         ["chapters"]=utils:uniqueChapters(chapters,true),
@@ -82,20 +82,39 @@ function query(name,page,params)
 end
 
 function query_url(url,page)
-    if page then url=url:find("page=") and url:gsub("page=%d+","page="..tostring(page+1)) or url.."&page="..tostring(page+1) end
+    if not url:find(host.."/team") then
+        if page and page>0 then url=url:find("page=") and url:gsub("page=%d+","page="..tostring(page+1)) or url.."&page="..tostring(page+1) end
+    end
     print(url)
-    local selects=network:load_as_Document(url):selectFirst("div.media-cards-grid"):select("div.media-card-wrap")
+    local doc=network:load_as_Document(url)
     local list={}
-    for i=0,selects:size()-1,1 do
-        local e=selects:get(i)
-        local f=e:selectFirst("a.media-card")
-        list[i]={
-            ["url"]=f:attr("abs:href"),
-            ["url_web"]=f:attr("abs:href"),
-            ["name"]=utils:text(e:selectFirst("h3")),
-            ["name_alt"]=utils:text(e:selectFirst("h3")),
-            ["thumbnail"]=select(1,f:attr("data-src"):gsub("^/",host.."/"))
-        }
+    if url:find(host.."/team") then
+        local json=JSONObject:create(doc:select("script"):toString():match("window.__DATA__ = (%b{})")):get("team")
+        local body=JSONObject.new():put("page",page and page+1 or 1):put("sort","rate"):put("dir","desc"):put("target","team"):put("targetValue",json:get("id"))
+        json=JSONObject:create(network:load_as_String(host.."/api/list",{["X-Xsrf-Token"]=network:decode(network:getCookie(domain,"XSRF-TOKEN"))},body:toString(),"application/json; charset=utf-8")):get("items"):get("data")
+        for i=0,json:size()-1,1 do
+            local e=json:get(i)
+            list[i]={
+                ["url"]=e:get("href"),
+                ["url_web"]=e:get("href"),
+                ["name"]=e:get("name"),
+                ["name_alt"]=utils:unescape_unicodes(e:get("rus_name")),
+                ["thumbnail"]=e:get("covers"):get("default"):gsub("\\","/")
+            }
+        end
+    else
+        local selects=doc:selectFirst("div.media-cards-grid"):select("div.media-card-wrap")
+        for i=0,selects:size()-1,1 do
+            local e=selects:get(i)
+            local f=e:selectFirst("a.media-card")
+            list[i]={
+                ["url"]=f:attr("abs:href"),
+                ["url_web"]=f:attr("abs:href"),
+                ["name"]=utils:text(e:selectFirst("h3")),
+                ["name_alt"]=utils:text(e:selectFirst("h3")),
+                ["thumbnail"]=select(1,f:attr("data-src"):gsub("^/",host.."/"))
+            }
+        end
     end
     return list
 end

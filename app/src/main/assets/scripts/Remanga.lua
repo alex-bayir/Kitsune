@@ -27,12 +27,17 @@ function update(url)
             local c=b~=nil and b:getInt("count_chapters") or 0
             if(c>count) then count=c; branch=b; end
         end
+        local publishers={}
+        local p=branch:get("publishers")
+        for j=0,p:size()-1,1 do
+            publishers[p:get(j):get("name")]="https://"..domain.."/api/titles?count=100&ordering=-id&publisher="..p:get(j):get("id")
+        end
         local chapters={}; local n=0
         for page=math.ceil(count/100),1,-1 do
             local list=JSONObject:create(network:load(host.."/api/titles/chapters/?branch_id="..branch:getInt("id").."&count=100&page="..page)):getArray("content")
             for i=list:size()-1,0,-1 do
-                local o=list:getObject(i); local p=o:getArray("publishers"):join(", ",{ "name"})
-                chapters[n]=Chapter.new(o:get("tome"), o:get("chapter"),o:get("name"),utils:parseDate(o:get("upload_date"),"yyyy-MM-dd'T'HH:mm:ss"),utils:to_map({id=o:get("id"),translator=p}))
+                local o=list:getObject(i);
+                chapters[n]=Chapter.new(o:get("tome"), o:get("chapter"),o:get("name"),utils:parseDate(o:get("upload_date"),"yyyy-MM-dd'T'HH:mm:ss"),utils:to_map({id=o:get("id"),["translators"]=publishers}))
                 n=n+1;
             end
         end

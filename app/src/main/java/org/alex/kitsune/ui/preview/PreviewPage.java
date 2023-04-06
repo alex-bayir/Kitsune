@@ -219,7 +219,7 @@ public class PreviewPage extends PreviewHolder {
                 if(count.getAndIncrement()>0){
                     builder.append(", ");
                 }
-                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.author,(String)entry.getKey()).putExtra(Constants.author_url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,(String)entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             });
         }else if(book.getAuthor() instanceof String str){
             builder.append("\n");
