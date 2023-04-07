@@ -122,7 +122,7 @@ public class ScriptsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case android.R.id.home: finish(); break;
-            case R.id.action_create_script: startActivity(new Intent(ScriptsActivity.this,CompilerActivity.class).putExtra(Constants.file,dir.getAbsolutePath()+"/newScript"+System.currentTimeMillis()+".py")); break;
+            case R.id.action_create_script: startActivity(new Intent(this,CompilerActivity.class).putExtra(Constants.file,dir.getAbsolutePath()+"/newScript"+System.currentTimeMillis()+".lua")); break;
             case R.id.action_open_api: startActivity(new Intent(this,ApiActivity.class)); break;
         }
         return super.onOptionsItemSelected(item);

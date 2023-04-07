@@ -227,18 +227,18 @@ public class OCRImageView extends PhotoView {
         }
         return null;
     }
-    public boolean showDialogTranslateIfTextExists(float x,float y){
+    public boolean showDialogTranslateIfTextExists(float x,float y,boolean integrated){
         org.alex.kitsune.ocr.Text.Group group=getTextBlock(x,y);
         if(group!=null){
             Intent intent=null;
-            for(ActivityInfo info:Utils.Translator.getTextTranslators(getContext()).stream().map(resolveInfo -> resolveInfo.activityInfo).collect(Collectors.toList())){
+            for(ActivityInfo info:Utils.Translator.getTextTranslators(getContext(),resolveInfo->resolveInfo.activityInfo)){
                 intent=new Intent(Intent.ACTION_PROCESS_TEXT)
                         .setComponent(new ComponentName(info.packageName,info.name))
                         .setType("text/plain")
                         .putExtra(Intent.EXTRA_PROCESS_TEXT,group.getText())
                         .putExtra(Intent.EXTRA_PROCESS_TEXT_READONLY,true);
             }
-            if(intent==null){
+            if(intent==null || integrated){
                 new DialogTranslate(getContext()).init(group.getText(),group.getTranslated()).show();
             }else{
                 getContext().startActivity(intent);

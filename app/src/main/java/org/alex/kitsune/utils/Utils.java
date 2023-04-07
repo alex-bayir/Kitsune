@@ -44,6 +44,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,7 +64,7 @@ public class Utils {
         public static boolean callTranslator(Context context, java.io.File file){
             return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file));
         }
-        public static boolean callTranslator(Context context, java.io.File file, List<ResolveInfo> translators){
+        public static boolean callTranslator(Context context, java.io.File file, List<ActivityInfo> translators){
             return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file),translators);
         }
 
@@ -74,7 +75,7 @@ public class Utils {
         public static boolean callTranslator(Context context,Uri uri,String packageName,boolean callPlayMarket){
             PackageInfo packageInfo=Utils.App.getPackageInfo(context,packageName);
             if(packageInfo==null){
-                if(callPlayMarket){Utils.App.callPlayMarkerToInstall(context,packageName);}
+                if(callPlayMarket){context.startActivity(App.getIntentOfCallPlayMarketToInstall(packageName));}
                 return false;
             }
             for(ResolveInfo resolveInfo:context.getPackageManager().queryIntentActivities(getTranslatorsIntent(uri),0)){
@@ -88,24 +89,28 @@ public class Utils {
         public static Intent getTranslatorsIntent(Uri uri){return new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_STREAM,uri).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);}
         public static Intent getIntent(Uri uri, String packageName, String activityName){return new Intent(Intent.ACTION_SEND).setType("image/*").putExtra(Intent.EXTRA_STREAM,uri).setComponent(new ComponentName(packageName,activityName)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_REORDER_TO_FRONT | Intent.FLAG_ACTIVITY_SINGLE_TOP);}
         public static Intent getIntent(Uri uri, ActivityInfo activityInfo){return getIntent(uri, activityInfo.packageName, activityInfo.name);}
-        public static List<ResolveInfo> getTranslators(Context context){
-            return getTranslators(context,Intent.ACTION_SEND,"image/*");
+        public static <R> List<R> getTranslators(Context context,Function<? super ResolveInfo, ? extends R> mapper){
+            return getTranslators(context,Intent.ACTION_SEND,"image/*",mapper);
         }
-        public static List<ResolveInfo> getTranslators(Context context,String action,String type){
+        public static <R> List<R> getTranslators(Context context, String action, String type, Function<? super ResolveInfo, ? extends R> mapper){
             return context.getPackageManager().queryIntentActivities(new Intent(action).setType(type),0)
-                    .stream().filter(resolveInfo -> resolveInfo.activityInfo.packageName.contains("translat"))
+                    .stream().filter(resolveInfo -> contains(resolveInfo.resolvePackageName,"translat") || contains(resolveInfo.activityInfo.packageName,"translat")
+                    ).map(mapper)
                     .collect(Collectors.toList());
         }
-        public static List<ResolveInfo> getTextTranslators(Context context){
-            return getTranslators(context,Intent.ACTION_PROCESS_TEXT,"text/plain");
+        private static boolean contains(String str,String s){
+            return str==null? s==null : str.contains(s);
+        }
+        public static <R> List<R> getTextTranslators(Context context,Function<? super ResolveInfo, ? extends R> mapper){
+            return getTranslators(context,Intent.ACTION_PROCESS_TEXT,"text/plain",mapper);
         }
         public static boolean callAnyTranslator(Context context,Uri uri){
-            return callAnyTranslator(context,uri,getTranslators(context));
+            return callAnyTranslator(context,uri,getTranslators(context,resolveInfo -> resolveInfo.activityInfo));
         }
-        public static boolean callAnyTranslator(Context context, Uri uri, List<ResolveInfo> translators){
+        public static boolean callAnyTranslator(Context context, Uri uri, List<ActivityInfo> translators){
             if(!callTranslator(context,uri,"ru.yandex.translate",translators.size()==0)){
                 if(translators.size()>0){
-                    context.startActivity(getIntent(uri,translators.iterator().next().activityInfo));
+                    context.startActivity(getIntent(uri,translators.get(0)));
                     return true;
                 }
             }
@@ -117,8 +122,8 @@ public class Utils {
             context.startActivity(new Intent(settings,Uri.parse("package:"+context.getPackageName())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         }
         public static boolean checkInstalled(Context context, String packageName){return getPackageInfo(context,packageName)!=null;}
-        public static void callPlayMarkerToInstall(Context context,String packageName){
-            context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName)));
+        public static Intent getIntentOfCallPlayMarketToInstall(String packageName){
+            return new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
         }
         public static PackageInfo getPackageInfo(Context context, String packageName){
             try {

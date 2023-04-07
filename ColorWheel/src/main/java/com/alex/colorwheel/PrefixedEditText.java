@@ -2,7 +2,6 @@ package com.alex.colorwheel;
 
 import android.content.Context;
 import android.graphics.Paint;
-import android.graphics.Typeface;
 import android.util.AttributeSet;
 import androidx.appcompat.widget.AppCompatEditText;
 
@@ -10,23 +9,11 @@ public class PrefixedEditText extends AppCompatEditText {
     private String prefix;
     private String Hint;
     private int prefixColor;
-    public int textsize=10;
     public Paint paintforprefix;
-    public String bold="";
-    int boldstyle=0;
-    public String boldStyle="";
     private int prefixPaddingBottom=0;
     private int prefixPaddingTop=0;
     private int prefixPaddingRight=0;
     private int prefixPaddingLeft=0;
-
-    private int parseint(String s){
-        int result=0; char c;
-        for(int i=0;i<s.length();i++){
-            c=s.charAt(i);
-            if('0'<=c && c<='9'){result=result*10+c-'0';}
-        }
-    return result;}
 
     public PrefixedEditText(Context context){
         super(context);
@@ -49,21 +36,9 @@ public class PrefixedEditText extends AppCompatEditText {
     protected void initPrefix(AttributeSet attrs){
         for(int i=0;i<attrs.getAttributeCount();i++){
             if(attrs.getAttributeName(i).equals("prefix")){setPrefix(attrs.getAttributeValue(i));}
-            if(attrs.getAttributeName(i).equals("textSize")){textsize=(int)(parseint(attrs.getAttributeValue(i))/3.6f);}
-            if(attrs.getAttributeName(i).equals("fontFamily")){bold=attrs.getAttributeValue(i);}
-            if(attrs.getAttributeName(i).equals("textStyle")){boldStyle=attrs.getAttributeValue(i);}
             if(attrs.getAttributeName(i).equals("hint")){Hint=attrs.getAttributeValue(i);}
         }
         if(prefix==null){prefix="";}
-        boldstyle=Typeface.BOLD;
-        if(boldStyle!=null){
-            switch(parseint(boldStyle)){
-                case Typeface.BOLD: boldstyle=Typeface.BOLD; break;
-                case Typeface.ITALIC: boldstyle=Typeface.ITALIC; break;
-                case Typeface.BOLD_ITALIC: boldstyle=Typeface.BOLD_ITALIC; break;
-                default : boldstyle=Typeface.NORMAL; break;
-            }
-        }
     }
 
     public String gethint(){return (Hint!=null) ? Hint : "";}
@@ -86,19 +61,13 @@ public class PrefixedEditText extends AppCompatEditText {
     }
     public int getPrefixColor(){return prefixColor;}
 
-    public void setTextsize(int textsize){
-        this.textsize=textsize;
-        setPaintforprefix(paintforprefix);
-    }
-
     public void setPaintforprefix(Paint paint){
         paintforprefix=paint;
         if(paintforprefix!=null){
         if(prefix==null){prefix="";}
         paintforprefix.setColor(prefixColor);
-        paintforprefix.setTextSize(textsize);
-        if(bold==null){bold="serif-monospace";}
-        paintforprefix.setTypeface(Typeface.create(bold,boldstyle));
+        paintforprefix.setTextSize(getTextSize());
+        paintforprefix.setTypeface(getTypeface());
         calculatePrefix(paintforprefix);
         invalidate();}
     }

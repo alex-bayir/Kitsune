@@ -51,15 +51,9 @@
                 android:defaultValue="20"
         />
 
-        <SwitchPreferenceCompat
-                android:key="custom_background"
-                android:defaultValue="false"
-                android:title="@string/custom_background"/>
-
         <com.alex.colorwheel.ColorChooserPreference
             android:key="custom_background_color"
             android:title="@string/custom_background"
-            android:dependency="custom_background"
             android:icon="@drawable/ic_background_color"
         />
         <org.alex.kitsune.commons.ListPreference
@@ -69,6 +63,12 @@
                 android:entries="@array/target_langs_entries"
                 android:entryValues="@array/target_langs_values"
                 android:defaultValue="ru"
+                android:icon="@drawable/ic_translate_yandex_transparent"
+        />
+        <SwitchPreferenceCompat
+                android:key="use third-party translator"
+                android:defaultValue="true"
+                android:title="@string/use_another_translator"
                 android:icon="@drawable/ic_translate_yandex_transparent"
         />
 

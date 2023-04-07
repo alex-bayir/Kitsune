@@ -88,7 +88,8 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
 
         image.setOnViewTapListener((view, x, y) -> {
             int width=view.getWidth(),length=width/3;
-            if(!image.showDialogTranslateIfTextExists(x,y)){
+            boolean internal=!ReaderActivity.getSharedPreferences().getBoolean(Constants.use_another_translator,true);
+            if(!image.showDialogTranslateIfTextExists(x,y,internal)){
                 if(x<length){
                     leftClick.onClick(view);
                 }else{

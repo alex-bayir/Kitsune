@@ -108,7 +108,7 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
             case (R.id.launcher_icon) -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(), launcher.getScaleType(), launcher.getDrawable())).create().show();
             case (R.id.profile_in_vk) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://vk.com/org.alex.kitsune")));
             case (R.id.source_code) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/alex-bayir/Kitsune")));
-            case (R.id.play_market) -> Utils.App.callPlayMarkerToInstall(this, getPackageName());
+            case (R.id.play_market) -> startActivity(Utils.App.getIntentOfCallPlayMarketToInstall(getPackageName()));
             case (R.id.card) -> {Utils.setClipboard(this, card);Toast.makeText(v.getContext(), card, Toast.LENGTH_SHORT).show();}
             case (R.id.update) -> {
                 if (NetworkUtils.isNetworkAvailable(this)) {

@@ -40,10 +40,11 @@ import org.alex.kitsune.utils.*;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ReaderActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,SeekBar.OnSeekBarChangeListener{
 
-    View root,frame;
+    ViewGroup root,frame;
     ReaderStatusBar statusBar;
     Toolbar toolBar;
     View bottomBar;
@@ -60,16 +61,19 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     Button btn_next;
     RecyclerView rv;
     CustomAdapter<Chapter> chaptersAdapter;
-    SharedPreferences prefs;
     boolean useVolumeKeys;
     float lastBrightness;
     Throwable lastThrowable;
     long start_read_time;
     TextView error_info;
+    private static SharedPreferences prefs;
     private static CustomSnackbar snackbar;
 
     public static CustomSnackbar getSnackbar(){
         return snackbar;
+    }
+    public static SharedPreferences getSharedPreferences(){
+        return prefs;
     }
 
     private void setData(int num_chapter){
@@ -94,7 +98,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onSaveInstanceState(@NonNull @NotNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        outState.putInt(Constants.hash, book !=null ? book.hashCode():-1);
+        outState.putInt(Constants.hash, book!=null ? book.hashCode():-1);
         outState.putBoolean(Constants.history,true);
     }
 
@@ -106,7 +110,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         setContentView(R.layout.activity_reader);
         lastBrightness=getBrightness();
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
-        snackbar=CustomSnackbar.makeSnackbar(findViewById(R.id.frame),CustomSnackbar.LENGTH_INDEFINITE).setBackgroundAlpha(192).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
+        frame=findViewById(R.id.frame);
+        root=findViewById(R.id.root);
+        snackbar=CustomSnackbar.makeSnackbar(frame,CustomSnackbar.LENGTH_INDEFINITE).setBackgroundAlpha(192).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
         Intent intent=getIntent();
         book=BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
@@ -119,7 +125,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             return false;
         });
         translate.setOnLongClickListener(v ->{
-            List<ResolveInfo> list=Translator.getTranslators(ReaderActivity.this);
+            List<ResolveInfo> list=Translator.getTranslators(ReaderActivity.this,resolveInfo -> resolveInfo);
             if(list.size()>1){
                 PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, translate,Gravity.END);
                 for(ResolveInfo info:list){
@@ -130,7 +136,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                 popupMenu.setForceShowIcon(true);
                 popupMenu.show();
             }else {
-                new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), list)).start();
+                new Thread(() -> Translator.callTranslator(ReaderActivity.this, Utils.Bitmap.saveBitmap(Utils.Bitmap.screenView(reader), Bitmap.CompressFormat.JPEG, new File(getExternalCacheDir() + File.separator + "tmp.jpg")), list.stream().map(resolveInfo -> resolveInfo.activityInfo).collect(Collectors.toList()))).start();
             }
             return true;
         });
@@ -146,8 +152,8 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         num_chapter=intent.getIntExtra(Constants.chapter,0);
         int num_bookMark=intent.getIntExtra(Constants.bookmark,-1);
         if(intent.getBooleanExtra(Constants.history,savedState!=null && savedState.getBoolean(Constants.history,false)) && book.getHistory()!=null){
-            num_chapter= book.getNumChapterHistory();
-            page= book.getHistory().getPage();
+            num_chapter=book.getNumChapterHistory();
+            page=book.getHistory().getPage();
         }
         if(num_bookMark>=0 && book.getBookMarks()!=null && num_bookMark< book.getBookMarks().size()){
             final BookMark bookMark= book.getBookMarks().get(num_bookMark);
@@ -182,8 +188,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         seekBar.setOnSeekBarChangeListener(this);
         seekBar.setOnTouchListener((v, event) -> {if(event.getAction()==MotionEvent.ACTION_UP){page=Math.max(0,Math.min(seekBar.getMax(),seekBar.getProgress()));}return false;});
         progress_text=findViewById(R.id.progress_text);
-        root=findViewById(R.id.root);
-        frame=findViewById(R.id.frame);
         menu_button=findViewById(R.id.action_menu);
         menu_button.setOnClickListener(v -> {
             PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, menu_button,Gravity.START);
@@ -296,7 +300,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         super.onResume();
         useVolumeKeys=prefs.getBoolean(Constants.use_volume_keys,true);
         setModes(prefs.getInt(Constants.ReaderMode,0),prefs.getInt(Constants.ScaleMode,ReaderPageHolder.ScaleType.FIT_X.ordinal()));
-        frame.setBackgroundColor(prefs.getBoolean(Constants.custom_background,false) ? prefs.getInt(Constants.custom_background_color,0) : 0);
+        frame.setBackgroundColor(prefs.getInt(Constants.custom_background_color,0));
         statusBar.setIsActive(prefs.getBoolean(Constants.show_status_bar,true));
         reader.setKeepScreenOn(prefs.getBoolean(Constants.keep_screen_on,false));
         setBrightness(!prefs.getBoolean(Constants.adjust_brightness,false),prefs.getInt(Constants.adjust_brightness_value,50));

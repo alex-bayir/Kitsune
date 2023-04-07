@@ -15,6 +15,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.TwoStatePreference;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
 import org.alex.kitsune.ui.main.Constants;
@@ -130,7 +131,7 @@ public class SettingsActivity extends AppCompatActivity {
                 setChangeListener("language",(preference, newValue) -> {
                     MainActivity.shouldUpdate=true;
                     shouldUpdate=true;
-                    Utils.Activity.setLocale((String)newValue,getContext());
+                    Utils.Activity.setLocale((String)newValue,preference.getContext());
                     Utils.Activity.restartActivity(getActivity());
                     return false;
                 });
@@ -140,6 +141,22 @@ public class SettingsActivity extends AppCompatActivity {
                     preference.setTitle(preference.getContext().getString(R.string.adjust_brightness_value)+": "+(newValue!=null ? newValue:0)+"%");
                     return true;
                 });
+
+                Preference translator=findPreference(Constants.use_another_translator);
+                if(translator!=null){
+                    boolean exists=Utils.Translator.getTextTranslators(getContext(),resolveInfo->resolveInfo).size()>0;
+                    translator.setOnPreferenceClickListener(
+                            preference -> {
+                                if(!exists && preference instanceof TwoStatePreference sp){
+                                    sp.setChecked(!sp.isChecked());
+                                    preference.getContext().startActivity(Utils.App.getIntentOfCallPlayMarketToInstall("ru.yandex.translate"));
+                                    return false;
+                                }else{
+                                    return true;
+                                }
+                            });
+                    translator.setSummaryProvider(preference -> exists ? "Yandex Translator":"Install Yandex Translator");
+                }
             }
         }
 
