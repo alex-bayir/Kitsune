@@ -263,8 +263,8 @@ public abstract class Book {
             set("history", book.getHistory());
             set("lastSize", book.getLastSize());
             set("lastTimeSave", book.getLastTimeSave());
-            set("CategoryFavorite", book.getCategoryFavorite());
-            set("lastTimeFavorite", book.getLastTimeFavorite());
+            set("category", book.getCategory());
+            set("category time", book.getCategoryTime());
             return true;
         }
         return false;
@@ -369,17 +369,15 @@ public abstract class Book {
     public long getHistoryDate(){return getHistory()!=null ? getHistory().getDate() : 0;}
     public final void setLastTimeSave(){set("lastTimeSave",System.currentTimeMillis());}
     public final long getLastTimeSave(){return get("lastTimeSave",0L);}
-    public final void setCategoryFavorite(String category){
-        set("CategoryFavorite",category);
-        if(category!=null){setLastTimeFavorite();}
-        else{set("lastTimeSave",0L);}
+    public final void setCategory(String category){
+        set("category",category);
+        set("category time",category==null?0L:System.currentTimeMillis());
         save();
     }
-    public final String getCategoryFavorite(){
-        return getString("CategoryFavorite");
+    public final String getCategory(){
+        return get("category",getString("CategoryFavorite"));
     }
-    public final void setLastTimeFavorite(){set("lastTimeFavorite",System.currentTimeMillis());}
-    public final long getLastTimeFavorite(){return get("lastTimeFavorite",0L);}
+    public final long getCategoryTime(){return get("category time",get("lastTimeFavorite",0L));}
     private long ImagesSize=-1;
     public long recalculateImagesSize(){return ImagesSize=Utils.File.getSize(new File(getPagesPath()));}
     public long getImagesSize(){return ImagesSize<0 ? recalculateImagesSize() : ImagesSize;}
@@ -392,13 +390,13 @@ public abstract class Book {
     }
 
     public CharSequence getGenres(ClickSpan.SpanClickListener listener){
-        FilterSortAdapter adapter= Book.getFilterSortAdapter(getSource());
+        FilterSortAdapter adapter=Book.getFilterSortAdapter(getSource());
         return adapter!=null && getGenres()!=null ? adapter.getClickableSpans(getGenres(), listener) : getGenres();
     }
 
     public static final Comparator<Book> HistoryComparator=(o1, o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
     public static final Comparator<Book> SavingTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
-    public static final Comparator<Book> FavoriteTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeFavorite(),o1.getLastTimeFavorite());
+    public static final Comparator<Book> CategoryTimeComparator=(o1, o2)->Long.compare(o2.getCategoryTime(),o1.getCategoryTime());
     public static final Comparator<Book> AlphabeticalComparatorEn=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(true),""));
     public static final Comparator<Book> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
     public static final Comparator<Book> ImagesSizesComparator=(o1, o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());

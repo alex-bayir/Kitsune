@@ -106,10 +106,10 @@ public class PreviewPage extends PreviewHolder {
         v1.findViewById(R.id.create).setOnClickListener(v -> inputNewCategory.show());
         v1.findViewById(R.id.remove).setOnClickListener(v -> {group.clearCheck(); chooseCategory.cancel(); v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));});
 
-        setGroups(context, BookService.getCategories(),group, book !=null ? book.getCategoryFavorite() : null);
+        setGroups(context, BookService.getCategories(),group, book !=null ? book.getCategory() : null);
         group.setOnCheckedChangeListener((group1, checkedId) -> {
             if(book !=null){
-                book.setCategoryFavorite(checkedId>=0 ? BookService.getCategories().toArray(new String[0])[checkedId] : null);
+                book.setCategory(checkedId>=0 ? BookService.getCategories().toArray(new String[0])[checkedId] : null);
                 BookService.allocate(book,false);
                 context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));
             }
@@ -128,8 +128,8 @@ public class PreviewPage extends PreviewHolder {
                 if(!categories.contains(category)){
                     BookService.getCategories().add(category);
                     SettingsShelf.add(PreferenceManager.getDefaultSharedPreferences(v.getContext()),category);
-                    setGroups(v.getContext(), BookService.getCategories(),group, book.getCategoryFavorite());
-                    book.setCategoryFavorite(input.getText().toString());
+                    setGroups(v.getContext(), BookService.getCategories(),group, book.getCategory());
+                    book.setCategory(input.getText().toString());
                     BookService.allocate(book,false);
                     v.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));
                     inputNewCategory.cancel();

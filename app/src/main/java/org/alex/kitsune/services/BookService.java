@@ -110,7 +110,7 @@ public class BookService {
         if(book !=null){
             if(book.getHistory()!=null){put(mapHistory, book); enableDelete=false;}else{mapHistory.remove(book.hashCode());}
             if(book.countSaved()>0){put(mapSaved, book); enableDelete=false;}else{mapSaved.remove(book.hashCode());}
-            if(book.getCategoryFavorite()!=null){put(mapFavorites, book); categories.add(book.getCategoryFavorite()); enableDelete=false;}else{remove(mapFavorites, book);}
+            if(book.getCategory()!=null){put(mapFavorites, book); categories.add(book.getCategory()); enableDelete=false;}else{remove(mapFavorites, book);}
             if(enableDelete){
                 book.delete();
             }
@@ -179,7 +179,7 @@ public class BookService {
             default -> Book.AlphabeticalComparator;
             case History -> Book.HistoryComparator;
             case Saved -> Book.SavingTimeComparator;
-            case Favorites -> Book.FavoriteTimeComparator;
+            case Favorites -> Book.CategoryTimeComparator;
             case Size -> Book.ImagesSizesComparator;
         };
     }
@@ -190,7 +190,7 @@ public class BookService {
     public static ArrayList<Book> getFavorites(String category){
         if(category==null){return null;}
         ArrayList<Book> list=getSorted(Type.Favorites);
-        list.removeIf(book -> !category.equals(book.getCategoryFavorite()));
+        list.removeIf(book -> !category.equals(book.getCategory()));
     return list;}
     public static int getCountUpdated(){int count=0;for(Book book :getMap(Type.All).values()){if(book.isUpdated()){count++;}}return count;}
     public static boolean isAllUpdated(){return getMap(Type.All).size()==getCountUpdated();}

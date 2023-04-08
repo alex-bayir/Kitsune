@@ -79,7 +79,7 @@ public class FavoritesActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case (android.R.id.home) -> finish();
-            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.FavoriteTimeComparator);}
+            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.CategoryTimeComparator);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
             case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
@@ -90,7 +90,7 @@ public class FavoritesActivity extends AppCompatActivity {
         List<String> categories=new ArrayList<>();
         List<BookAdapter> adapters=new ArrayList<>();
         boolean showSource=true;
-        Comparator<Book> comparator= Book.FavoriteTimeComparator;
+        Comparator<Book> comparator=Book.CategoryTimeComparator;
         public CategoriesAdapter(List<String> categories){
             setCategories(categories);
         }
