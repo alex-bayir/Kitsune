@@ -100,7 +100,16 @@ public class Catalogs extends Fragment implements MenuProvider {
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         return switch (item.getItemId()) {
             case (R.id.action_add_source) -> {startActivity(new Intent(getContext(), ScriptsActivity.class)); yield true;}
-            case (R.id.action_update_sctips) -> {Updater.checkAndUpdateScripts(activity, updating -> {updatingScrips=updating; activity.invalidateOptionsMenu();}); yield  true;}
+            case (R.id.action_update_sctips) -> {
+                Updater.getUpdate(getContext(),json->{
+                    if(json!=null){
+                        Updater.createSnackBarUpdate((ViewGroup) rv.getParent().getParent()).show();
+                    }else if(Updater.isActualVersion()){
+                        Updater.checkAndUpdateScripts(activity,updating -> {updatingScrips=updating; activity.invalidateOptionsMenu();});
+                    }
+                });
+                yield  true;
+            }
             default -> false;
         };
     }

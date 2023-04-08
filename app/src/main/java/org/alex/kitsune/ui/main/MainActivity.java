@@ -116,7 +116,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         updateMenu();
         headerImage.setOnClickListener(view -> Utils.Activity.callFilesStore(MainActivity.this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE));
         executeIntent(getIntent());
-        Updater.checkAndUpdateScripts(this,null);
     }
 
     @Override
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         counter.setGravity(Gravity.CENTER_VERTICAL);
         counter.setTypeface(null, Typeface.BOLD);
         counter.setTextColor(0xffff0000);
-        counter.setText(count!=0 ? ""+count : "");
+        counter.setText(count>0 ? String.valueOf(count) : "");
     }
 
     @Override
@@ -143,7 +142,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onPostCreate(savedInstanceState);
         Updater.getUpdate(this,json->{
             if(json!=null){
-                Updater.createSnackBarUpdate((ViewGroup) drawer.getParent(),Gravity.CENTER, Snackbar.LENGTH_LONG, v->startActivity(new Intent(this,ActivityAbout.class).putExtra("update",true))).show();
+                Updater.createSnackBarUpdate((ViewGroup) drawer.getParent()).show();
+            }else if(Updater.isActualVersion()){
+                Updater.checkAndUpdateScripts(this,null);
             }
         });
     }

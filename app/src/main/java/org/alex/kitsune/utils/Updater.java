@@ -15,6 +15,7 @@ import android.widget.Toast;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
 import com.alex.json.java.JSON;
+import com.google.android.material.snackbar.Snackbar;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
@@ -22,6 +23,7 @@ import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.services.BookService;
+import org.alex.kitsune.ui.main.ActivityAbout;
 import org.alex.kitsune.ui.main.Constants;
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +35,11 @@ import org.alex.kitsune.BuildConfig;
 
 public class Updater {
     private static JSON.Object updateInfo=null;
+    private static boolean actual_version=false;
     private static File f;
+    public static boolean isActualVersion(){
+        return actual_version;
+    }
     public static void init(Context context){
         f=new File(context.getExternalCacheDir().getAbsolutePath()+File.separator+"update.apk"); f.delete();
         if(compareVersions(PreferenceManager.getDefaultSharedPreferences(context).getString(Constants.version,""),BuildConfig.VERSION_NAME)!=0){
@@ -42,7 +48,7 @@ public class Updater {
         }
     }
     private static JSON.Object getUpdate(Context context){
-        if(NetworkUtils.isNetworkAvailable(context)){
+        if(context!=null && NetworkUtils.isNetworkAvailable(context)){
             try{
                 JSON.Array<?> json=NetworkUtils.getJSON("https://api.github.com/repos/alex-bayir/Kitsune/releases").array();
                 for(int i=0;i<json.size();i++){
@@ -61,6 +67,7 @@ public class Updater {
                         }
                     }
                 }
+                actual_version=true;
             }catch (Exception e){
                 Logs.saveLog(e);
             }
@@ -69,13 +76,13 @@ public class Updater {
     }
     private static boolean updateScripts(Context context){
         AtomicBoolean update=new AtomicBoolean(false);
-        if(NetworkUtils.isNetworkAvailable(context)){
+        if(context!=null && NetworkUtils.isNetworkAvailable(context)){
             String dir=context.getExternalFilesDir(Constants.scripts).getAbsolutePath();
             LinkedHashSet<String> set=new LinkedHashSet<>();
             SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
             Set<String> hashes=prefs.getStringSet(Constants.scripts_hashes,new HashSet<>());
             try{
-                JSON.Array<?> json=JSON.Array.create(NetworkUtils.getString("https://api.github.com/repos/alex-bayir/Kitsune/contents/app/src/main/assets/scripts"));
+                JSON.Array<?> json=NetworkUtils.getJSON("https://api.github.com/repos/alex-bayir/Kitsune/contents/app/src/main/assets/scripts").array();
                 for(int i=0;i<json.size();i++) {
                     int index=i;
                     Thread thread=new Thread(() -> {
@@ -109,7 +116,7 @@ public class Updater {
     }
 
     public static void checkAndUpdateScripts(Activity activity,Callback<Boolean> callback){
-        if(PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("update_scripts_automatically",true)){
+        if(activity!=null && PreferenceManager.getDefaultSharedPreferences(activity).getBoolean("update_scripts_automatically",true)){
             if(NetworkUtils.isNetworkAvailable(activity)){
                 if(callback!=null){callback.call(true);}
                 new Thread(()->{
@@ -194,6 +201,9 @@ public class Updater {
     }
     public static CustomSnackbar createSnackBarUpdate(ViewGroup parent, int gravity, int duration, View.OnClickListener update){
         return createSnackBarUpdate(parent,gravity,duration,parent.getContext().getString(R.string.new_version_founded)+" "+updateInfo.getString("version"),update);
+    }
+    public static CustomSnackbar createSnackBarUpdate(ViewGroup parent){
+        return createSnackBarUpdate(parent,Gravity.CENTER,Snackbar.LENGTH_LONG,v->v.getContext().startActivity(new Intent(v.getContext(), ActivityAbout.class).putExtra("update",true)));
     }
     public static Dialog createDialogUpdate(Context context, View.OnClickListener update){
         Dialog dialog=new Dialog(context);

@@ -497,6 +497,9 @@ public class Utils {
             return System.currentTimeMillis();
         }
     }
+    public static String toDate(long date,String format){
+        return new SimpleDateFormat(format,java.util.Locale.US).format(new Date(date));
+    }
 
     public static boolean isUrl(String string){
         return string!=null && (string.startsWith("https://") || string.startsWith("http://"));
