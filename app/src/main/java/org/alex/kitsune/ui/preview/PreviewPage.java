@@ -108,7 +108,7 @@ public class PreviewPage extends PreviewHolder {
 
         setGroups(context, BookService.getCategories(),group, book !=null ? book.getCategory() : null);
         group.setOnCheckedChangeListener((group1, checkedId) -> {
-            if(book !=null){
+            if(book!=null){
                 book.setCategory(checkedId>=0 ? BookService.getCategories().toArray(new String[0])[checkedId] : null);
                 BookService.allocate(book,false);
                 context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.favorites));
@@ -120,7 +120,7 @@ public class PreviewPage extends PreviewHolder {
         EditText input=v2.findViewById(R.id.input);
         v2.findViewById(R.id.close).setOnClickListener(v -> inputNewCategory.cancel());
         v2.findViewById(R.id.create).setOnClickListener(v -> {
-            if(book !=null && input.getText()!=null && input.getText().length()>0){
+            if(book!=null && input.getText()!=null && input.getText().length()>0){
                 String category=input.getText().toString();
                 HashSet<String> categories=new HashSet<>(BookService.getCategories());
                 categories.add(Shelf.History);

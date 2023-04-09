@@ -370,7 +370,7 @@ public abstract class Book {
     public final void setLastTimeSave(){set("lastTimeSave",System.currentTimeMillis());}
     public final long getLastTimeSave(){return get("lastTimeSave",0L);}
     public final void setCategory(String category){
-        set("category",category);
+        set("category",category); set("CategoryFavorite",null);
         set("category time",category==null?0L:System.currentTimeMillis());
         save();
     }
