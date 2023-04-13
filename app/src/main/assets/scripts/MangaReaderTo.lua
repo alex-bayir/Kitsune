@@ -72,9 +72,11 @@ function query(name,page,params)
                 if(#params>2) then url:add("score",params[3]:getSelected()) end
                 if(#params>3) then url:add("language",params[4]:getSelected()) end
                 if(#params>4) then url:add("sort",params[5]:getSelected()) end
-                if(#params>5) then url:add("sort",params[6]:getSelected()) end
-                if(#params>6) then url:add("status",params[6]:getSelected()) end
-                if(#params>7) then url:add("rating_type",params[7]:getSelected()) end
+                if(#params>5) then url:add("status",params[6]:getSelected()) end
+                if(#params>6) then url:add("rating_type",params[7]:getSelected()) end
+            else
+                local switch={[0]="most-viewed",[1]="release-date",[2]="latest-updated"}
+                url:add("sort",switch[params[1]])
             end
         end
     end

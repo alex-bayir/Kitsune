@@ -11,6 +11,7 @@ import okhttp3.*;
 import okio.Buffer;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.jetbrains.annotations.NotNull;
@@ -101,10 +102,7 @@ public class NetworkUtils {
         if (connectivityManager == null || (activeNetworkInfo = connectivityManager.getActiveNetworkInfo()) == null || !activeNetworkInfo.isConnected()) {
             return false;
         }
-        if (isNotMetered(activeNetworkInfo)) {
-            return true;
-        }
-        return false;
+        return isNotMetered(activeNetworkInfo);
     }
 
     private static boolean isNotMetered(NetworkInfo networkInfo) {
@@ -112,10 +110,7 @@ public class NetworkUtils {
             return false;
         }
         int type = networkInfo.getType();
-        if (type == ConnectivityManager.TYPE_MOBILE ||type == ConnectivityManager.TYPE_WIFI || type == ConnectivityManager.TYPE_WIMAX || type == ConnectivityManager.TYPE_ETHERNET) {
-            return true;
-        }
-        return false;
+        return type == ConnectivityManager.TYPE_MOBILE || type == ConnectivityManager.TYPE_WIFI || type == ConnectivityManager.TYPE_WIMAX || type == ConnectivityManager.TYPE_ETHERNET;
     }
 
     public static GlideUrl getGlideUrl(String url,String domain){
@@ -154,10 +149,6 @@ public class NetworkUtils {
 
     private static final Handler main=new Handler(Looper.getMainLooper());
     public static Handler getMainHandler(){return main;}
-
-    public interface Callback2<K,V>{
-        void call(K k,V v);
-    }
     public static boolean load(String url, String domain, File file){
         return load(url,domain,file,null);
     }

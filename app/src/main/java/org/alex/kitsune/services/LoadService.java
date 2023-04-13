@@ -64,6 +64,9 @@ public class LoadService extends Service {
             e.printStackTrace();
         }
     }
+    private void clearTasks(){
+        tasks.clear();
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("action", intent.getAction());
@@ -87,7 +90,7 @@ public class LoadService extends Service {
                             while (getPages(task.book,chapter) == null) {
                                 if (task.isCanceled()) {
                                     task.clearCancel();
-                                    finish(download); return;
+                                    finish(download); clearTasks(); return;
                                 }
                                 sleep(1000);
                             }
@@ -102,7 +105,7 @@ public class LoadService extends Service {
                                     if (task.isCanceled()) {
                                         task.clearCancel();
                                         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.book.hashCode()).putExtra(Constants.option, Constants.load));
-                                        finish(download); return;
+                                        finish(download); clearTasks(); return;
                                     }
                                     sleep(1000);
                                 }

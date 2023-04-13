@@ -60,6 +60,25 @@ public class Utils {
             @Override public void onStateRestorationPolicyChanged(){runnable.run();}
         });
     }
+    public static void setHorizontalInterceptorDisallow(RecyclerView inner, Function<Void,ViewParent> outer){
+        inner.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener(){
+            float lastX,lastY;
+            @Override public boolean onInterceptTouchEvent(@NonNull @NotNull RecyclerView irv, @NonNull @NotNull MotionEvent e){
+                float x=e.getX(),y=e.getY();
+                switch (e.getAction()){
+                    case MotionEvent.ACTION_MOVE -> {
+                        boolean disallow=false;
+                        if(Math.abs(x-lastX)>Math.abs(y-lastY)){
+                            disallow=inner.canScrollHorizontally((int)(lastX-x));
+                        }
+                        outer.apply(null).requestDisallowInterceptTouchEvent(disallow);
+                    }
+                }
+                lastX=x; lastY=y;
+                return false;
+            }
+        });
+    }
     public static class Translator{
         public static boolean callTranslator(Context context, java.io.File file){
             return file!=null && file.exists() && callAnyTranslator(context, Utils.File.toUri(context,file));

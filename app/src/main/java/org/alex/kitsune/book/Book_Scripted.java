@@ -3,6 +3,7 @@ package org.alex.kitsune.book;
 import android.text.Html;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
@@ -113,7 +114,7 @@ public class Book_Scripted extends Book {
     }
 
     @Override
-    public boolean loadPage(Chapter chapter, Page page, Callback<File> done, Boolean cancel_flag, NetworkUtils.Callback2<Long, Long> process, Callback<Throwable> onBreak) {
+    public boolean loadPage(Chapter chapter, Page page, Callback<File> done, Boolean cancel_flag, Callback2<Long, Long> process, Callback<Throwable> onBreak) {
         if(page==null){return false;}
         File save=getPage(chapter, page);
         if(page.getUrl()!=null){

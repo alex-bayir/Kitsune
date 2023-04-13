@@ -144,7 +144,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         }).notifyUpdate(this).getOldListSize()!=list.size();
     }
     public int update(Book book){
-        int index= book !=null ? get(book) : -1;
+        int index=book!=null ? get(book) : -1;
         if(index!=-1){notifyItemChanged(index);}
         return index;
     }

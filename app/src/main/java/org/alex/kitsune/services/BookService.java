@@ -59,11 +59,9 @@ public class BookService {
     public static boolean isInited(){return dir!=null && getMap(BookService.Type.All).size()>0;}
     public static String getDir(){return dir;}
     public static String getCacheDir(){return cacheDir;}
-    public static void setCacheDirIfNull(List<Book> books){for(Book book : books){if(book.getDir()==null){
-        book.setDir(getCacheDir());}} replaceIfExists(books,map);}
+    public static void setCacheDirIfNull(List<Book> books){for(Book book : books){if(book.getDir()==null){book.setDir(getCacheDir());}} replaceIfExists(books,map);}
     public static void setDir(List<Book> books){setDir(books,dir);}
-    public static void setDir(List<Book> books, String dir){for(Book book : books){
-        book.setDir(dir);}}
+    public static void setDir(List<Book> books, String dir){for(Book book : books){book.setDir(dir);}}
     public static Map<Integer, Book> getMap(Type type){
         return switch (type != null ? type : Type.All) {
             default -> map;
@@ -77,8 +75,7 @@ public class BookService {
     public static Book get(int hash){return get(hash,Type.All);}
 
     public static HashSet<String> getCategories(){return categories;}
-    public static int putNew(Book book){if(book !=null){
-        book.setDir(cacheDir);} return put(map, book);}
+    public static int putNew(Book book){if(book !=null){book.setDir(cacheDir);} return put(map, book);}
     public static Book getOrPutNewWithDir(int hash, String json){
         Book book=get(hash);
         if(book==null && (book= Book.fromJSON(json))!=null){

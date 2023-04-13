@@ -9,6 +9,7 @@ import android.os.Message;
 import android.text.Html;
 import androidx.annotation.Nullable;
 import org.alex.kitsune.R;
+import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.commons.ClickSpan;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.ListSet;
@@ -144,7 +145,7 @@ public abstract class Book {
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
     }
     public Drawable getPage(Chapter chapter,int page){return Drawable.createFromPath(getPagePath(chapter,page));}
-    public abstract boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,NetworkUtils.Callback2<Long,Long> process,Callback<Throwable> onBreak);
+    public abstract boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak);
     public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
     public static void loadThumbnail(String path,String url,Callback<Drawable> callback){

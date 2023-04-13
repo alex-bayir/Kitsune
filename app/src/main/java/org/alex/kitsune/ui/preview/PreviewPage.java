@@ -17,7 +17,6 @@ import android.view.*;
 import android.webkit.*;
 import android.widget.*;
 import android.widget.RadioGroup;
-import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
@@ -37,7 +36,6 @@ import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.ui.shelf.Shelf;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
-import org.jetbrains.annotations.NotNull;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -90,7 +88,7 @@ public class PreviewPage extends PreviewHolder {
             itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,m.hashCode()));
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
-        rv.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener(){@Override public boolean onInterceptTouchEvent(@NonNull @NotNull RecyclerView rv, @NonNull @NotNull MotionEvent e){itemView.getParent().requestDisallowInterceptTouchEvent(true);return false;}});
+        Utils.setHorizontalInterceptorDisallow(rv,v->itemView.getParent());
     }
 
 

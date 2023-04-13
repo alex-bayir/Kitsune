@@ -1,38 +1,32 @@
 package org.alex.kitsune.ui.search;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.view.*;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayoutMediator;
-import fr.castorflex.android.circularprogressbar.CircularProgressBar;
-import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.R;
-import org.alex.kitsune.book.Book;
-import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.services.BookService;
-import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.shelf.Catalogs;
-import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecommendationsActivity extends AppCompatActivity {
     Toolbar toolbar;
     ViewPager2 pager;
     Adapter adapter;
-    Book updateOnReturn=null;
 
     int[] stringIds={R.string.sort_popular,R.string.sort_latest,R.string.sort_updated};
     ArrayList<Catalogs.Container> catalogs;
@@ -54,111 +48,65 @@ public class RecommendationsActivity extends AppCompatActivity {
         }
         toolbar.setTitle(R.string.recommendations);
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(stringIds[position])).attach();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        adapter.updateBook(updateOnReturn);
-        updateOnReturn=null;
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.options_search, menu);
-        menu.findItem(adapter.isShowSource() ? R.id.source : R.id.status).setChecked(true);
-        return super.onCreateOptionsMenu(menu);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                adapter.update(intent.getIntExtra(Constants.hash,-1));
+            }
+        },new IntentFilter(Constants.action_Update));
     }
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home -> finish();
-            case (R.id.list) -> {item.setChecked(true);adapter.setSpanCount(1);}
-            case (R.id.largeGrid) -> {item.setChecked(true);adapter.setSpanCount(2);}
-            case (R.id.mediumGrid) -> {item.setChecked(true);adapter.setSpanCount(3);}
-            case (R.id.smallGrid) -> {item.setChecked(true);adapter.setSpanCount(4);}
-            case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }
 
     public class Adapter extends RecyclerView.Adapter<Adapter.Holder>{
-        boolean showSource=true;
-        int spanCount=1;
         int[] orders;
-        ArrayList<BookAdapter> adapters=new ArrayList<>();
-        public Adapter(int[] orders){this.orders=orders;}
-        public void setShowSource(boolean showSource){this.showSource=showSource; for(BookAdapter adapter:adapters){adapter.setShowSource(this.showSource);}}
-        public boolean isShowSource(){return showSource;}
-        public void setSpanCount(int spanCount){this.spanCount=spanCount; for(BookAdapter adapter:adapters){adapter.setSpanCount(spanCount);}}
-
+        SourceSearchAdapter[] adapters;
+        public Adapter(int[] orders){
+            this.orders=orders;
+            adapters=new SourceSearchAdapter[orders.length];
+        }
+        public void update(int hash){
+            for(SourceSearchAdapter adapter:adapters){if(adapter!=null){adapter.update(hash);}}
+        }
         @Override
-        public int getItemViewType(int position){return position+1;}
+        public int getItemViewType(int position){return position;}
 
         @NonNull
         @NotNull
         @Override
         public Holder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-            Holder holder=new Holder(parent,viewType);
-            adapters.add(holder.getAdapter());
-            return holder;
+            return new Holder(parent,viewType);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull @NotNull Holder holder, int position) {}
+        public void onBindViewHolder(@NonNull @NotNull Holder holder, int position) {
+            adapters[position]=holder.getAdapter();
+        }
 
         @Override public int getItemCount(){return orders.length;}
 
-        public void updateBook(Book book){for(BookAdapter adapter:adapters){adapter.update(book);}}
-
         public class Holder extends RecyclerView.ViewHolder{
-            BookAdapter adapter;
-            TextView nothingFound;
-            CircularProgressBar progressBar;
-            private int loaded=0;
+            SourceSearchAdapter adapter;
+            RecyclerView rv;
+            TextView error;
             public Holder(@NonNull @NotNull ViewGroup parent,int order) {
-                super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list_with_progerss,parent,false));
-                nothingFound=itemView.findViewById(R.id.text);
-                progressBar=itemView.findViewById(R.id.progress);
-                progressBar.setIndeterminateDrawable(new CircularProgressDrawable.Builder(itemView.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).style(CircularProgressDrawable.STYLE_ROUNDED).strokeWidth(8f).sweepInterpolator(new AccelerateDecelerateInterpolator()).build());
-
-                adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
-                    adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
-                    parent.getContext().startActivity(new Intent(parent.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
-                });
-                adapter.setShowSource(showSource);
-                adapter.initRV(itemView.findViewById(R.id.rv_list),spanCount);
-                if(NetworkUtils.isNetworkAvailable(itemView.getContext())){
-                    progressBar.setVisibility(View.VISIBLE); int i=0;
-                    for(Catalogs.Container container:catalogs){if(container.enable){i++; SearchActivity.searchBook(container.source, null, order, this::add, nothingFound);}}
-                    if(i==0){
-                        nothingFound.setText(R.string.no_catalogs_selected);
-                        nothingFound.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.GONE);
-                    }
-                }else{
-                    nothingFound.setText(R.string.internet_is_loss);
-                    nothingFound.setVisibility(View.VISIBLE);
-                    progressBar.setVisibility(View.GONE);
-                }
+                super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
+                error=itemView.findViewById(R.id.text);
+                rv=itemView.findViewById(R.id.rv_list);
+                rv.setLayoutManager(new LinearLayoutManager(rv.getContext(),RecyclerView.VERTICAL,false));
+                adapter=new SourceSearchAdapter(catalogs.stream().filter(c->c.enable).map(c->c.source).collect(Collectors.toList()),true);
+                rv.setAdapter(adapter);
+                rv.setVerticalScrollBarEnabled(false);
+                SearchActivity.search(rv.getContext(),null,order,adapter.getSources(),adapter.getCallback(),error);
             }
 
-            public BookAdapter getAdapter(){return adapter;}
-
-            private synchronized void add(Collection<Book> books){
-                if(books !=null && books.size()>0){
-                    books = books instanceof List ? books : new ArrayList<>(books);
-                    BookService.setCacheDirIfNull((List<Book>) books);
-                    adapter.addAll(books, Book.SourceComparator(Catalogs.Container.sources(catalogs)));
-                    progressBar.setVisibility(View.GONE);
-                }
-                if(++loaded==Catalogs.Container.countEnabled(catalogs)){
-                    progressBar.setVisibility(View.GONE);
-                    if(adapter.getItemCount()==0){nothingFound.setVisibility(View.VISIBLE);}
-                }
-
-            }
+            public SourceSearchAdapter getAdapter(){return adapter;}
         }
 
     }
