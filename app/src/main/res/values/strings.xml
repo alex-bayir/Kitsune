@@ -200,7 +200,8 @@
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
         Version 1.8.0-1.8.1:\n
-        \t-The first English source has been added.\n
+        \t-Showing search and recommendations results in a convenient form.\n
+        \t-The first English sources have been added.\n
         \t-The first source of ranobe has been added.\n
         \t-Added image translation directly into the app.\n
         \t-Optimization and error correction.\n\n
