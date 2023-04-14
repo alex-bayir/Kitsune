@@ -1,5 +1,7 @@
 package org.alex.kitsune.ui.search;
 
+import android.annotation.SuppressLint;
+import android.app.SearchManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -12,7 +14,10 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.MenuItemCompat;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -31,13 +36,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SearchActivity extends AppCompatActivity {
+public class SearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener{
 
     Toolbar toolbar;
     RecyclerView rv;
     SourceSearchAdapter adapter;
     TextView error;
     ArrayList<Catalogs.Container> catalogs;
+    String query;
+    MenuItem search_item;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(Utils.Theme.getTheme(this));
@@ -60,14 +67,36 @@ public class SearchActivity extends AppCompatActivity {
         adapter=new SourceSearchAdapter(catalogs.stream().filter(c->c.enable).map(c->c.source).collect(Collectors.toList()),false);
         rv.setAdapter(adapter);
         rv.setVerticalScrollBarEnabled(false);
-        search(this,query,0,adapter.getSources(),adapter.getCallback(),error);
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 adapter.update(intent.getIntExtra(Constants.hash,-1));
             }
         },new IntentFilter(Constants.action_Update));
+        onQueryTextSubmit(query);
     }
+
+    @SuppressLint("RestrictedApi")
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        search_item=menu.add("search");
+        search_item.setIcon(R.drawable.ic_search);
+        search_item.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS|MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW);
+        SearchView searchView = new SearchView(this);
+        search_item.setActionView(searchView);
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnQueryTextListener(this);
+        searchView.setOnSearchClickListener(v -> searchView.setQuery(query,false));
+        searchView.setOnQueryTextFocusChangeListener((v, hasFocus) -> {
+            if(!hasFocus){
+                search_item.collapseActionView();
+            }
+        });
+        if(menu instanceof MenuBuilder){((MenuBuilder)menu).setOptionalIconsVisible(true);}
+        return true;
+    }
+
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
@@ -115,5 +144,19 @@ public class SearchActivity extends AppCompatActivity {
             }
             //out_error.setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    public boolean onQueryTextSubmit(String query) {
+        this.query=query;
+        toolbar.setTitle(query);
+        if(search_item!=null){search_item.collapseActionView();}
+        search(this,query,0,adapter.getSources(),adapter.getCallback(),error);
+        adapter.clear();
+        return true;
+    }
+    @Override
+    public boolean onQueryTextChange(String newText) {
+        return false;
     }
 }

@@ -41,6 +41,10 @@ public class SourceSearchAdapter extends RecyclerView.Adapter<SourceSearchAdapte
         };
         updates=new Callback[sources.size()];
     }
+    public void clear(){
+        books.clear();
+        notifyItemRangeChanged(0,getItemCount());
+    }
     public void update(int hash){
         for(Callback<Integer> callback:updates){
             if(callback!=null){callback.call(hash);}
