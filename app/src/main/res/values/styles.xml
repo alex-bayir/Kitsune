@@ -11,46 +11,32 @@
     </style>
 
     <style name="AppTheme.LightRed" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="transparent_overlay">@color/transparent_light</item>
         <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
         <item name="colorPrimary">@color/red</item>
         <item name="colorAccent">?android:colorPrimary</item>
         <item name="colorPrimaryDark">@color/transparent_dark</item>
         <item name="appBarColor">?android:colorPrimary</item>
     </style>
-    <style name="AppTheme.LightYellow" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+    <style name="AppTheme.LightYellow" parent="AppTheme.LightRed">
         <item name="colorPrimary">@color/yellow</item>
-        <item name="colorAccent">?android:colorPrimary</item>
-        <item name="colorPrimaryDark">@color/transparent_dark</item>
-        <item name="appBarColor">?android:colorPrimary</item>
     </style>
-    <style name="AppTheme.LightGreen" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+    <style name="AppTheme.LightGreen" parent="AppTheme.LightRed">
         <item name="colorPrimary">@color/green</item>
-        <item name="colorAccent">?android:colorPrimary</item>
-        <item name="colorPrimaryDark">@color/transparent_dark</item>
-        <item name="appBarColor">?android:colorPrimary</item>
     </style>
     <style name="AppTheme.DarkRed" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="transparent_overlay">@color/transparent_dark</item>
         <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
         <item name="colorPrimary">@color/red</item>
         <item name="colorAccent">?android:colorPrimary</item>
         <item name="colorPrimaryDark">@color/transparent_dark</item>
         <item name="appBarColor">#FF282828</item>
     </style>
-    <style name="AppTheme.DarkYellow" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+    <style name="AppTheme.DarkYellow" parent="AppTheme.DarkRed">
         <item name="colorPrimary">@color/yellow</item>
-        <item name="colorAccent">?android:colorPrimary</item>
-        <item name="colorPrimaryDark">@color/transparent_dark</item>
-        <item name="appBarColor">#FF282828</item>
     </style>
-    <style name="AppTheme.DarkGreen" parent="Theme.MaterialComponents.NoActionBar">
-        <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
+    <style name="AppTheme.DarkGreen" parent="AppTheme.DarkRed">
         <item name="colorPrimary">@color/green</item>
-        <item name="colorAccent">?android:colorPrimary</item>
-        <item name="colorPrimaryDark">@color/transparent_dark</item>
-        <item name="appBarColor">#FF282828</item>
     </style>
 
 

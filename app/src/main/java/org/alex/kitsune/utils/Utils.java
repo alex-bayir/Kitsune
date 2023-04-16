@@ -594,22 +594,6 @@ public class Utils {
         if(sort){list.sort(Integer::compareTo);}
         return list;
     }
-    public static void showToolTip(View anchor,int text){
-        showToolTip(anchor,text,R.layout.tooltip);
-    }
-    public static void showToolTip(View anchor,String text){
-        showToolTip(anchor,text,R.layout.tooltip);
-    }
-
-    public static void showToolTip(View anchor, int text, View layout, int text_view_id){
-        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout,text_view_id).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
-    }
-    public static void showToolTip(View anchor,int text,int layout){
-        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
-    }
-    public static void showToolTip(View anchor,String text,int layout){
-        new SimpleTooltip.Builder(anchor.getContext()).anchorView(anchor).contentView(layout).text(text).arrowColor(anchor.getContext().getColor(R.color.transparent_dark)).gravity(Gravity.TOP).animated(false).transparentOverlay(false).build().show();
-    }
 
     public static Throwable getRootCause(Throwable throwable, int depth){
         return change_known_errors(throwable!=null && throwable.getCause()!=null && (depth>0||depth==-1)? getRootCause(throwable.getCause(),--depth) : throwable);

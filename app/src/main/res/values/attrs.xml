@@ -5,5 +5,6 @@
          ?android:attr/buttonBarStyle is new as of API 11 so this is
          necessary to support previous API levels. -->
     <attr name="colorLine" format="color" />
-    <attr name="appBarColor" format="color" />
+    <attr name="appBarColor" format="color"/>
+    <attr name="transparent_overlay" format="reference|color"/>
 </resources>

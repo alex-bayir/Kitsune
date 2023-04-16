@@ -22,6 +22,7 @@ import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.alex.listitemview.ListItemView;
+import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.commons.*;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.views.BookAdapter;
@@ -71,7 +72,21 @@ public class PreviewPage extends PreviewHolder {
         favorite=itemView.findViewById(R.id.button_favourite);
         web=itemView.findViewById(R.id.button_web);
         web.setOnClickListener(v-> web_dialog.show(((FragmentActivity)web.getContext()).getSupportFragmentManager(),""));
-        web.setOnLongClickListener(v -> {Utils.showToolTip(web,R.string.auth_help_info); return true;});
+        web.setOnLongClickListener(v -> {
+            new SimpleTooltip.Builder(web.getContext())
+                    .anchorView(web)
+                    .contentView(R.layout.tooltip)
+                    .text(R.string.auth_help_info)
+                    .arrowColor(web.getContext().getColor(R.color.transparent_dark))
+                    .gravity(Gravity.TOP)
+                    .showArrow(true)
+                    .transparentOverlay(false)
+                    .focusable(true)
+                    .margin(0f).overlayOffset(0f)
+                    .build()
+                    .show();
+            return true;
+        });
         read=itemView.findViewById(R.id.button_read);
         ratingBar=itemView.findViewById(R.id.ratingBar);
         genres=itemView.findViewById(R.id.genres);

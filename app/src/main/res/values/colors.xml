@@ -9,6 +9,7 @@
     <color name="background_dark">#FF282828</color>
     <color name="colorCard">#222222</color>
     <color name="transparent_dark">#98000000</color>
+    <color name="transparent_light">#98FFFFFF</color>
     <color name="black_overlay">#66000000</color>
     <color name="gray">#7f7f7f</color>
     <color name="gray_dark">#202020</color>

@@ -3,12 +3,15 @@ package org.alex.kitsune.book.views;
 import android.app.AlertDialog;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.card.MaterialCardView;
+import io.github.douglasjunior.androidSimpleTooltip.OverlayView;
+import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.R;
 import com.alex.ratingbar.RatingBar;
 import org.alex.kitsune.commons.AspectRatioImageView;
@@ -52,15 +55,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
         line=root.findViewById(R.id.line);
         line.setImageDrawable(progress_drawable);
         markNew=root.findViewById(R.id.mark_new);
-        if(onItem!=null){
-            root.setOnClickListener(v->onItem.onItemClick(v,getBindingAdapterPosition()));
-        }
-        if(onItemButton!=null){
-            button.setOnClickListener(v->onItemButton.onItemClick(v,getBindingAdapterPosition()));
-        }else{
-            button.setClickable(false);
-            button.setFocusable(false);
-        }
+        setOnClickListeners(onItem,onItemButton);
         cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
     }
     public BookHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton, boolean fullContent, boolean horizontal){
@@ -74,6 +69,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
         setSubtitle(book.getNameAlt());
         setGenres(book.getGenres());
         setSize(book.getImagesSize(),fullSize);
+        setDescriptionHint(book.getDescription());
         setRating(book.getRating());
         setNumSaved(book.countSaved());
         setNumNew(showCheckedNew ? book.getCheckedNew() : book.getNotCheckedNew());
@@ -115,8 +111,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
         this.ratingBar.setRating(rating,true);
     }
     public final void setSizeText(String text,boolean show){
-        size.setText(text);
-        size.setVisibility(show ? View.VISIBLE : View.INVISIBLE);
+        size.setText(show?text:null);
     }
     public final void setButtonText(String text,boolean enabled){
         button.setText(text);
@@ -147,14 +142,26 @@ public class BookHolder extends RecyclerView.ViewHolder{
         progress_drawable.setColors(colors).setMax(max).setProgress(progress).invalidateSelf();
     }
     public final void setOnClickListeners(HolderClickListener onItem, HolderClickListener onItemButton){
-        if(onItem!=null){
-            root.setOnClickListener(v->onItem.onItemClick(v,getBindingAdapterPosition()));
-        }
-        if(onItemButton!=null){
-            button.setOnClickListener(v->onItemButton.onItemClick(v,getBindingAdapterPosition()));
-        }else{
-            button.setClickable(false);
-            button.setFocusable(false);
-        }
+        root.setOnClickListener(onItem==null?null:v->onItem.onItemClick(v,getBindingAdapterPosition()));
+        button.setOnClickListener(onItemButton==null?null:v->onItemButton.onItemClick(v,getBindingAdapterPosition()));
+        button.setClickable(onItemButton!=null);
+    }
+    public final void setDescriptionHint(String description){
+        root.setOnLongClickListener(description==null || description.length()==0?null:v->{
+            new SimpleTooltip.Builder(root.getContext())
+                    .anchorView(root)
+                    .contentView(R.layout.tooltip)
+                    .text(description)
+                    .gravity(Gravity.BOTTOM)
+                    .showArrow(false)
+                    .animated(false)
+                    .transparentOverlay(false)
+                    .highlightShape(OverlayView.HIGHLIGHT_SHAPE_RECTANGULAR_ROUNDED)
+                    .cornerRadius(root.getRadius()).overlayOffset(0).margin(0f)
+                    .focusable(true)
+                    .build()
+                    .show();
+            return true;
+        });
     }
 }
