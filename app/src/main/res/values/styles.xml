@@ -11,6 +11,7 @@
     </style>
 
     <style name="AppTheme.LightRed" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="isLightTheme">true</item>
         <item name="transparent_overlay">@color/transparent_light</item>
         <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
         <item name="colorPrimary">@color/red</item>
@@ -24,7 +25,11 @@
     <style name="AppTheme.LightGreen" parent="AppTheme.LightRed">
         <item name="colorPrimary">@color/green</item>
     </style>
+    <style name="AppTheme.LightBlue" parent="AppTheme.LightRed">
+        <item name="colorPrimary">@color/blue</item>
+    </style>
     <style name="AppTheme.DarkRed" parent="Theme.MaterialComponents.NoActionBar">
+        <item name="isLightTheme">false</item>
         <item name="transparent_overlay">@color/transparent_dark</item>
         <item name="materialButtonStyle">@style/Widget.MaterialComponents.Button.TextButton</item>
         <item name="colorPrimary">@color/red</item>
@@ -38,16 +43,10 @@
     <style name="AppTheme.DarkGreen" parent="AppTheme.DarkRed">
         <item name="colorPrimary">@color/green</item>
     </style>
-
-
-    <style name="AppDialogDark" parent="@style/Theme.Design.BottomSheetDialog">
-        <item name="colorPrimary">@color/red</item>
-        <item name="colorAccent">@color/red</item>
+    <style name="AppTheme.DarkBlue" parent="AppTheme.DarkRed">
+        <item name="colorPrimary">@color/blue</item>
     </style>
-    <style name="AppDialogLight" parent="@style/Theme.Design.Light.BottomSheetDialog">
-        <item name="colorPrimary">@color/green</item>
-        <item name="colorAccent">@color/green</item>
-    </style>
+
     <style name="Theme.Transparent" parent="Theme.AppCompat">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>

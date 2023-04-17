@@ -4,9 +4,11 @@
         <item>Dark Red</item>
         <item>Dark Yellow</item>
         <item>Dark Green</item>
+        <item>Dark Blue</item>
         <item>Light Red</item>
         <item>Light Yellow</item>
         <item>Light Green</item>
+        <item>Light Blue</item>
     </string-array>
 
     <integer-array name="themes_values">
@@ -16,6 +18,8 @@
         <item>3</item>
         <item>4</item>
         <item>5</item>
+        <item>6</item>
+        <item>7</item>
     </integer-array>
 
     <string-array name="reader_mode_entries">

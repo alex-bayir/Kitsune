@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Typeface;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.text.Html;
 import android.text.SpannableStringBuilder;
@@ -169,6 +170,9 @@ public class PreviewPage extends PreviewHolder {
             cover.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
             backdrop.setImageDrawable(drawable==null ? caution : drawable);
             backdrop.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
+            if(drawable instanceof Animatable animatable){
+                animatable.start();
+            }
         });
         info.setText(createText(info.getContext(), book,full));
         ratingBar.setRating(book.getRating(),true);

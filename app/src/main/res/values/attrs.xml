@@ -7,4 +7,5 @@
     <attr name="colorLine" format="color" />
     <attr name="appBarColor" format="color"/>
     <attr name="transparent_overlay" format="reference|color"/>
+    <attr name="isLightTheme" format="boolean"/>
 </resources>

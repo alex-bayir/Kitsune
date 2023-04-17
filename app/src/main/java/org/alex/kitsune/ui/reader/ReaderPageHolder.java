@@ -290,7 +290,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
 
     public void setScaleType(ScaleType scaleType,boolean vertical){
-        Drawable drawable= image.getDrawable();
+        Drawable drawable=image.getDrawable();
         if(drawable!=null){
             switch (scaleType!=null ? scaleType : ScaleType.FIT_X) {
                 case CENTER -> setScaleType(false, ImageView.ScaleType.CENTER);

@@ -7,8 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.ImageView;
@@ -19,11 +19,11 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
 import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.navigation.NavigationView;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.snackbar.Snackbar;
-import com.soundcloud.android.crop.Crop;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.commons.DrawerLayout;
@@ -98,7 +98,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Constants.saved_path, BookService.init(this)).apply();
         adapter=new PagesAdapter(this.getSupportFragmentManager(),R.id.pager);
-        headerImagePath=getExternalFilesDir(null).getAbsolutePath()+"/header";
+        headerImagePath=getExternalFilesDir(null).getAbsolutePath()+File.separator+"header";
         drawer=findViewById(R.id.drawer_layout);
         drawer.addHamburger(this,toolbar);
         drawer.addDrawerListener(new androidx.drawerlayout.widget.DrawerLayout.SimpleDrawerListener() {
@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             }
         });
         navigationView=findViewById(R.id.nav_view);
+        navigationView.setCheckedItem(R.id.nav_shelf);
         navigationView.setNavigationItemSelectedListener(this);
         findViewById(R.id.progress).setVisibility(View.GONE);
         onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
@@ -187,7 +188,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
     public void updateMenu(){
         if(new File(headerImagePath).exists()){
-            ((ImageView)navigationView.getHeaderView(0)).setImageDrawable(Drawable.createFromPath(headerImagePath));
+            Drawable drawable=Drawable.createFromPath(headerImagePath);
+            ((ImageView)navigationView.getHeaderView(0)).setImageDrawable(drawable);
+            if(drawable instanceof Animatable animatable){
+                animatable.start();
+            }
+            RecyclerView rv=(RecyclerView) navigationView.getChildAt(0);
+            rv.scrollToPosition(rv.getAdapter().getItemCount()-1);
         }
     }
 
@@ -217,15 +224,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case PERMISSION_REQUEST_CODE->{}
             case CALL_FILE_STORE->{
                 if(resultCode==RESULT_OK){
-                    Crop.of(data.getData(),Uri.fromFile(new File(headerImagePath))).withAspect(navigationView.getHeaderView(0).getWidth(),navigationView.getHeaderView(0).getHeight()).start(this);
-                }
-            }
-            case Crop.REQUEST_CROP->{
-                if(resultCode==RESULT_OK){
-                    try{
-                        Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(headerImagePath));
-                    }catch(Exception e){e.printStackTrace();}
-                    updateMenu();
+                    if(data.getData()!=null){
+                        try{
+                            Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(headerImagePath));
+                        }catch(Exception e){e.printStackTrace();}
+                        updateMenu();
+                    }
                 }
             }
         }

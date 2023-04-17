@@ -5,8 +5,7 @@
     <LinearLayout android:layout_width="match_parent"
                   android:layout_height="wrap_content"
                   android:id="@+id/input_layout"
-                  android:orientation="vertical"
-                  android:theme="@style/Theme.MaterialComponents">
+                  android:orientation="vertical">
         <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

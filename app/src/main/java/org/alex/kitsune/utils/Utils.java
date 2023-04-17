@@ -14,6 +14,7 @@ import android.os.Build;
 import android.os.Environment;
 import android.provider.OpenableColumns;
 import android.provider.Settings;
+import android.util.TypedValue;
 import android.view.*;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -397,17 +398,14 @@ public class Utils {
         }
     }
     public static class Theme{
-        private static final int[] APP_THEMES={R.style.AppTheme_DarkRed,R.style.AppTheme_DarkYellow,R.style.AppTheme_DarkGreen,R.style.AppTheme_LightRed,R.style.AppTheme_LightYellow,R.style.AppTheme_LightGreen,};
+        private static final int[] APP_THEMES={R.style.AppTheme_DarkRed,R.style.AppTheme_DarkYellow,R.style.AppTheme_DarkGreen,R.style.AppTheme_DarkBlue,R.style.AppTheme_LightRed,R.style.AppTheme_LightYellow,R.style.AppTheme_LightGreen,R.style.AppTheme_LightBlue};
         public static int getTheme(int index){return APP_THEMES[Math.max(0,Math.min(APP_THEMES.length-1, index))];}
         public static int getTheme(SharedPreferences prefs){return getTheme(prefs.getInt("THEME",0));}
         public static int getTheme(Context context){return getTheme(PreferenceManager.getDefaultSharedPreferences(context));}
         public static boolean isThemeDark(Context context){
-            switch (getTheme(context)){
-                case R.style.AppTheme_DarkRed:
-                case R.style.AppTheme_DarkYellow:
-                case R.style.AppTheme_DarkGreen: return true;
-                default: return false;
-            }
+            TypedValue v = new TypedValue();
+            context.getTheme().resolveAttribute(R.attr.isLightTheme,v,true);
+            return !Boolean.parseBoolean(v.coerceToString().toString());
         }
     }
     public static class Bitmap{

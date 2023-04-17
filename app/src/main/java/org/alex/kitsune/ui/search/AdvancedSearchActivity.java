@@ -41,6 +41,9 @@ import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
+import javax.net.ssl.SSLException;
+import java.net.SocketTimeoutException;
+import org.alex.kitsune.commons.HttpStatusException;
 
 
 public class AdvancedSearchActivity extends AppCompatActivity implements Callback<Object> {
@@ -155,7 +158,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
                 }catch (Throwable e){
                     e.printStackTrace();
                     NetworkUtils.getMainHandler().post(()-> {
-                        SearchActivity.out_error_info(e,nothingFound);
+                        out_error_info(e,nothingFound);
                         progressBar.progressiveStop();
                         progressBar.setVisibility(View.GONE);
                     });
@@ -167,6 +170,20 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         }
     }
 
+    public static void out_error_info(Throwable e, TextView out_error){
+        if(out_error!=null){
+            if(e instanceof SocketTimeoutException){
+                out_error.setText(R.string.time_out);
+            }else if(e instanceof HttpStatusException) {
+                out_error.setText(((HttpStatusException) e).message());
+            }else if(e instanceof SSLException){
+                out_error.setText(e.getClass().getSimpleName());
+            }else{
+                out_error.setText(R.string.nothing_found);
+            }
+            out_error.setVisibility(View.VISIBLE);
+        }
+    }
     @Override
     protected void onResume() {
         super.onResume();
@@ -258,7 +275,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         @NotNull
         @Override
         public Dialog onCreateDialog(Bundle bundle) {
-            return new BottomSheetDialog(requireContext(), Utils.Theme.isThemeDark(getContext()) ? R.style.AppDialogDark : R.style.AppDialogLight);
+            return new BottomSheetDialog(requireContext());
         }
 
         @Override

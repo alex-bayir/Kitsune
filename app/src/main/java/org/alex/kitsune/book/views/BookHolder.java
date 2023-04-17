@@ -2,6 +2,7 @@ package org.alex.kitsune.book.views;
 
 import android.app.AlertDialog;
 import android.graphics.Color;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -90,9 +91,12 @@ public class BookHolder extends RecyclerView.ViewHolder{
         this.cover.setClickable(full);
     }
     public final boolean isFull(){return this.full.getVisibility()!=View.GONE;}
-    public final void setCover(Drawable d){
-        this.cover.setScaleType(d==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
-        this.cover.setImageDrawable(d==null ? caution : d);
+    public final void setCover(Drawable drawable){
+        this.cover.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
+        this.cover.setImageDrawable(drawable==null ? caution : drawable);
+        if(drawable instanceof Animatable animatable){
+            animatable.start();
+        }
     }
     public final void setCover(Book book){
         book.loadThumbnail(this::setCover);

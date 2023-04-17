@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.view.*;
-import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -94,16 +93,14 @@ public class RecommendationsActivity extends AppCompatActivity {
         public class Holder extends RecyclerView.ViewHolder{
             SourceSearchAdapter adapter;
             RecyclerView rv;
-            TextView error;
             public Holder(@NonNull @NotNull ViewGroup parent,int order) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
-                error=itemView.findViewById(R.id.text);
                 rv=itemView.findViewById(R.id.rv_list);
                 rv.setLayoutManager(new LinearLayoutManager(rv.getContext(),RecyclerView.VERTICAL,false));
                 adapter=new SourceSearchAdapter(catalogs.stream().filter(c->c.enable).map(c->c.source).collect(Collectors.toList()),true);
                 rv.setAdapter(adapter);
                 rv.setVerticalScrollBarEnabled(false);
-                SearchActivity.search(rv.getContext(),null,order,adapter.getSources(),adapter.getCallback(),error);
+                SearchActivity.search(rv.getContext(),null,order,adapter.getSources(),adapter.getResultCallback(), adapter.getErrorCallback());
             }
 
             public SourceSearchAdapter getAdapter(){return adapter;}

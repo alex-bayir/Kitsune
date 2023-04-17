@@ -31,7 +31,7 @@ public class SearchResultsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_search_results);
+        setContentView(R.layout.activity_search);
         String source=getIntent().getStringExtra("source");
         List<Book> books=getIntent().getExtras().getBinder("books") instanceof Binder<?> binder? (List<Book>) binder.getData():null;
         toolbar=findViewById(R.id.toolbar);
