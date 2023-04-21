@@ -30,8 +30,9 @@ public class EditTextCode extends androidx.appcompat.widget.AppCompatMultiAutoCo
         @Override public void afterTextChanged(Editable s){
             if(count==1){
                 switch (s.subSequence(start,start+count).toString()){
-                    case " ":
+                    case " ": char c=s.charAt(Math.max(0,start-1));if(c==' ' || c=='\n'){break;}
                     case "\n":
+                    case "\"":
                     case "(":
                     case ")": updateSyntax(); break;
                     default: break;

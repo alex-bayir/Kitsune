@@ -1,6 +1,7 @@
 package org.alex.kitsune.scripts;
 
-import com.alex.edittextcode.EditTextCode.SyntaxHighlightRule;
+import com.blacksquircle.ui.language.base.Language;
+import com.blacksquircle.ui.language.lua.LuaLanguage;
 import okhttp3.Cookie;
 import okhttp3.Headers;
 import okhttp3.MediaType;
@@ -341,27 +342,8 @@ public class Lua extends Script{
         }
     }
 
-    public static final SyntaxHighlightRule[] syntaxHighlightRules=new SyntaxHighlightRule[]{
-            new SyntaxHighlightRule("\\b(luajava)\\b",0xFF00FF00),
-            new SyntaxHighlightRule("\\b(function|local|if|else|break|while|for|in|end|return)\\b",0xFFCC7832),
-            new SyntaxHighlightRule("(?<=[:\\.]).+?(?=\\()",0xFFFCC56C),
-            new SyntaxHighlightRule("\\b(_G|_VERSION|assert|collectgarbage|dofile|error|getmetatable|ipairs|load|loadfile|next|pairs|pcall|print|rawequal|rawget|rawlen|rawset|require|select|setmetatable|tonumber|tostring|type|xpcall|coroutine|coroutine.create|coroutine.isyieldable|coroutine.resume|coroutine.running|coroutine.status|coroutine.wrap|coroutine.yield|debug|debug.debug|debug.gethook|debug.getinfo|debug.getlocal|debug.getmetatable|debug.getregistry|debug.getupvalue|debug.getuservalue|debug.sethook|debug.setlocal|debug.setmetatable|debug.setupvalue|debug.setuservalue|debug.traceback|debug.upvalueid|debug.upvaluejoin|io|io.close|io.flush|io.input|io.lines|io.open|io.output|io.popen|io.read|io.stderr|io.stdin|io.stdout|io.tmpfile|io.type|io.write|file:close|file:flush|file:lines|file:read|file:seek|file:setvbuf|math.abs|math.acos|math.asin|math.atan|math.ceil|math.cos|math.deg|math.exp|math.floor|math.fmod|math.huge|math.log|math.max|math.maxinteger|math.min|math.mininteger|math.modf|math.pi|math.rad|math.random|math.randomseed|math.sin|math.sqrt|math.tan|math.tointeger|math.type|math.ult|os|os.clock|os.date|os.difftime|os.execute|os.exit|os.getenv|os.remove|os.rename|os.setlocale|os.time|os.tmpname|package|package.config|package.cpath|package.loaded|package.loadlib|package.path|package.preload|package.searchers|package.searchpath|string|string.byte|string.char|string.dump|string.find|string.format|string.gmatch|string.gsub|string.len|string.lower|string.match|string.pack|string.packsize|string.rep|string.reverse|string.sub|string.unpack|string.upper|table|table.concat|table.insert|table.move|table.pack|table.remove|table.sort|table.unpack|utf8|utf8.char|utf8.charpattern|utf8.codepoint|utf8.codes|utf8.len|byte|char|dump|find|format|gmatch|gsub|len|lower|match|pack|packsize|rep|reverse|sub|unpack|upper)\\b",0xFFCC542E),
-            new SyntaxHighlightRule("[0-9]+[.]?[0-9]*",0xFF6896BB),
-            new SyntaxHighlightRule("(\\\".*?\\\")",0xFF6A864E),
-            new SyntaxHighlightRule("--(.*)",0xFF808080),
-            new SyntaxHighlightRule("---(.*)",0xFF609448),
-            new SyntaxHighlightRule("--\\[\\[[\\s\\S]*--\\]\\]",0xFF808080)
-    };
     @Override
-    public SyntaxHighlightRule[] getSyntaxHighlightRules() {return syntaxHighlightRules;}
-
-    @Override
-    public Set<String> getSuggestionsSet() {
-        HashSet<String> set=new HashSet<>();
-        addSuggestions(set,syntaxHighlightRules[0].getPattern());
-        addSuggestions(set,syntaxHighlightRules[1].getPattern());
-        addSuggestions(set,syntaxHighlightRules[2].getPattern());
-        return set;
+    public Language getLanguageInterface() {
+        return new LuaLanguage();
     }
-
 }

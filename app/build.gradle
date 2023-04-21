@@ -59,11 +59,12 @@ dependencies {
     implementation project(path: ':ColorWheel')
     implementation project(path: ':ThreeStates')
     implementation project(path: ':Shimmer')
-    implementation project(path: ':EditTextCode')
     implementation project(path: ':ListItemView')
     implementation project(path: ':NestedScrollWebView')
     implementation project(path: ':JSON')
     implementation 'org.luaj:luaj-jse:3.0.1'
+    implementation 'com.blacksquircle.ui:editorkit:2.6.0'
+    implementation 'com.blacksquircle.ui:language-lua:2.6.0'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'
     //implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'

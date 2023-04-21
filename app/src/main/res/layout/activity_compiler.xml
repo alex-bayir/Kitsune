@@ -6,7 +6,7 @@
         android:layout_height="match_parent"
         android:fitsSystemWindows="true">
 
-    <com.alex.edittextcode.EditTextCode
+    <com.blacksquircle.ui.editorkit.widget.TextProcessor
             android:id="@+id/editor"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

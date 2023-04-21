@@ -2,15 +2,18 @@ package org.alex.kitsune.ui.main.scripts;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.View;
+import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import com.alex.edittextcode.EditTextCode;
+import com.blacksquircle.ui.editorkit.model.UndoStack;
+import com.blacksquircle.ui.editorkit.plugin.autoindent.AutoIndentPlugin;
+import com.blacksquircle.ui.editorkit.plugin.base.PluginSupplier;
+import com.blacksquircle.ui.editorkit.plugin.linenumbers.LineNumbersPlugin;
+import com.blacksquircle.ui.editorkit.plugin.pinchzoom.PinchZoomPlugin;
+import com.blacksquircle.ui.editorkit.widget.TextProcessor;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
 import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
@@ -29,7 +32,7 @@ public class CompilerActivity extends AppCompatActivity {
 
     View fab;
     File file;
-    EditTextCode editor;
+    TextProcessor editor;
     TextView logcat;
     CircularProgressBar progressBar;
     BottomSheetBehavior<TextView> b;
@@ -48,12 +51,26 @@ public class CompilerActivity extends AppCompatActivity {
         progressBar=findViewById(R.id.progress);
         progressBar.setIndeterminateDrawable(new CircularProgressDrawable.Builder(this).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).style(CircularProgressDrawable.STYLE_ROUNDED).strokeWidth(8f).sweepInterpolator(new AccelerateDecelerateInterpolator()).build());
         progressBar.setVisibility(View.INVISIBLE);
-
-        if(file.exists()){try{editor.setText(Utils.File.readFile(file)); Script script=Script.getInstance(file); editor.setSyntaxHighlightRules(script.getSyntaxHighlightRules()); editor.setSuggestionsSet(script.getSuggestionsSet());}catch(Throwable e){e.printStackTrace();}}
+        if(file.exists()){
+            try{
+                Script script=Script.getInstance(file);
+                editor.setLanguage(script.getLanguageInterface());
+                editor.setTextContent(Utils.File.readFile(file));
+            }catch(Throwable e){e.printStackTrace();}
+        }
+        editor.setUndoStack(new UndoStack());
+        editor.setRedoStack(new UndoStack());
+        editor.plugins(PluginSupplier.Companion.create(
+                supplier -> {
+                    supplier.plugin(new LineNumbersPlugin());
+                    supplier.plugin(new PinchZoomPlugin());
+                    supplier.plugin(new AutoIndentPlugin());
+                    return kotlin.Unit.INSTANCE;
+                }
+        ));
         b=BottomSheetBehavior.from(logcat);
         b.setState(BottomSheetBehavior.STATE_HIDDEN);
         fab.setOnClickListener(v->{
-            editor.updateSyntax();
             b.setState(BottomSheetBehavior.STATE_HIDDEN);
             fab.setEnabled(false);
             progressBar.setVisibility(View.VISIBLE);

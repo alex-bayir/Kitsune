@@ -1,11 +1,8 @@
 package org.alex.kitsune.scripts;
 
-import com.alex.edittextcode.EditTextCode;
+import com.blacksquircle.ui.language.base.Language;
 import org.alex.kitsune.utils.Utils;
 import java.io.*;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public abstract class Script {
     private final String name;
@@ -57,12 +54,5 @@ public abstract class Script {
     public <T> T invokeMethod(String name, Class<T> return_type, Object... params){return invokeMethod(null,name,return_type,params);}
     //public void invokeMethod(String name, Object object,Object... params){invokeMethod(name,object,Void.class,params);}
     public void invokeMethod(String name, Object... params){invokeMethod(name,Void.class,params);}
-    public abstract EditTextCode.SyntaxHighlightRule[] getSyntaxHighlightRules();
-    public abstract Set<String> getSuggestionsSet();
-    protected final void addSuggestions(Set<String> set, Pattern p){
-        Matcher m=p.matcher(p.pattern());
-        while(m.find()){
-            set.add(m.pattern().toString().substring(m.start(),m.end()));
-        }
-    }
+    public abstract Language getLanguageInterface();
 }
