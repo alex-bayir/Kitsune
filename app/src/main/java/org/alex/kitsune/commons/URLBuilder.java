@@ -9,20 +9,14 @@ import java.util.stream.Collectors;
 
 public class URLBuilder {
     private final String url;
-    private final LinkedHashMap<String,String> params=new LinkedHashMap<>();
+    private final LinkedHashMap<String,Object> params=new LinkedHashMap<>();
     public URLBuilder(String url){
         this.url=url;
     }
     public URLBuilder add(String key, Object value){
         if(key!=null && value!=null){
-            if(value instanceof Object[] values){
-                for(Object val:values){
-                    add(key,val);
-                }
-            }else if(value instanceof Collection<?> values){
-                for(Object val:values){
-                    add(key,val);
-                }
+            if(value instanceof Object[] || value instanceof Collection<?>){
+                params.put(key, value);
             }else{
                 params.put(key,String.valueOf(value));
             }
@@ -57,14 +51,25 @@ public class URLBuilder {
         return this;
     }
 
+    private static String build(String key, Object value, boolean encode){
+        if(value==null){
+            return encode ? URLEncoder.encode(key) : key;
+        }else if(value instanceof Object[] values){
+            return Arrays.stream(values).filter(Objects::nonNull).filter(v->!String.valueOf(v).isEmpty()).map(v->encode?URLEncoder.encode(key)+"="+URLEncoder.encode(String.valueOf(v)):key+"="+v).collect(Collectors.joining("&"));
+        }else if(value instanceof Collection<?> values){
+            return values.stream().filter(Objects::nonNull).filter(v->!String.valueOf(v).isEmpty()).map(v->encode?URLEncoder.encode(key)+"="+URLEncoder.encode(String.valueOf(v)):key+"="+v).collect(Collectors.joining("&"));
+        }else{
+            return encode?URLEncoder.encode(key)+"="+URLEncoder.encode(String.valueOf(value)):key+"="+value;
+        }
+    }
     public String build(){
-        return url+params.entrySet().stream().map(entry->entry.getValue()!=null?entry.getKey()+"="+URLEncoder.encode(entry.getValue()):URLEncoder.encode(entry.getKey())).collect(Collectors.joining("&","?",""));
+        return url+params.entrySet().stream().map(entry->build(entry.getKey(),entry.getValue(),true)).filter(s ->!s.isEmpty()).collect(Collectors.joining("&","?",""));
     }
     @NonNull
     @NotNull
     @Override
     public String toString() {
-        return url+params.entrySet().stream().map(entry->entry.getValue()!=null?entry.getKey()+"="+entry.getValue():entry.getKey()).collect(Collectors.joining("&","?",""));
+        return url+params.entrySet().stream().map(entry->build(entry.getKey(),entry.getValue(),false)).filter(s ->!s.isEmpty()).collect(Collectors.joining("&","?",""));
     }
     private String join(String delimiter,Object[] tokens){
         return Arrays.stream(tokens).map(String::valueOf).collect(Collectors.joining(delimiter));

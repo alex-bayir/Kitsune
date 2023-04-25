@@ -4,13 +4,17 @@
 --- DateTime: 03.03.2023 23:56
 ---
 
-version="1.0"
+version="1.1"
 domain="www.mangaread.org"
 source="MangaRead"
 Type="Manga"
 description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
 host="https://"..domain
 auth_tokens={}
+
+Genres={["Action"]="action",["Adventure"]="adventure",["Animated"]="animated",["Anime"]="anime",["Cartoon"]="cartoon",["Comedy"]="comedy",["Comic"]="comic",["Completed"]="completed",["Cooking"]="cooking",["Detective"]="detective",["Doujinshi"]="doujinshi",["Drama"]="drama",["Ecchi"]="ecchi",["Fantasy"]="fantasy",["Gender-bender"]="gender-bender",["Harem"]="harem",["Historical"]="historical",["Horror"]="horror",["Isekai"]="isekai",["Josei"]="josei",["Magic"]="magic",["Manga"]="manga",["Manhua"]="manhua",["Manhwa"]="manhwa",["Martial-arts"]="martial-arts",["Mature"]="mature",["Mecha"]="mecha",["Military"]="military",["Mystery"]="mystery",["One-shot"]="one-shot",["Psychological"]="psychological",["Reincarnation"]="reincarnation",["Romance"]="romance",["School-life"]="school-life",["Sci-fi"]="sci-fi",["Seinen"]="seinen",["Shoujo"]="shoujo",["Shoujo-ai"]="shoujo-ai",["Shounen"]="shounen",["Shounen-ai"]="shounen-ai",["Slice-of-life"]="slice-of-life",["Smut"]="smut",["Sports"]="sports",["Super-power"]="super-power",["Supernatural"]="supernatural",["Thriller"]="thriller",["Tragedy"]="tragedy",["Webtoon"]="webtoon"}
+Status={["Ongoing"]="on-going",["Completed"]="end",["Canceled"]="canceled",["On Hold"]="on-hold",["Upcoming"]="upcoming",}
+Adult={["All"]="",["None adult"]="0",["Only Adult"]="1"}
 
 function update(url)
     local e=network:load_as_Document(url):selectFirst("div.site-content")
@@ -41,49 +45,27 @@ function update(url)
 end
 
 function query(name,page,params)
-    local url=network:url_builder(host.."/wp-admin/admin-ajax.php")
-    local body={
-        ["action"]="madara_load_more",
-        ["page"]=tostring(page),
-        ["template"]="madara-core/content/content-search",
-        ["vars[paged]"]="1",
-        ["vars[s]"]=name,
-        ["vars[template]"]="search",
-        ["vars[meta_query][0][s]"]=name,
-        ["vars[meta_query][0][template]"]="search",
-        ["vars[meta_query][relation]"]="AND",
-        ["vars[post_type]"]="wp-manga",
-        ["vars[post_status]"]="publish"
-    }
-    --body["vars[meta_key]"]="_wp_manga_views/_latest_update"
+    local url=network:url_builder(host..(page and "/page/"..(page+1) or "").."/"):add("s",name or ""):add("post_type","wp-manga")
     if(params~=nil and #params>0) then
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
-            local genres=utils:to_table(params[1]:getSelected())
-            if #genres>0 then
-                body["vars[tax_query][0][taxonomy]"]="wp-manga-genre"
-                local str="term_id"
-                for _,v in pairs(genres) do
-                    str=str.."&".."vars[tax_query][0][terms][]="..tostring(v)
-                end
-                body["vars[tax_query][0][field]"]=str
-                body["vars[tax_query][relation]"]="AND"
-            end
+            url:add("genre[]",params[1]:getSelected()):add("op",1)
+            url:add("status[]",params[2]:getSelected())
+            url:add("adult",params[3]:getSelected()[1])
+            url:add("author",params[4]:getInput())
+            url:add("artist",params[5]:getInput())
+            url:add("release",params[6]:getInput())
         else
 
         end
     end
     url=url:build()
-    print(url)
-    return parse_answer(network:load_as_Document(url,nil,body))
+    return query_url(url)
 end
 
 function query_url(url,page)
+    if page then url=url:find("page/") and url:gsub("page/%d+","page/"..tostring(page+1)) or host.."/page/"..(page+1).."/"..url:match("(%?.*)") end
     print(url)
-    return parse_answer(network:load_as_Document(url))
-end
-
-function parse_answer(document)
-    local selects=document:select("div.row.c-tabs-item__content")
+    local selects=network:load_as_Document(url):select("div.row.c-tabs-item__content")
     local list={}
     for i=0,selects:size()-1,1 do
         local e=selects:get(i)
@@ -116,7 +98,14 @@ function getPages(url,chapter) -- table <Page>
 end
 
 function createAdvancedSearchOptions() -- table <Options>
-    return {}
+    return {
+        Options.new("Жанры",utils:to_map(Genres),1),
+        Options.new("Статусы",utils:to_map(Status),1),
+        Options.new("Взрослый контент",utils:to_map(Adult),0),
+        Options.new("Автор",3),
+        Options.new("Художник",3),
+        Options.new("Год выпуска",3)
+    }
 end
 
 function similar(elements)

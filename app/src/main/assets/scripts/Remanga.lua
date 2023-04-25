@@ -28,8 +28,8 @@ function update(url)
             if(c>count) then count=c; branch=b; end
         end
         local publishers={}
-        local p=branch:get("publishers")
-        for j=0,p:size()-1,1 do
+        local p=branch and branch:get("publishers")
+        for j=0,p and p:size()-1 or -1,1 do
             publishers[p:get(j):get("name")]="https://"..domain.."/api/titles?count=100&ordering=-id&publisher="..p:get(j):get("id")
         end
         local chapters={}; local n=0

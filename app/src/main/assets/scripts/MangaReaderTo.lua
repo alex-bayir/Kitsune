@@ -44,6 +44,7 @@ function update(url)
     for j=0,authors:size()-1,1 do
         local a=authors:get(j); author[a:text()]=a:attr("abs:href")
     end
+    local status=container:select("div.item"):text():match("Status: (%S+)")
     return {
         ["url"]=url,
         ["url_web"]=url,
@@ -51,6 +52,7 @@ function update(url)
         ["name_alt"]=container:select("div.manga-name-or"):text(),
         ["author"]=author,
         ["genres"]=genres,
+        ["status"]=status:find("Finished") and "2" or (status:find("Publishing") and "1" or "0"),
         ["rating"]=num(container:select("div.item"):text():match("Score: (%d*%.?%d+)"))/2,
         ["description"]=container:select("div.description"):text(),
         ["thumbnail"]=container:select("img.manga-poster-img"):attr("src"),

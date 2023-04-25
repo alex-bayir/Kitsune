@@ -29,6 +29,7 @@ function update(url)
     for j=0,authors:size()-1,1 do
         local a=authors:get(j); author[a:text()]=a:attr("abs:href")
     end
+    local status=e:selectFirst("div.subject-meta"):selectFirst("p"):ownText()
     return {
         ["url"]=url,
         ["url_web"]=url,
@@ -37,7 +38,7 @@ function update(url)
         ["author"]=author,
         ["genres"]=utils:text(e:select("span.elem_genre"),""):gsub(" ,",","),
         ["rating"]=num(e:selectFirst("span.rating-block"):attr("data-score")),
-        ["status"]=utils:text(e:select("div.subject-meta"):select("p"):get(1)),
+        ["status"]=status:find("завершено") and "2" or (status:find("выпуск продолжается") and "1" or "0"),
         ["description"]=utils:text(e:selectFirst("div.manga-description")),
         ["thumbnail"]=e:selectFirst("div.picture-fotorama"):selectFirst("img"):attr("src"),
         ["chapters"]=chapters,

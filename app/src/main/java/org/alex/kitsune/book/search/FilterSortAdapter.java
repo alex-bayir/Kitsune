@@ -1,8 +1,6 @@
 package org.alex.kitsune.book.search;
 
-import android.text.Spannable;
-import android.text.SpannableStringBuilder;
-import android.text.Spanned;
+import android.text.*;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 
-public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdapter.CheckedHolder> {
+public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdapter.PairHolder> {
 
     private final Script script;
     private final Options[] options;
@@ -44,7 +42,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
             for(Options option: options){
                 if(option!=null){
                     pairs.add(option.title);
-                    if(option.title.getValue()==0){
+                    if(option.title.getChecked()==0){
                         pairs.addAll(Arrays.asList(option.values));
                     }
                 }
@@ -59,7 +57,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     private int onSelected(StringPair checked){
         StringPair last=null;
         for(StringPair pair:pairs){
-            if(pair.getGroup()==checked.getGroup() && pair!=checked && pair.getValue()==1){(last=pair).setValue(0);}
+            if(pair.getGroup()==checked.getGroup() && pair!=checked && pair.getChecked()==1){(last=pair).setChecked(0);}
         }
         return pairs.indexOf(last);
     }
@@ -67,11 +65,13 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     private void reset(boolean notify){
         for(Options op:options){
             if(op!=null){
-                op.title.setValue(0);
-                switch (op.values[0].getType()){
+                if(op.title.getType()==4){op.title.setValue(null);}
+                op.title.setChecked(0);
+                switch (op.values.length>0 ? op.values[0].getType() :-1){
                     case 1: onSelected(op.values[0].change()); break;
                     case 2:
-                    case 3: for(StringPair pair:op.values){pair.setValue(0);}break;
+                    case 3: for(StringPair pair:op.values){pair.setChecked(0);} break;
+                    case 5: for(StringPair pair:op.values){pair.setKey(null); pair.setValue(null);}
                 }
             }
         }
@@ -83,7 +83,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     @NonNull
     @NotNull
     @Override
-    public FilterSortAdapter.CheckedHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
+    public FilterSortAdapter.PairHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater from=LayoutInflater.from(parent.getContext());
         switch (viewType){
             case -1: return new CheckedHolder(from.inflate(R.layout.header_group,parent,false),(v, position) -> {
@@ -106,24 +106,32 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
                 pairs.get(position).change();
                 notifyItemChanged(position);
             });
+            case +4: return new InputHolder(from.inflate(R.layout.item_input, parent, false));
+            case +5: return new RangeInputHolder(from.inflate(R.layout.item_input_range,parent,false));
             default: throw new AssertionError("No such type of holder");
         }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull @NotNull FilterSortAdapter.CheckedHolder holder, int position) {
-        holder.setCheckedText(pairs.get(position));
+    public void onBindViewHolder(@NonNull @NotNull FilterSortAdapter.PairHolder holder, int position) {
+        holder.bind(pairs.get(position));
     }
 
     @Override
     public int getItemCount(){return pairs.size();}
+    public static abstract class PairHolder extends RecyclerView.ViewHolder{
+        public PairHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+        }
+        public abstract void bind(StringPair pair);
+    }
 
-    public static final class CheckedHolder extends RecyclerView.ViewHolder{
+    public static final class CheckedHolder extends PairHolder{
         public CheckedHolder(@NonNull @NotNull View itemView,final HolderClickListener listener) {
             super(itemView); if(listener!=null){itemView.setOnClickListener(v->listener.onItemClick(v,getAbsoluteAdapterPosition()));}
         }
-        public void setCheckedText(StringPair pair){
-            setCheckedText(pair.getName(),pair.getValue());
+        public void bind(StringPair pair){
+            setCheckedText(pair.getKey(),pair.getChecked());
         }
         public void setCheckedText(String text,int state){
             ((TextView)itemView).setText(text);
@@ -134,10 +142,61 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
             }
         }
     }
+    public static final class InputHolder extends PairHolder{
+        TextView title;
+        TextView input;
+        StringPair pair;
+        public InputHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+            title=itemView.findViewById(android.R.id.title);
+            input=itemView.findViewById(android.R.id.input);
+            input.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override public void afterTextChanged(Editable s) {
+                    pair.setValue(s.length()==0? null : s.toString());
+                }
+            });
+        }
+        public void bind(StringPair pair){
+            this.pair=pair;
+            title.setText(pair.getKey());
+            input.setText(pair.getValue());
+        }
+    }
+    public static final class RangeInputHolder extends PairHolder{
+        TextView start;
+        TextView end;
+        StringPair pair;
+        public RangeInputHolder(@NonNull @NotNull View itemView) {
+            super(itemView);
+            start=itemView.findViewById(R.id.start);
+            end=itemView.findViewById(R.id.end);
+            start.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override public void afterTextChanged(Editable s) {
+                    pair.setKey(s.length()==0? null : s.toString());
+                }
+            });
+            end.addTextChangedListener(new TextWatcher() {
+                @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                @Override public void afterTextChanged(Editable s) {
+                    pair.setValue(s.length()==0? null : s.toString());
+                }
+            });
+        }
+        public void bind(StringPair pair){
+            this.pair=pair;
+            start.setText(pair.getKey());
+            end.setText(pair.getValue());
+        }
+    }
 
     public void changeOption(String name){
         for(StringPair pair:pairs){
-            if(Objects.equals(name,pair.getName())){
+            if(Objects.equals(name,pair.getKey())){
                 pair.change();
             }
         }
@@ -148,8 +207,8 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     private void setOption(String name, int value){
         if(name!=null){
             for(StringPair pair:pairs){
-                if(Objects.equals(name,pair.getName())){
-                    pair.setValue(value);
+                if(Objects.equals(name,pair.getKey())){
+                    pair.setChecked(value);
                 }
             }
         }
@@ -159,14 +218,14 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     }
     public Set<String> getTitles(){
         Set<String> words=new HashSet<>(pairs.size());
-        for(StringPair pair:pairs){words.add(pair.getName());}
+        for(StringPair pair:pairs){words.add(pair.getKey());}
         return words;
     }
     public static void getTitles(FilterSortAdapter adapter, Set<String> words){
         if(adapter!=null){adapter.getTitles(words);}
     }
     public void getTitles(Set<String> words){
-        for(StringPair pair:pairs){words.add(pair.getName());}
+        for(StringPair pair:pairs){words.add(pair.getKey());}
     }
 
     public static Spannable getClickableSpans(CharSequence text, Collection<String> words, ClickSpan.SpanClickListener listener){

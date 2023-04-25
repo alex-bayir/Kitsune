@@ -56,9 +56,9 @@ public abstract class Book {
     public abstract String getSource();
     public abstract String getType();
     public final String getStatus(){return getStatus(getString("status"));}
-    public final String getStatus(Context context){return getStatus(getStatus(getString("status")),context);}
+    public final String getStatus(Context context){return getStatus(getString("status"),context);}
     private static String getStatus(String status,Context context){
-        return switch (status) {
+        return switch (getStatus(status)) {
             case "Ongoing" -> context.getString(R.string.Ongoing);
             case "Released" -> context.getString(R.string.Completed);
             default -> context.getString(R.string.None);
@@ -68,15 +68,16 @@ public abstract class Book {
         switch (status!=null ? status.toLowerCase() : "none"){
             case "продолжается":
             case "1":
+            case "онгоинг":
             case "ongoing": return "Ongoing";
             case "cингл":
             case "single":
+            case "закончен":
             case "завершен":
             case "completed":
             case "2":
             case "released": return "Released";
-            default:
-            case "none": return "None";
+            default: return "None";
         }
     }
     public abstract boolean update() throws Exception;
@@ -249,7 +250,7 @@ public abstract class Book {
         }
     return false;}
 
-    public int countSaved(){int i=0; for(Chapter chapter:getChapters()){if(checkChapter(chapter)){i++;}} return i;}
+    public int countSaved(){return (int)getChapters().stream().filter(this::checkChapter).count();}
 
     public static int getNumChapter(List<Chapter> list,Chapter chapter){if(chapter!=null && list!=null){for(int i=0;i<list.size();i++){if(chapter.equals(list.get(i))){return i;}}}return -1;}
     public final int getNumChapter(Chapter chapter){return getNumChapter(getChapters(),chapter);}

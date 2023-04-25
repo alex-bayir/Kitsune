@@ -4,7 +4,7 @@
 --- DateTime: 09.01.2022 16:53
 ---
 
-version="1.4"
+version="1.5"
 domain="mangalib.me"
 source="MangaLib"
 Type="Manga"
@@ -53,6 +53,7 @@ function update(url)
         ["name_alt"]=jo:getString("rus_name"),
         ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
         ["genres"]=genres,
+        ["status"]=container:select("a[href*=manga_status]"):attr("href"):match("manga_status.*=(%d)"),
         ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
         ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
@@ -67,12 +68,18 @@ function query(name,page,params)
         if(type(params[1])=="userdata" and Options:equals(params[1]:getClass())) then
             url:add("sort",params[1]:getSelected()[1])
             url:add("dir",params[1]:getTitleSortSelected())
-            if(#params>1) then url:add("genres[include][]",params[2]:getSelected()):add("genres[exclude][]",params[2]:getDeselected()) end
-            if(#params>2) then url:add("tags[include][]",params[3]:getSelected()):add("tags[exclude][]",params[3]:getDeselected()) end
-            if(#params>3) then url:add("series[]",params[4]:getSelected()) end
-            if(#params>4) then url:add("types[]",params[5]:getSelected()) end
-            if(#params>5) then url:add("manga_status[]",params[6]:getSelected()) end
-            if(#params>6) then url:add("format[include][]",params[7]:getSelected()):add("format[exclude][]",params[7]:getDeselected()) end
+            url:add("chapters[min]",params[2]:getInputRangeStart())
+            url:add("chapters[max]",params[2]:getInputRangeEnd())
+            url:add("year[min]",params[3]:getInputRangeStart())
+            url:add("year[max]",params[3]:getInputRangeEnd())
+            url:add("rating[min]",params[4]:getInputRangeStart())
+            url:add("rating[max]",params[4]:getInputRangeEnd())
+            url:add("genres[include][]",params[5]:getSelected()):add("genres[exclude][]",params[5]:getDeselected())
+            url:add("tags[include][]",params[6]:getSelected()):add("tags[exclude][]",params[6]:getDeselected())
+            url:add("series[]",params[7]:getSelected())
+            url:add("types[]",params[8]:getSelected())
+            url:add("manga_status[]",params[9]:getSelected())
+            url:add("format[include][]",params[10]:getSelected()):add("format[exclude][]",params[10]:getDeselected())
         else
             url:add("sort",sorts[params[1]])
         end
@@ -136,6 +143,9 @@ end
 function createAdvancedSearchOptions() -- table <Options>
     return {
         Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
+        Options.new("Количество глав",4),
+        Options.new("Год выпуска",4),
+        Options.new("Оценка",4),
         Options.new("Жанры",utils:to_map(Genres),2),
         Options.new("Теги",utils:to_map(Tags),2),
         Options.new("Серии",utils:to_map(Series),1),
