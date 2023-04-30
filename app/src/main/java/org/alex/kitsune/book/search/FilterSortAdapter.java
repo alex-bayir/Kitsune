@@ -217,15 +217,18 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
         return getClickableSpans(text, getTitles(), listener);
     }
     public Set<String> getTitles(){
-        Set<String> words=new HashSet<>(pairs.size());
-        for(StringPair pair:pairs){words.add(pair.getKey());}
-        return words;
+        return getTitles(new HashSet<>(pairs.size()));
     }
     public static void getTitles(FilterSortAdapter adapter, Set<String> words){
         if(adapter!=null){adapter.getTitles(words);}
     }
-    public void getTitles(Set<String> words){
-        for(StringPair pair:pairs){words.add(pair.getKey());}
+    public Set<String> getTitles(Set<String> words){
+        for(StringPair pair:pairs){
+            if(pair.getKey()!=null && (1<=pair.getType() &&  pair.getType()<=3)){
+                words.add(pair.getKey());
+            }
+        }
+        return words;
     }
 
     public static Spannable getClickableSpans(CharSequence text, Collection<String> words, ClickSpan.SpanClickListener listener){
