@@ -46,14 +46,14 @@ import java.net.SocketTimeoutException;
 import org.alex.kitsune.commons.HttpStatusException;
 
 
-public class AdvancedSearchActivity extends AppCompatActivity implements Callback<Object> {
+public class AdvancedSearchActivity extends AppCompatActivity implements Callback<String> {
     Toolbar toolbar;
     FilterDialogFragment filters;
     RecyclerView rv;
     BookAdapter adapter;
     Book updateOnReturn=null;
     FilterSortAdapter sortAdapter;
-    String queryName=null;
+    String query=null;
     String source;
     TextView nothingFound;
     private boolean enableLoadMore=false;
@@ -86,8 +86,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         }
         if(sortAdapter!=null){
             sortAdapter.selectOption(getIntent().getStringExtra(Constants.option));
-            queryName=getIntent().getStringExtra(Constants.url);
-            if(queryName!=null && queryName.length()==0){queryName=null;}
+            query=getIntent().getStringExtra(Constants.url);
         }
         filters=new FilterDialogFragment(sortAdapter,this);
         View fab=findViewById(R.id.fab);
@@ -110,19 +109,20 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
-                if(enableLoadMore && findLastVisibleItemPosition(rv)>getItemCount(rv)-3){load(queryName);}
+                if(enableLoadMore && findLastVisibleItemPosition(rv)>getItemCount(rv)-3){load(query,true);}
             }
         });
-        call(queryName);
+        call(query);
     }
 
-
-
     @Override
-    public void call(Object obj){
+    public void call(String str){
         adapter.clear();
         page=0;
-        load(obj instanceof String ? (String) obj : null);
+        load(query,true);
+    }
+    public void load(String query, boolean remove_empty){
+        load(remove_empty && query!=null && query.length()==0 ? null:query);
     }
     public void load(String query){
         if(NetworkUtils.isNetworkAvailable(this)){
@@ -133,7 +133,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             progressBar.startNestedScroll(0);
             new Thread(()->{
                 try {
-                    List<Book> books =sortAdapter!=null ?
+                    List<Book> books=sortAdapter!=null ?
                             Utils.isUrl(query)?
                                     Book_Scripted.query(sortAdapter.getScript(), query, page)
                                     :
@@ -141,24 +141,23 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
                             :
                             null;
                     NetworkUtils.getMainHandler().post(()->{
-                        if(books !=null){
+                        if(books!=null){
                             BookService.setCacheDirIfNull(books);
                             if(adapter.addAll(books)){
-                                nothingFound.setVisibility(View.GONE);
                                 page++;
                                 enableLoadMore=true;
                             }else{
                                 enableLoadMore=false;
                             }
                         }
-                        if(adapter.getItemCount()==0){nothingFound.setVisibility(View.VISIBLE);}
+                        nothingFound.setVisibility(adapter.getItemCount()>0?View.GONE:View.VISIBLE);
                         progressBar.progressiveStop();
                         progressBar.setVisibility(View.GONE);
                     });
                 }catch (Throwable e){
                     e.printStackTrace();
                     NetworkUtils.getMainHandler().post(()-> {
-                        out_error_info(e,nothingFound);
+                        out_error_info(e,nothingFound,page==0);
                         progressBar.progressiveStop();
                         progressBar.setVisibility(View.GONE);
                     });
@@ -169,19 +168,18 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
             nothingFound.setVisibility(View.VISIBLE);
         }
     }
-
-    public static void out_error_info(Throwable e, TextView out_error){
+    public static void out_error_info(Throwable throwable, TextView out_error, boolean show){
         if(out_error!=null){
-            if(e instanceof SocketTimeoutException){
+            if(throwable instanceof SocketTimeoutException){
                 out_error.setText(R.string.time_out);
-            }else if(e instanceof HttpStatusException) {
-                out_error.setText(((HttpStatusException) e).message());
-            }else if(e instanceof SSLException){
-                out_error.setText(e.getClass().getSimpleName());
+            }else if(throwable instanceof HttpStatusException e) {
+                out_error.setText(e.message());
+            }else if(throwable instanceof SSLException){
+                out_error.setText(throwable.getClass().getSimpleName());
             }else{
                 out_error.setText(R.string.nothing_found);
             }
-            out_error.setVisibility(View.VISIBLE);
+            out_error.setVisibility(show?View.VISIBLE:View.GONE);
         }
     }
     @Override
@@ -200,15 +198,16 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         searchItem.setVisible(true);
         SearchView searchView = (SearchView) searchItem.getActionView();
         searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setOnSearchClickListener(v -> searchView.setQuery(query,false));
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onQueryTextSubmit(String query) {
-                toolbar.setTitle(query.trim());
+            public boolean onQueryTextSubmit(String text) {
+                toolbar.setTitle(text.trim());
                 toolbar.collapseActionView();
-                call(queryName=query.trim());
+                call(query=text.trim());
                 return false;
             }
-            @Override public boolean onQueryTextChange(String newText){queryName=newText.trim(); return false;}
+            @Override public boolean onQueryTextChange(String text){query=text.trim(); return false;}
         });
         return true;
     }
