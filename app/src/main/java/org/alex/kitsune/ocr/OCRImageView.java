@@ -5,10 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
@@ -30,7 +27,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 
 public class OCRImageView extends PhotoView {
@@ -75,16 +71,19 @@ public class OCRImageView extends PhotoView {
         save=file;
     }
     TextPaint paint=new TextPaint(Paint.ANTI_ALIAS_FLAG);
+    private final float TextSizeNormal=6 * getResources().getDisplayMetrics().density;
     Paint ok=new Paint(Paint.ANTI_ALIAS_FLAG);
     Paint error=new Paint(Paint.ANTI_ALIAS_FLAG);
     private void initPaints(){
         paint.setColor(0xFF000000);
-        paint.setTextSize(8 * getResources().getDisplayMetrics().density);
         paint.setTextAlign(Paint.Align.CENTER);
         ok.setColor(0x9FFFFFFF);
         error.setColor(0x3FFF0000);
     }
-    private final Rect tmp=new Rect();
+    private final RectF tmp=new RectF();
+    private final Matrix matrix=new Matrix();
+    private final Matrix base=new Matrix();
+    private final float[] values=new float[9];
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -93,11 +92,27 @@ public class OCRImageView extends PhotoView {
             if(text!=null && getDrawable() instanceof BitmapDrawable bd){
                 float scaleX=getWidth()/(float)bd.getBitmap().getWidth();
                 float scaleY=getHeight()/(float)bd.getBitmap().getHeight();
+                getDisplayMatrix(base);
+                getSuppMatrix(matrix);
+                float max=Math.max(scaleX,scaleY);
+                float min=Math.min(scaleX,scaleY);
+                switch (getScaleType()){
+                    case CENTER_CROP -> matrix.preScale(max,max);
+                    case CENTER -> matrix.preScale(scaleX,scaleY);
+                    case FIT_CENTER -> matrix.preScale(min,min);
+                }
+                matrix.getValues(values);
+                float translateX=values[Matrix.MTRANS_X];
+                float translateY=values[Matrix.MTRANS_Y];
+                base.getValues(values);
+                matrix.postTranslate(values[Matrix.MTRANS_X]-translateX,values[Matrix.MTRANS_Y]-translateY);
                 for(org.alex.kitsune.ocr.Text.Group group:text.getGroups()){
                     tmp.set(group.getBoundingBox());
-                    scale(tmp,scaleX,scaleY);
+                    matrix.mapRect(tmp);
                     if(group.isTranslated()){
                         canvas.drawRect(tmp,ok);
+                        matrix.getValues(values);
+                        paint.setTextSize(TextSizeNormal*Math.min(values[Matrix.MSCALE_X],values[Matrix.MSCALE_Y]));
                         drawText(canvas,tmp,group.getTranslated(),paint);
                     }else{
                         canvas.drawRect(tmp,error);
@@ -106,7 +121,6 @@ public class OCRImageView extends PhotoView {
             }
         }
     }
-
     private boolean show=false; // static is important for save state on invalidate when activity paused
     public void show(){
         init();
@@ -185,8 +199,8 @@ public class OCRImageView extends PhotoView {
             }
         }
     }
-    private static void drawText(Canvas canvas,Rect bounds,String text,TextPaint paint){
-        StaticLayout l=StaticLayout.Builder.obtain(text, 0,text.length(),paint,bounds.width()).build();
+    private static void drawText(Canvas canvas,RectF bounds,String text,TextPaint paint){
+        StaticLayout l=StaticLayout.Builder.obtain(text, 0,text.length(),paint,(int)bounds.width()).setLineSpacing(0,0.8f).build();
         canvas.save();
         switch (paint.getTextAlign()){
             case CENTER -> canvas.translate(bounds.centerX(),bounds.top+(bounds.height()-l.getHeight())/2f);

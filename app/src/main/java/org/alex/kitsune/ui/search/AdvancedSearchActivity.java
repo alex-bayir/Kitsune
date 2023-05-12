@@ -207,7 +207,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
                 call(query=text.trim());
                 return false;
             }
-            @Override public boolean onQueryTextChange(String text){query=text.trim(); return false;}
+            @Override public boolean onQueryTextChange(String text){query=text==null? "":text.trim(); return false;}
         });
         return true;
     }
