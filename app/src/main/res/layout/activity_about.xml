@@ -18,72 +18,81 @@
         <LinearLayout android:orientation="vertical"
                       android:layout_width="match_parent"
                       android:layout_height="wrap_content"
-                      android:padding="8dp"
+                      android:gravity="center_horizontal"
                       android:id="@+id/content">
-            <com.google.android.material.card.MaterialCardView
+            <FrameLayout
+                    android:id="@+id/launcher_item"
+                    android:padding="8dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
-                <RelativeLayout android:layout_width="match_parent"
-                                android:layout_height="wrap_content">
-                    <ImageView android:id="@+id/launcher_icon"
-                               android:src="@drawable/ic_launcher_primary"
-                               android:background="#7fcccccc"
-                               android:padding="8dp"
-                               android:layout_width="64sp"
-                               android:layout_height="128sp"
-                               android:layout_alignParentStart="true"
-                               android:layout_alignParentTop="true"/>
-                    <RelativeLayout android:orientation="horizontal"
-                                    android:padding="8dp"
-                                    android:gravity="center_vertical"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_toEndOf="@+id/launcher_icon"
-                                    android:layout_alignTop="@+id/launcher_icon"
-                                    android:layout_alignBottom="@+id/launcher_icon">
-                        <LinearLayout android:orientation="vertical"
-                                      android:gravity="center_vertical"
-                                      android:layout_width="match_parent"
-                                      android:layout_height="wrap_content"
-                                      android:layout_toStartOf="@+id/update"
-                                      android:layout_alignTop="@+id/update">
+                <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                    <RelativeLayout android:layout_width="match_parent"
+                                    android:layout_height="wrap_content">
+                        <ImageView android:id="@+id/launcher_icon"
+                                   android:src="@drawable/ic_launcher_primary"
+                                   android:background="#7fcccccc"
+                                   android:padding="8dp"
+                                   android:layout_width="64sp"
+                                   android:layout_height="128sp"
+                                   android:layout_alignParentStart="true"
+                                   android:layout_alignParentTop="true"/>
+                        <RelativeLayout android:orientation="horizontal"
+                                        android:padding="8dp"
+                                        android:gravity="center_vertical"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_toEndOf="@+id/launcher_icon"
+                                        android:layout_alignTop="@+id/launcher_icon"
+                                        android:layout_alignBottom="@+id/launcher_icon">
+                            <LinearLayout android:orientation="vertical"
+                                          android:gravity="center_vertical"
+                                          android:layout_width="match_parent"
+                                          android:layout_height="wrap_content"
+                                          android:layout_toStartOf="@+id/update"
+                                          android:layout_alignTop="@+id/update">
+                                <com.google.android.material.textview.MaterialTextView
+                                        android:id="@+id/version"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:textStyle="bold"
+                                        android:textColor="?colorAccent"
+                                />
+                                <com.google.android.material.textview.MaterialTextView
+                                        android:id="@+id/time"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="0dip"
+                                        android:layout_weight="1"
+                                        android:textStyle="italic"
+                                />
+                            </LinearLayout>
+                            <ImageView
+                                    android:id="@+id/update"
+                                    android:layout_width="48sp"
+                                    android:layout_height="48sp"
+                                    android:src="@drawable/ic_search"
+                                    android:layout_alignParentEnd="true"/>
                             <com.google.android.material.textview.MaterialTextView
-                                    android:id="@+id/version"
-                                    android:layout_width="match_parent"
+                                    android:id="@+id/progress"
+                                    android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
+                                    android:gravity="center"
                                     android:textStyle="bold"
                                     android:textColor="?colorAccent"
-                            />
-                            <com.google.android.material.textview.MaterialTextView
-                                    android:id="@+id/time"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="0dip"
-                                    android:layout_weight="1"
-                                    android:textStyle="italic"
-                            />
-                        </LinearLayout>
-                        <ImageView
-                                android:id="@+id/update"
-                                android:layout_width="48sp"
-                                android:layout_height="48sp"
-                                android:src="@drawable/ic_search"
-                                android:layout_alignParentEnd="true"/>
-                        <com.google.android.material.textview.MaterialTextView
-                                android:id="@+id/progress"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:gravity="center"
-                                android:textStyle="bold"
-                                android:textColor="?colorAccent"
-                                android:layout_alignEnd="@+id/update"
-                                android:layout_alignStart="@id/update"
-                                android:layout_alignTop="@+id/update"
-                                android:layout_alignBottom="@+id/update"/>
+                                    android:layout_alignEnd="@+id/update"
+                                    android:layout_alignStart="@id/update"
+                                    android:layout_alignTop="@+id/update"
+                                    android:layout_alignBottom="@+id/update"/>
+                        </RelativeLayout>
                     </RelativeLayout>
-                </RelativeLayout>
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
+
             <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <LinearLayout android:layout_width="match_parent"
@@ -140,7 +149,10 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <com.google.android.material.textview.MaterialTextView
@@ -150,24 +162,10 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"/>
             </com.google.android.material.card.MaterialCardView>
-            <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="8dp"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                <com.google.android.material.textview.MaterialTextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:textStyle="italic"
-                        android:padding="8dp"
-                        android:layout_gravity="center_horizontal"
-                        android:gravity="center"
-                        android:drawableStart="@drawable/ic_logo_components"
-                        android:text="@string/built_with_material_components"
-                />
-            </com.google.android.material.card.MaterialCardView>
             <FrameLayout
-                    android:layout_marginTop="8dp"
-                    android:layout_width="match_parent"
+                    android:id="@+id/card_view"
+                    android:padding="8dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content">
                 <ImageView android:layout_width="match_parent"
                            android:layout_height="wrap_content"
@@ -188,7 +186,9 @@
                         app:reflectionColor="?android:colorForeground"/>
             </FrameLayout>
             <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <com.google.android.material.textview.MaterialTextView
@@ -201,7 +201,10 @@
                 />
             </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.card.MaterialCardView
-                    android:layout_marginTop="8dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="4dp"
+                    android:layout_marginTop="4dp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content">
                 <com.google.android.material.textview.MaterialTextView

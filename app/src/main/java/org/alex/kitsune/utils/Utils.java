@@ -5,6 +5,7 @@ import android.app.ActivityManager;
 import android.content.*;
 import android.content.pm.*;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
@@ -35,7 +36,6 @@ import com.bumptech.glide.load.HttpException;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
-import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HttpStatusException;
@@ -617,5 +617,8 @@ public class Utils {
             @Override
             protected void onResourceCleared(@Nullable @org.jetbrains.annotations.Nullable Drawable placeholder) {}
         });
+    }
+    public static float toDP(float value){
+        return (float)Math.ceil(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, Resources.getSystem().getDisplayMetrics()));
     }
 }

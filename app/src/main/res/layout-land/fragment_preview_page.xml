@@ -22,8 +22,8 @@
           android:layout_height="88.0dip"
           app:layout_constraintBottom_toBottomOf="@id/backdrop"
           android:id="@+id/view"/>
-    <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cover_card"
+    <FrameLayout
+            android:id="@+id/cover_card_parent"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_margin="16dp"
@@ -32,20 +32,26 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent">
-        <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/cover"
-                android:scaleType="center"
-                android:src="@drawable/ic_caution"
+        <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cover_card"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-    </com.google.android.material.card.MaterialCardView>
+                android:layout_height="match_parent"
+                app:cardCornerRadius="4dp">
+            <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/cover"
+                    android:scaleType="center"
+                    android:src="@drawable/ic_caution"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+        </com.google.android.material.card.MaterialCardView>
+    </FrameLayout>
 
     <androidx.core.widget.NestedScrollView
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_toEndOf="@+id/cover_card"
+            android:layout_toEndOf="@+id/cover_card_parent"
             android:layout_marginStart="16dp"
-            app:layout_constraintStart_toEndOf="@+id/cover_card"
+            app:layout_constraintStart_toEndOf="@+id/cover_card_parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent">

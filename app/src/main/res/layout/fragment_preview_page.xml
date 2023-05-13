@@ -32,8 +32,8 @@
                   android:layout_width="match_parent"
                   android:layout_height="88.0dip"
                   app:layout_constraintBottom_toBottomOf="@id/backdrop" android:id="@+id/view"/>
-            <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cover_card"
+            <FrameLayout
+                    android:id="@+id/cover_card_parent"
                     android:layout_width="0.0dip"
                     android:layout_height="0.0dip"
                     android:layout_marginTop="16.0dip"
@@ -46,13 +46,19 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintBottom_toBottomOf="parent">
-                <androidx.appcompat.widget.AppCompatImageView
-                        android:id="@+id/cover"
-                        android:scaleType="center"
-                        android:src="@drawable/ic_caution"
+                <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cover_card"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"/>
-            </com.google.android.material.card.MaterialCardView>
+                        android:layout_height="match_parent"
+                        app:cardCornerRadius="4dp">
+                    <androidx.appcompat.widget.AppCompatImageView
+                            android:id="@+id/cover"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_caution"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"/>
+                </com.google.android.material.card.MaterialCardView>
+            </FrameLayout>
             <com.google.android.material.textview.MaterialTextView
                       android:id="@+id/info"
                       android:layout_width="wrap_content"

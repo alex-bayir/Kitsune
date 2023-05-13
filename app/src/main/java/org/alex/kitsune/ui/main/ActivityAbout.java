@@ -22,13 +22,13 @@ import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.AspectRatioImageView;
 import org.alex.kitsune.commons.Callback;
+import org.alex.kitsune.commons.NeonShadowDrawable;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
-import java.util.Comparator;
 
 
 public class ActivityAbout extends AppCompatActivity implements View.OnClickListener{
@@ -94,6 +94,8 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
             update.performClick();
         }
         downloads=findViewById(R.id.downloads);
+        NeonShadowDrawable.setToView(0xFF000000,(int)Utils.toDP(8),findViewById(R.id.card_view),(int)Utils.toDP(8),2000);
+        NeonShadowDrawable.setToView(0,findViewById(R.id.launcher_item),(int)Utils.toDP(8),2000);
         if(json!=null && json.size()>0){
             downloads.setText(format_downloads(json));
         }else{
