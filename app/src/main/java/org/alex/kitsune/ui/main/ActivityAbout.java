@@ -167,9 +167,9 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
     }
     public String format_downloads(JSON.Object array) {
         StringBuilder builder = new StringBuilder();
-        String format = "%9s | %-20s | %9s\n";
-        builder.append(String.format(Locale.getDefault(), format, "Downloads", "        Date        ", "Version"));
-        builder.append("----------+----------------------+----------\n");
+        String format = "%9.9s | %-19.19s | %-9.9s\n";
+        builder.append(String.format(Locale.getDefault(), format, "Downloads", "       Date        ", "Version"));
+        builder.append("----------+---------------------+----------\n");
         int len = builder.length();
         array.forEach((key, value) -> {
             JSON.Object json = (JSON.Object) value;
