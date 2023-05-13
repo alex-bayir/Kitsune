@@ -28,11 +28,12 @@ import org.alex.kitsune.utils.Utils;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Comparator;
 
 
 public class ActivityAbout extends AppCompatActivity implements View.OnClickListener{
     Toolbar toolbar;
-    TextView version,buildTime,progress;
+    TextView version,buildTime,progress,downloads;
     ImageView launcher,update;
     SharedPreferences prefs;
     Callback<JSON.Object> ucs= json -> {
@@ -55,6 +56,7 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
         }
     });
     private final String card=BuildConfig.card;
+    private static JSON.Object json=null;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         setTheme(Utils.Theme.getTheme(this));
@@ -91,6 +93,29 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
         if(getIntent().getBooleanExtra("update",false)){
             update.performClick();
         }
+        downloads=findViewById(R.id.downloads);
+        if(json!=null && json.size()>0){
+            downloads.setText(format_downloads(json));
+        }else{
+            new Thread(()->{
+                try {json=count_downloads(JSON.Object.create(prefs.getString("downloads","")));} catch (Throwable e) {e.printStackTrace();}
+                if(json!=null){
+                    NetworkUtils.getMainHandler().post(()->{
+                        prefs.edit().putString("downloads",json.toString()).apply();
+                        downloads.setText(format_downloads(json));
+                    });
+                }else{
+                    NetworkUtils.getMainHandler().post(()->{
+                        try{
+                            downloads.setText(format_downloads(JSON.Object.create(prefs.getString("downloads",""))));
+                        }catch (Exception e) {
+                            ((View)downloads.getParent()).setVisibility(View.GONE);
+                            e.printStackTrace();
+                        }
+                    });
+                }
+            }).start();
+        }
     }
     private ShimmerTextView init(Shimmer shimmer,ShimmerTextView v){v.setOnClickListener(this); shimmer.start(v); return v;}
 
@@ -119,5 +144,38 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
                 }
             }
         }
+    }
+
+    public JSON.Object count_downloads(JSON.Object def) throws Throwable {
+        JSON.Object obj=new JSON.Object(def);
+        JSON.Array<?> json=NetworkUtils.getJSON("https://api.github.com/repos/alex-bayir/Kitsune/releases").array();
+        for(int i=0;i<json.size();i++){
+            JSON.Object jo=json.getObject(i);
+            String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
+            JSON.Array<?> assets=jo.getArray("assets");
+            for(int j=0;j<(assets!=null?assets.size():0) && (url==null || !url.contains(".apk"));j++){
+                url=assets.getObject(j).getString("browser_download_url");
+            }
+            if(url!=null && url.contains(".apk")){
+                JSON.Object asset=jo.getArray("assets").getObject(0);
+                String date=asset.getString("updated_at").replaceAll("[TZ]"," ");
+                long timestamp=Utils.parseDate(date,"yyyy-MM-dd HH:mm:ss");
+                obj.put(Long.toString(timestamp),new JSON.Object().put("version",version).put("date",date).put("count",asset.getInt("download_count")));
+            }
+        }
+        return obj;
+    }
+    public String format_downloads(JSON.Object array) {
+        StringBuilder builder = new StringBuilder();
+        String format = "%9s | %-20s | %9s\n";
+        builder.append(String.format(Locale.getDefault(), format, "Downloads", "        Date        ", "Version"));
+        builder.append("----------+----------------------+----------\n");
+        int len = builder.length();
+        array.forEach((key, value) -> {
+            JSON.Object json = (JSON.Object) value;
+            builder.insert(len, String.format(Locale.getDefault(), format, json.getInt("count"), json.getString("date"), json.getString("version")));
+        });
+        builder.deleteCharAt(builder.length() - 1);
+        return builder.toString();
     }
 }

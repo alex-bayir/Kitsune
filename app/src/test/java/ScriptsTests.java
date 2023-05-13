@@ -125,21 +125,4 @@ public class ScriptsTests {
         content.select("div.article-image").forEach(e->e.replaceWith(new Element(Tag.valueOf("img"),e.baseUri(),new Attributes().put("src",e.select("img").attr("src")))));
         println(content);
     }
-    @Test
-    public void count_download() throws Throwable {
-        JSON.Array<?> json=NetworkUtils.getJSON("https://api.github.com/repos/alex-bayir/Kitsune/releases").array();
-        for(int i=0;i<json.size();i++){
-            JSON.Object jo=json.getObject(i);
-            String version=Utils.match(jo.getString("tag_name"),"\\d.*\\d"),url=null;
-            JSON.Array<?> assets=jo.getArray("assets");
-            for(int j=0;j<(assets!=null?assets.size():0) && (url==null || !url.contains(".apk"));j++){
-                url=assets.getObject(j).getString("browser_download_url");
-            }
-            if(url!=null && url.contains(".apk")){
-                JSON.Object asset=jo.getArray("assets").getObject(0);
-                String date=asset.getString("updated_at").replaceAll("[TZ]"," ");
-                println(version+" "+date+" "+asset.getInt("download_count"));
-            }
-        }
-    }
 }

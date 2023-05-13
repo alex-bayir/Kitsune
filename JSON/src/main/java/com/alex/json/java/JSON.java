@@ -28,7 +28,7 @@ public interface JSON {
             return create(new FileReader(json));
         }
         public static Object create(Reader reader) throws IOException {
-            return JSON.json(reader).object();
+            return JSON.json(reader,Object.class).object();
         }
         @NotNull
         @Override public Object put(String key, java.lang.Object value){
@@ -188,7 +188,7 @@ public interface JSON {
             return create(new FileReader(json));
         }
         public static Array<?> create(Reader reader) throws IOException {
-            return JSON.json(reader).array();
+            return JSON.json(reader,Array.class).array();
         }
 
         public Array<T> put(T obj){add(obj); return this;}
@@ -326,9 +326,15 @@ public interface JSON {
         return json(new FileReader(json));
     }
     static JSON json(Reader reader) throws IOException{
-        return json(reader,null);
+        return json(reader,(JSON) null);
     }
     static JSON json(Reader reader, JSON o) throws IOException {
+        return json(reader, o,null);
+    }
+    static JSON json(Reader reader, Class<? extends JSON> clz) throws IOException {
+        return json(reader, null,clz);
+    }
+    static JSON json(Reader reader, JSON o, Class<? extends JSON> clz) throws IOException {
         char c;
         boolean rs=false;
         boolean rv=o instanceof Array<?>;
@@ -443,6 +449,13 @@ public interface JSON {
                 case '\n','\t',' ','\r'->{if(rs){buffer.append(c);}}
                 default -> {buffer.append(c);}
             }
+        }
+        if(o==null){
+            return switch (clz.getName()){
+                case "com.alex.json.java.JSON$Object"-> new JSON.Object();
+                case "com.alex.json.java.JSON$Array"-> new JSON.Array<>();
+                default -> null;
+            };
         }
         throw new IllegalArgumentException("No ending tag found");
     }

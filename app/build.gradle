@@ -68,7 +68,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'
     //implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
-    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
     // Required -- JUnit 4 framework
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.json:json:20220320'
