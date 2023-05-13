@@ -94,8 +94,8 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
             update.performClick();
         }
         downloads=findViewById(R.id.downloads);
-        NeonShadowDrawable.setToView(0xFF000000,(int)Utils.toDP(8),findViewById(R.id.card_view),(int)Utils.toDP(8),2000);
-        NeonShadowDrawable.setToView(0,findViewById(R.id.launcher_item),(int)Utils.toDP(8),2000);
+        NeonShadowDrawable.Rainbow((int)Utils.toDP(4),(int)Utils.toDP(8),0.75f).setToView(findViewById(R.id.launcher_item),true);
+        NeonShadowDrawable.Rainbow(0xff000000,(int)Utils.toDP(8),(int)Utils.toDP(8),0.75f).setToView(findViewById(R.id.card_view),true);
         if(json!=null && json.size()>0){
             downloads.setText(format_downloads(json));
         }else{

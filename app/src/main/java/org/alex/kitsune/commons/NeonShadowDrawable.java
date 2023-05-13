@@ -1,127 +1,125 @@
 package org.alex.kitsune.commons;
 
 import android.animation.ValueAnimator;
-import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.graphics.SweepGradient;
+import android.graphics.*;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RoundRectShape;
 import android.view.View;
 import android.view.animation.Animation;
-import androidx.annotation.ColorInt;
+import androidx.annotation.Nullable;
 import androidx.core.graphics.ColorUtils;
-import org.alex.kitsune.utils.Utils;
 
-public class NeonShadowDrawable extends LayerDrawable {
+public class NeonShadowDrawable extends Drawable implements Animatable {
     public static final int[] rainbow=new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff,0xff0000ff};
-    private final ShapeDrawable shadow;
-    private final GradientDrawable background;
     private final int[] colors;
-    public NeonShadowDrawable(@ColorInt int background,@ColorInt int[] colors, float corner, float elevation){
-        this(colors,create(colors,corner,elevation,0,0),create(background,corner));
+    private final float corners;
+    private final int padding;
+    private final Paint neon;
+    private final Paint background;
+    ValueAnimator animator;
+    public static NeonShadowDrawable Rainbow(int background, float corners, int padding, float scale_elevation){
+        return new NeonShadowDrawable(background,rainbow,corners,padding,padding*scale_elevation);
     }
-    public NeonShadowDrawable(@ColorInt int background,@ColorInt int[] colors, float corner, float elevation, float centerX, float centerY){
-        this(colors,create(colors,corner,elevation,centerX,centerY),create(background,corner));
+    public static NeonShadowDrawable Rainbow(float corners, int padding, float scale_elevation){
+        return new NeonShadowDrawable(0,rainbow,corners,padding,padding*scale_elevation);
     }
-    public NeonShadowDrawable(ColorStateList background,@ColorInt int[] colors, float corner, float elevation){
-        this(colors,create(colors,corner,elevation,0,0),create(background,corner));
-    }
-    public NeonShadowDrawable(ColorStateList background,@ColorInt int[] colors, float corner, float elevation, float centerX, float centerY){
-        this(colors,create(colors,corner,elevation,centerX,centerY),create(background,corner));
-    }
-    public NeonShadowDrawable(int[] colors,ShapeDrawable shadow,GradientDrawable background){
-        super(new Drawable[]{shadow,background});
+    public NeonShadowDrawable(int background, int[] colors, float corners, int padding, float elevation){
         this.colors=colors;
-        this.shadow=shadow;
-        this.background=background;
+        this.padding=padding;
+        this.corners=corners;
+        this.neon=new Paint(Paint.ANTI_ALIAS_FLAG);
+        this.neon.setStyle(Paint.Style.FILL);
+        this.neon.setShadowLayer(elevation,0,0, Color.BLACK);
+        this.background=new Paint(Paint.ANTI_ALIAS_FLAG);
+        this.background.setStyle(Paint.Style.FILL);
+        this.background.setColor(background);
+        this.animator=ValueAnimator.ofFloat(0,colors.length);
+        initAnimator(100,2000);
     }
-    public int[] getColors(){
+    public void setToView(View view,boolean animate){
+        view.setBackground(this);
+        view.setPadding(padding,padding,padding,padding);
+        if(animate){start();}
+    }
+    public void setBackground(int color){
+        this.background.setColor(color);
+        invalidateSelf();
+    }
+    public int getPadding(){
+        return padding;
+    }
+
+    public float getCorners() {
+        return corners;
+    }
+
+    public int[] getColors() {
         return colors;
     }
-    public ShapeDrawable getShadow(){
-        return shadow;
-    }
-    public GradientDrawable getBackground(){
-        return background;
-    }
-    public void updateShadow(@ColorInt int[] colors,float centerX,float centerY){
-        shadow.getPaint().setShader(new SweepGradient(centerX,centerY,colors,null));
-    }
-    private static ShapeDrawable create(@ColorInt int[] colors, float corner, float elevation, float centerX, float centerY){
-        ShapeDrawable shadow=new ShapeDrawable();
-        shadow.getPaint().setShadowLayer(elevation,0,0, Color.BLACK);
-        shadow.getPaint().setShader(new SweepGradient(centerX,centerY,colors,null));
-        shadow.setShape(new RoundRectShape(new float[]{corner,corner,corner,corner,corner,corner,corner,corner},null,null));
-        return shadow;
-    }
 
-    private static GradientDrawable create(@ColorInt int color, float corner){
-        GradientDrawable background=new GradientDrawable();
-        background.setColor(color);
-        background.setCornerRadius(corner);
-        return background;
-    }
-    private static GradientDrawable create(ColorStateList color, float corner){
-        GradientDrawable background=new GradientDrawable();
-        background.setColor(color);
-        background.setCornerRadius(corner);
-        return background;
-    }
-    public static void setToView(View view, long duration){
-        setToView(view,(int)Utils.toDP(4),duration);
-    }
-    public static void setToView(int background, View view, long duration){
-        setToView(background,view,(int)Utils.toDP(4),duration);
-    }
-    public static void setToView(ColorStateList background, View view, long duration){
-        setToView(background,view,(int)Utils.toDP(4),duration);
-    }
-    public static void setToView(View view, int padding, long duration){
-        setToView(0xff1f1f1f,view,padding,duration);
-    }
-    public static void setToView(int background, View view, int padding, long duration){
-        setToView(new NeonShadowDrawable(background,rainbow,(int)Utils.toDP(4),padding/2f),view,padding,duration);
-    }
-    public static void setToView(int background, int corner, View view, int padding, long duration){
-        setToView(new NeonShadowDrawable(background,rainbow,corner,padding/2f),view,padding,duration);
-    }
-    public static void setToView(ColorStateList background, View view, int padding, long duration){
-        setToView(new NeonShadowDrawable(background,rainbow,(int)Utils.toDP(4),padding/2f),view,padding,duration);
-    }
-    public static void setToView(NeonShadowDrawable drawable, View view, int padding,long duration){
-        view.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-            float centerX=(right-left)/2f-padding;
-            float centerY=(bottom-top)/2f-padding;
-            drawable.updateShadow(drawable.colors,centerX,centerY);
-            drawable.setLayerInset(0,padding,padding,padding,padding);
-            drawable.setLayerInset(1,padding,padding,padding,padding);
-            v.setPadding(padding,padding,padding,padding);
-            v.setBackground(drawable);
-            if(duration>0){
-                long invalidateDelay=100;
-                final long[] deltaTime = {System.currentTimeMillis()};
-                int[] c=drawable.getColors();
-                int[] colors=new int[c.length];
-                ValueAnimator animator=ValueAnimator.ofFloat(0,colors.length);
-                animator.addUpdateListener(animation -> {
-                    if (System.currentTimeMillis() - deltaTime[0] > invalidateDelay) {
-                        float fraction = (Float)animation.getAnimatedValue();
-                        deltaTime[0] = System.currentTimeMillis();
-                        for(int i=0;i<colors.length;i++){
-                            colors[i]=ColorUtils.blendARGB(c[(i+(int)fraction)%(c.length-1)],c[(i+1+(int)fraction)%(c.length-1)],fraction-(int)fraction);
-                        }
-                        drawable.updateShadow(colors,centerX,centerY);
-                        drawable.shadow.invalidateSelf();
-                    }
-                });
-                animator.setRepeatMode(ValueAnimator.REVERSE);
-                animator.setRepeatCount(Animation.INFINITE);
-                animator.setDuration(duration);
-                animator.start();
+    public void initAnimator(long delay, long duration){
+        animator.removeAllUpdateListeners();
+        int[] colors=new int[this.colors.length];
+        final long[] delta = {System.currentTimeMillis()};
+        animator.addUpdateListener(animation -> {
+            if (System.currentTimeMillis() - delta[0] > delay) {
+                float fraction = (Float)animation.getAnimatedValue();
+                delta[0] = System.currentTimeMillis();
+                for(int i=0;i<colors.length;i++){
+                    colors[i]=ColorUtils.blendARGB(this.colors[(i+(int)fraction)%(this.colors.length-1)],this.colors[(i+1+(int)fraction)%(this.colors.length-1)],fraction-(int)fraction);
+                }
+                neon.setShader(new SweepGradient(getBounds().centerX(),getBounds().centerY(), colors,null));
+                invalidateSelf();
             }
         });
+        animator.setRepeatMode(ValueAnimator.REVERSE);
+        animator.setRepeatCount(Animation.INFINITE);
+        animator.setDuration(duration);
+    }
+    @Override
+    protected void onBoundsChange(Rect bounds) {
+        super.onBoundsChange(bounds);
+        neon.setShader(new SweepGradient(bounds.centerX(),bounds.centerY(), colors,null));
+    }
+
+    RectF rect=new RectF(getBounds());
+    @Override
+    public void draw(Canvas canvas) {
+        rect.set(getBounds());
+        rect.inset(padding,padding);
+        canvas.drawRoundRect(rect,corners,corners,neon);
+        canvas.drawRoundRect(rect,corners,corners,background);
+    }
+
+    @Override
+    public void setAlpha(int alpha) {
+        neon.setAlpha(alpha);
+        invalidateSelf();
+    }
+
+    @Override
+    public void setColorFilter(@Nullable ColorFilter colorFilter) {
+        neon.setColorFilter(colorFilter);
+        invalidateSelf();
+    }
+
+    @Override
+    public int getOpacity() {
+        return neon.getAlpha()==0?PixelFormat.TRANSPARENT:neon.getAlpha()==255?PixelFormat.OPAQUE:PixelFormat.TRANSLUCENT;
+    }
+
+    @Override
+    public void start() {
+        animator.start();
+    }
+
+    @Override
+    public void stop() {
+        animator.end();
+    }
+
+    @Override
+    public boolean isRunning() {
+        return animator.isRunning();
     }
 }
