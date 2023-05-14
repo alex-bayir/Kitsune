@@ -5,41 +5,50 @@ import android.graphics.*;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import androidx.annotation.Nullable;
+import androidx.cardview.widget.CardView;
 import androidx.core.graphics.ColorUtils;
+import static java.lang.Math.max;
+import static java.lang.Math.min;
 
 public class NeonShadowDrawable extends Drawable implements Animatable {
     public static final int[] rainbow=new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff,0xff0000ff};
     private final int[] colors;
     private final float corners;
     private final int padding;
-    private final Paint neon;
-    private final Paint background;
+    private final Paint neon=new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint background=new Paint(Paint.ANTI_ALIAS_FLAG);
     ValueAnimator animator;
-    public static NeonShadowDrawable Rainbow(int background, float corners, int padding, float scale_elevation){
-        return new NeonShadowDrawable(background,rainbow,corners,padding,padding*scale_elevation);
+    public static NeonShadowDrawable Rainbow(int background, ViewGroup corners_padding){
+        return new NeonShadowDrawable(background,rainbow,getCornersChildCard(corners_padding,0),getPadding(corners_padding));
     }
-    public static NeonShadowDrawable Rainbow(float corners, int padding, float scale_elevation){
-        return new NeonShadowDrawable(0,rainbow,corners,padding,padding*scale_elevation);
+    public static NeonShadowDrawable Rainbow(int background, float corners,View padding){
+        return new NeonShadowDrawable(background,rainbow,corners,getPadding(padding));
     }
-    public NeonShadowDrawable(int background, int[] colors, float corners, int padding, float elevation){
+    public static NeonShadowDrawable Rainbow(int background, float corners, int padding){
+        return new NeonShadowDrawable(background,rainbow,corners,padding);
+    }
+    public static NeonShadowDrawable Rainbow(float corners, int padding){
+        return new NeonShadowDrawable(0,rainbow,corners,padding);
+    }
+    public NeonShadowDrawable(int background, int[] colors, float corners, int padding){
         this.colors=colors;
-        this.padding=padding;
         this.corners=corners;
-        this.neon=new Paint(Paint.ANTI_ALIAS_FLAG);
         this.neon.setStyle(Paint.Style.FILL);
-        this.neon.setShadowLayer(elevation,0,0, Color.BLACK);
-        this.background=new Paint(Paint.ANTI_ALIAS_FLAG);
         this.background.setStyle(Paint.Style.FILL);
         this.background.setColor(background);
         this.animator=ValueAnimator.ofFloat(0,colors.length);
+        this.padding=padding;
+        neon.setMaskFilter(new BlurMaskFilter(padding*0.75f, BlurMaskFilter.Blur.OUTER));
         initAnimator(100,2000);
     }
-    public void setToView(View view,boolean animate){
+    public NeonShadowDrawable setToView(View view,boolean animate){
+        view.setPadding(max(view.getPaddingStart(),padding),max(view.getPaddingTop(),padding),max(view.getPaddingEnd(),padding),max(view.getPaddingBottom(),padding));
         view.setBackground(this);
-        view.setPadding(padding,padding,padding,padding);
         if(animate){start();}
+        return this;
     }
     public void setBackground(int color){
         this.background.setColor(color);
@@ -78,15 +87,14 @@ public class NeonShadowDrawable extends Drawable implements Animatable {
     }
     @Override
     protected void onBoundsChange(Rect bounds) {
-        super.onBoundsChange(bounds);
+        rect.set(bounds);
+        rect.inset(padding,padding);
         neon.setShader(new SweepGradient(bounds.centerX(),bounds.centerY(), colors,null));
     }
 
     RectF rect=new RectF(getBounds());
     @Override
     public void draw(Canvas canvas) {
-        rect.set(getBounds());
-        rect.inset(padding,padding);
         canvas.drawRoundRect(rect,corners,corners,neon);
         canvas.drawRoundRect(rect,corners,corners,background);
     }
@@ -121,5 +129,12 @@ public class NeonShadowDrawable extends Drawable implements Animatable {
     @Override
     public boolean isRunning() {
         return animator.isRunning();
+    }
+
+    public static int getPadding(View view){
+        return min(view.getPaddingLeft(),min(view.getPaddingTop(),min(view.getPaddingRight(),view.getPaddingBottom())));
+    }
+    public static float getCornersChildCard(ViewGroup parent,float def){
+        return parent.getChildCount()==1 && parent.getChildAt(0) instanceof CardView cv? cv.getRadius() : def;
     }
 }

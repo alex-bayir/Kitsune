@@ -105,7 +105,7 @@ public class PreviewPage extends PreviewHolder {
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
         Utils.setHorizontalInterceptorDisallow(rv,v->itemView.getParent());
-        NeonShadowDrawable.Rainbow((int)Utils.toDP(4),(int)Utils.toDP(6),0.75f).setToView(itemView.findViewById(R.id.cover_card_parent),true);
+        NeonShadowDrawable.Rainbow(0,itemView.findViewById(R.id.cover_card_parent)).setToView(itemView.findViewById(R.id.cover_card_parent),true);
     }
 
 
