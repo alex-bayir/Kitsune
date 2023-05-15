@@ -5,9 +5,9 @@
                 android:gravity="center">
     <ImageView android:id="@+id/image"
                android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:padding="8sp"
-               android:visibility="gone"
+               android:layout_height="match_parent"
+               android:padding="12dp"
+               android:src="@drawable/ic_caution_yellow"
     />
     <com.google.android.material.textview.MaterialTextView
             android:id="@+id/text"
@@ -15,7 +15,7 @@
             android:layout_height="match_parent"
             android:layout_weight="1.0"
             android:gravity="center"
-            android:maxLines="4"
+            android:maxLines="3"
             android:ellipsize="end"
             style="?android:textAppearance"
     />

@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
+import org.alex.kitsune.commons.NeonShadowDrawable;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.scripts.Script;
@@ -197,7 +198,18 @@ public class Updater {
     }
 
     public static CustomSnackbar createSnackBarUpdate(ViewGroup parent, int gravity, int duration, String text, View.OnClickListener update){
-        return CustomSnackbar.makeSnackbar(parent, duration).setGravity(gravity).setText(text).setIcon(R.drawable.ic_caution_yellow).setAction(R.string.update,update).setBackgroundAlpha(200);
+        return CustomSnackbar.makeSnackbar(parent, duration,
+                        new NeonShadowDrawable.RoundRect(4*Utils.DP)
+                                .padding(8f)
+                                .background(Utils.getAttrColor((Activity) parent.getContext(),android.R.attr.colorBackground))
+                                .setIgnoreAlphaShadow(true)
+                                .build()
+                )
+                .setPadding(Utils.toDP(8))
+                .setGravity(gravity).setText(text)
+                .setIcon(R.drawable.ic_caution_yellow)
+                .setAction(R.string.update,update)
+                .setBackgroundAlpha(200);
     }
     public static CustomSnackbar createSnackBarUpdate(ViewGroup parent, int gravity, int duration, View.OnClickListener update){
         return createSnackBarUpdate(parent,gravity,duration,parent.getContext().getString(R.string.new_version_founded)+" "+updateInfo.getString("version"),update);

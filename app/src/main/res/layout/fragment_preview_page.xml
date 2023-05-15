@@ -33,29 +33,37 @@
                   android:layout_height="88.0dip"
                   app:layout_constraintBottom_toBottomOf="@id/backdrop" android:id="@+id/view"/>
             <FrameLayout
-                    android:id="@+id/cover_card_parent"
+                    android:id="@+id/cover_card_shadow"
                     android:layout_width="0.0dip"
                     android:layout_height="0.0dip"
-                    android:layout_margin="8dp"
                     android:padding="8dp"
+                    app:layout_constraintStart_toStartOf="@+id/cover_card"
+                    app:layout_constraintTop_toTopOf="@+id/cover_card"
+                    app:layout_constraintBottom_toBottomOf="@+id/cover_card"
+                    app:layout_constraintEnd_toEndOf="@+id/cover_card"
+                    android:layout_marginBottom="-8dp"
+                    android:layout_marginEnd="-8dp"
+                    android:layout_marginTop="-8dp"
+                    android:layout_marginStart="-8dp">
+            </FrameLayout>
+            <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cover_card"
+                    android:layout_width="0.0dip"
+                    android:layout_height="0.0dip"
+                    android:layout_margin="16dp"
                     app:layout_constraintDimensionRatio="h,2:3"
                     app:layout_constraintEnd_toStartOf="@id/guideline"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent">
-                <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cover_card"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:cardCornerRadius="4dp">
+                <androidx.appcompat.widget.AppCompatImageView
+                        android:id="@+id/cover"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_caution"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        app:cardCornerRadius="4dp">
-                    <androidx.appcompat.widget.AppCompatImageView
-                            android:id="@+id/cover"
-                            android:scaleType="center"
-                            android:src="@drawable/ic_caution"
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"/>
-                </com.google.android.material.card.MaterialCardView>
-            </FrameLayout>
+                        android:layout_height="match_parent"/>
+            </com.google.android.material.card.MaterialCardView>
             <com.google.android.material.textview.MaterialTextView
                       android:id="@+id/info"
                       android:layout_width="wrap_content"

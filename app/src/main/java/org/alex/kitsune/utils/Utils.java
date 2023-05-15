@@ -618,7 +618,16 @@ public class Utils {
             protected void onResourceCleared(@Nullable @org.jetbrains.annotations.Nullable Drawable placeholder) {}
         });
     }
-    public static float toDP(float value){
-        return (float)Math.ceil(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, Resources.getSystem().getDisplayMetrics()));
+    public static float DP=TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 1, Resources.getSystem().getDisplayMetrics());
+    public static int toDP(float value){
+        return (int)Math.ceil(value*DP);
+    }
+    public static TypedValue getAttrValue(android.app.Activity activity,int attr){
+        TypedValue value = new TypedValue();
+        activity.getTheme().resolveAttribute(attr,value,true);
+        return value;
+    }
+    public static int getAttrColor(android.app.Activity activity,int attr){
+        return getAttrValue(activity,attr).data;
     }
 }

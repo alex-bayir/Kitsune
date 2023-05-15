@@ -6,8 +6,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
@@ -107,7 +105,7 @@ public class PreviewPage extends PreviewHolder {
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
         Utils.setHorizontalInterceptorDisallow(rv,v->itemView.getParent());
-        NeonShadowDrawable.Rainbow(0,itemView.findViewById(R.id.cover_card_parent)).setToView(itemView.findViewById(R.id.cover_card_parent),true);
+        new NeonShadowDrawable.RoundRect(4*Utils.DP).buildFrom(itemView.findViewById(R.id.cover_card_shadow),true);
     }
 
 
@@ -231,7 +229,7 @@ public class PreviewPage extends PreviewHolder {
     public static CharSequence createText(Context context, Book book, boolean count_known){
         SpannableStringBuilder builder=new SpannableStringBuilder();
         builder.append(context.getString(R.string.Chapters), new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        builder.append(count_known ? book.getChapters().size()+"" : "?");
+        builder.append(count_known ? String.valueOf(book.getChapters().size()) : "?");
         if(book.getAuthor() instanceof Map<?,?> map){
             builder.append("\n");
             AtomicInteger count=new AtomicInteger();

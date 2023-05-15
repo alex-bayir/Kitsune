@@ -14,8 +14,14 @@ import com.google.android.material.snackbar.BaseTransientBottomBar;
 import org.alex.kitsune.R;
 
 public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
+    ImageView icon;
+    TextView text;
+    Button button;
     private CustomSnackbar(ViewGroup parent, View content, ContentViewCallback contentViewCallback){
         super(parent,content,contentViewCallback);
+        icon=content.findViewById(R.id.image);
+        text=content.findViewById(R.id.text);
+        button=content.findViewById(R.id.button);
     }
     private CustomSnackbar(ViewGroup parent, View content){
         this(parent,content,new ContentViewCallback(parent));
@@ -24,12 +30,14 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
         return makeSnackbar(parent,duration, R.drawable.bg_snackbar);
     }
     public static CustomSnackbar makeSnackbar(ViewGroup parent, @Duration int duration, int background){
-        View root=LayoutInflater.from(parent.getContext()).inflate(R.layout.snackbar_update,parent,false);
-        return new CustomSnackbar(parent,root).setBackground(background).setDuration(duration);
+        return new CustomSnackbar(parent,LayoutInflater.from(parent.getContext()).inflate(R.layout.snackbar_update,parent,false)).setBackground(background).setDuration(duration);
+    }
+    public static CustomSnackbar makeSnackbar(ViewGroup parent, @Duration int duration, Drawable background){
+        return new CustomSnackbar(parent,LayoutInflater.from(parent.getContext()).inflate(R.layout.snackbar_update,parent,false)).setBackground(background).setDuration(duration);
     }
 
     public CustomSnackbar setText(CharSequence text){
-        ((TextView)getView().findViewById(R.id.text)).setText(text); return this;
+        this.text.setText(text); return this;
     }
     public CustomSnackbar setText(int string){
         return setText(getContext().getString(string));
@@ -38,23 +46,31 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
         return setIcon(getContext().getDrawable(drawable));
     }
     public CustomSnackbar setIcon(Drawable icon){
-        ImageView imageView=getView().findViewById(R.id.image);
-        imageView.setImageDrawable(icon);
-        imageView.setVisibility(View.VISIBLE);
+        this.icon.setImageDrawable(icon);
+        this.icon.setVisibility(View.VISIBLE);
         return this;
     }
     public CustomSnackbar setAction(int string, final View.OnClickListener listener){
         return setAction(getContext().getString(string),listener);
     }
     public CustomSnackbar setAction(CharSequence text, final View.OnClickListener listener){
-        Button button=getView().findViewById(R.id.button);
         button.setText(text);
         button.setVisibility(View.VISIBLE);
         button.setOnClickListener(listener);
         return this;
     }
+    public ImageView getIcon() {
+        return icon;
+    }
+    public TextView getText() {
+        return text;
+    }
+    public Button getButton() {
+        return button;
+    }
+
     public CustomSnackbar setBackground(int drawable){
-        return setBackground(getView().getContext().getDrawable(drawable));
+        return setBackground(getContext().getDrawable(drawable));
     }
     public CustomSnackbar setBackground(Drawable drawable){
         getView().setBackground(drawable); return this;
@@ -79,6 +95,13 @@ public class CustomSnackbar extends BaseTransientBottomBar<CustomSnackbar> {
             params.setMarginEnd(right);
             getView().setLayoutParams(params);
         }
+        return this;
+    }
+    public CustomSnackbar setPadding(int padding){
+        return setPadding(padding,padding,padding,padding);
+    }
+    public CustomSnackbar setPadding(int left, int top, int right, int bottom){
+        getView().setPadding(left, top, right, bottom);
         return this;
     }
 
