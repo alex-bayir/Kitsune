@@ -54,7 +54,7 @@ public class PreviewActivity extends AppCompatActivity{
     private static int hash=-1;
     static final int PERMISSION_REQUEST_CODE=1;
     static final int CALL_FILE_STORE=2;
-    private Runnable scrollToHistory=()->{adapter.getChaptersPage().scrollToHistory(); scrollToHistory=null;};
+    private Runnable scrollToHistory=()->{if(adapter.getChaptersPage()!=null){adapter.getChaptersPage().scrollToHistory(); scrollToHistory=null;}};
     private final Callback<Throwable> errorCallback=(throwable) -> {
         progressBar.progressiveStop(); this.throwable=throwable;
         if(throwable!=null && throwable.getCause() instanceof IOException e){
