@@ -31,7 +31,7 @@
             <View android:background="@drawable/info_gradient"
                   android:layout_width="match_parent"
                   android:layout_height="88.0dip"
-                  app:layout_constraintBottom_toBottomOf="@id/backdrop" android:id="@+id/view"/>
+                  app:layout_constraintBottom_toBottomOf="@id/backdrop"/>
             <FrameLayout
                     android:id="@+id/cover_card_shadow"
                     android:layout_width="0.0dip"

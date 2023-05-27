@@ -1,6 +1,4 @@
-plugins {
-    id 'com.android.library'
-}
+apply plugin: 'com.android.library'
 
 android {
     compileSdk 33
@@ -9,7 +7,7 @@ android {
         targetSdk 33
     }
 
-    buildTypes.all {
+    buildTypes.configureEach {
         minifyEnabled true
     }
     compileOptions {
@@ -19,5 +17,5 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }

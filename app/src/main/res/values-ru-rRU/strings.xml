@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="not_implemented_yet">Пока не реализованно</string>
     <string name="recommendations">Рекомендации</string>
     <string name="menu_catalogs">Каталоги</string>
     <string name="settings">Настройки</string>
@@ -8,12 +7,10 @@
     <string name="check_for_updates">Проверка обновлений</string>
     <string name="sorting">Сортировка</string>
     <string name="create_shortcut">Создать ярлык</string>
-    <string name="action_open_browser">Открыть в браузере</string>
     <string name="action_open_in">Открыть в</string>
     <string name="unable_create_shortcut">Не получилось создать ярлык</string>
     <string name="genres">Жанры</string>
     <string name="estimated_time">Расчётное время чтения</string>
-    <string name="average_time">Средее время чтения</string>
     <string name="description">Описание</string>
     <string name="error_has_occurred">Произошла ошибка</string>
     <string name="downloaded">Загружена</string>
@@ -34,9 +31,6 @@
     <string name="share_screen">Поделиться скрином</string>
     <string name="loading_page">Загрузка страницы…</string>
     <string name="action_settings_shelf">Настройка полки</string>
-    <string name="history_rows">Строк истории</string>
-    <string name="favorites_rows">Строк Избранных</string>
-    <string name="saved_rows">Строк Сохранёных</string>
     <string name="appearance">Внешний вид</string>
     <string name="theme">Тема</string>
     <string name="downloads">Храшилище</string>
@@ -67,23 +61,19 @@
     <string name="sort_updated">Обновления</string>
     <string name="menu_shelf">Полка</string>
     <string name="Chapters">"Главы: "</string>
-    <string name="Author">"Автор: "</string>
     <string name="Source_">"Домен: "</string>
     <string name="Type_">"Тип: "</string>
     <string name="Status_">"Статус: "</string>
     <string name="share">Поделиться</string>
-    <string name="categories">Категории</string>
     <string name="general">Основные</string>
     <string name="Chapter">Глава</string>
     <string name="About">О приложении</string>
     <string name="language">Язык</string>
-    <string name="similar">Похожее</string>
     <string name="Volume">Том</string>
     <string name="adjust_brightness">Отрегулировать яркость</string>
     <string name="adjust_brightness_value">Яркость</string>
     <string name="build_time">Время сборки: %1$s \nСборка: %2$s</string>
     <string name="text_copied">Текст скопирован</string>
-    <string name="install_update">Установить обновление</string>
     <string name="no_updates_found">Обновлений не найдено</string>
     <string name="new_version_founded">Найдена новая версия</string>
     <string name="if_shortcut_did_not_created">Если ярлык не создан предоставте разрешения</string>
@@ -147,7 +137,6 @@
     <string name="statistics">Статистика</string>
     <string name="donate">Пожертвования:\n%1$s\n\n</string>
     <string name="all_scripts_updated">Все скрипты обновлены</string>
-    <string name="access_denial">Отказ доступа</string>
     <string name="auth_help_info">Для некоторых тайтлов требуется авторизация, попробуйте авторизоваться через WebView.</string>
     <string name="average_reading_time_per_day">Среднее время чтения в день</string>
     <string name="target_lang">Целевой язык перевода</string>

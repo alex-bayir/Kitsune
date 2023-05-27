@@ -5,8 +5,7 @@
           android:icon="@drawable/ic_api"
           app:showAsAction="always"
     />
-    <item android:id="@+id/choose_mode"
-        android:title="@string/test_functions">
+    <item android:title="@string/test_functions">
         <menu>
             <group android:checkableBehavior="single">
                 <item android:id="@+id/base_functions"

@@ -10,12 +10,10 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.cardview.widget.CardView;
 import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
-
 import java.util.function.Function;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
