@@ -133,7 +133,10 @@ public class Shelf extends Fragment implements MenuProvider {
         if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated()){
             check_for_updates();
         }
-        if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
+        if(getActivity()!=null){
+            getActivity().invalidateOptionsMenu();
+            progress.setVisibility(BookService.isUpdating?View.VISIBLE:View.GONE);
+        }
         if(adapter!=null){
             adapter.setEnableUpdate(true);
         }

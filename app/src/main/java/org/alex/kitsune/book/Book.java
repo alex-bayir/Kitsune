@@ -19,6 +19,8 @@ import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.services.LoadService;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -65,20 +67,11 @@ public abstract class Book {
         };
     }
     private static String getStatus(String status){
-        switch (status!=null ? status.toLowerCase() : "none"){
-            case "продолжается":
-            case "1":
-            case "онгоинг":
-            case "ongoing": return "Ongoing";
-            case "cингл":
-            case "single":
-            case "закончен":
-            case "завершен":
-            case "completed":
-            case "2":
-            case "released": return "Released";
-            default: return "None";
-        }
+        return switch (status != null ? status.toLowerCase() : "none") {
+            case "продолжается", "1", "онгоинг", "ongoing" -> "Ongoing";
+            case "cингл", "single", "закончен", "завершен", "completed", "2", "released" -> "Released";
+            default -> "None";
+        };
     }
     public abstract boolean update() throws Exception;
 
@@ -114,8 +107,8 @@ public abstract class Book {
     public String getUrl_WEB(){return getString("url_web");}
     public final String getName(){return getString("name");}
     public final String getNameAlt(){return getString("name_alt");}
-    public final String getAnyName(){return getAnyName(false);}
-    public final String getAnyName(boolean en){return en ? getName()!=null ? getName() : getNameAlt() : getNameAlt()!=null ? getNameAlt() : getName();}
+    public final String getAnyName(){return getAnyName(true);}
+    public final String getAnyName(boolean alt){return alt ? getNameAlt()!=null ? getNameAlt() : getName() : getName()!=null ? getName() : getNameAlt();}
     public final Object getAuthor(){return get("author");}
     public final String getGenres(){return getString("genres");}
     public final String getThumbnail(){return getString("thumbnail");}
@@ -176,6 +169,7 @@ public abstract class Book {
                 .put("history",getHistory()!=null ? getHistory().toJSON() : null);
     }
 
+    @NotNull
     @Override
     public final String toString(){return this.toJSON().toString();}
 
@@ -248,7 +242,8 @@ public abstract class Book {
                 }
             }
         }
-    return false;}
+        return false;
+    }
 
     public int countSaved(){return (int)getChapters().stream().filter(this::checkChapter).count();}
 
@@ -257,9 +252,9 @@ public abstract class Book {
     public final int getNumChapter(BookMark bookMark){return getNumChapter(bookMark!=null ? bookMark.getChapter() : null);}
     public final int getNumChapterHistory(){return getNumChapter(getHistory());}
 
-    public final boolean updateDetails(){return updateDetails(loadFromStorage(getInfoPath()));}
-    public final boolean updateDetails(Book book){
-        if(book !=null && this.hashCode()== book.hashCode()){
+    public final void updateDetails(){updateDetails(loadFromStorage(getInfoPath()));}
+    public final void updateDetails(Book book){
+        if(book!=null && this.hashCode()==book.hashCode()){
             updateChapters(book.getChapters());
             updateBookMarks(book.getBookMarks());
             set("history", book.getHistory());
@@ -267,9 +262,7 @@ public abstract class Book {
             set("lastTimeSave", book.getLastTimeSave());
             set("category", book.getCategory());
             set("category time", book.getCategoryTime());
-            return true;
         }
-        return false;
     }
 
     public final void updateChapters(List<Chapter> chapters){
@@ -399,8 +392,8 @@ public abstract class Book {
     public static final Comparator<Book> HistoryComparator=(o1, o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
     public static final Comparator<Book> SavingTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
     public static final Comparator<Book> CategoryTimeComparator=(o1, o2)->Long.compare(o2.getCategoryTime(),o1.getCategoryTime());
-    public static final Comparator<Book> AlphabeticalComparatorEn=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(true),""));
-    public static final Comparator<Book> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(false),""));
+    public static final Comparator<Book> AlphabeticalComparatorAlt=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(true),""));
+    public static final Comparator<Book> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(false),""));
     public static final Comparator<Book> ImagesSizesComparator=(o1, o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
     public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating);
     public static Comparator<Book> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}

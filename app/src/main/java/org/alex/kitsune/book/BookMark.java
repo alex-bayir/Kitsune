@@ -3,6 +3,7 @@ package org.alex.kitsune.book;
 import com.alex.json.java.JSON;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class BookMark{
@@ -28,7 +29,7 @@ public class BookMark{
     public static JSON.Array<JSON.Object> toJSON(List<BookMark> list){
         return list==null? null : new JSON.Array<>(list.stream().map(BookMark::toJSON).collect(Collectors.toList()));}
     public static List<BookMark> fromJSON(List<JSON.Object> json){
-        return json==null ? null : json.stream().map(BookMark::fromJSON).collect(Collectors.toList());
+        return json==null ? null : json.stream().map(BookMark::fromJSON).filter(Objects::nonNull).collect(Collectors.toList());
     }
     public boolean equals(BookMark bookMark){
         return (bookMark!=null && (chapter.equals(bookMark.chapter) && page==bookMark.page));

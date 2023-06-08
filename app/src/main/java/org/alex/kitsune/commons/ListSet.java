@@ -15,7 +15,7 @@ public class ListSet<E> implements List<E>,Set<E> {
     public ListSet(Class<? extends List> listClass) throws IllegalAccessException,InstantiationException{
         this.map=listClass.newInstance();
     }
-    public ListSet(Class<? extends List> listClass,Collection<E> c) throws IllegalAccessException,InstantiationException{
+    public ListSet(Class<? extends List<E>> listClass,Collection<E> c) throws IllegalAccessException,InstantiationException{
         this(listClass);
         addAll(c);
     }
@@ -168,7 +168,7 @@ public class ListSet<E> implements List<E>,Set<E> {
 
     @Override
     public boolean removeAll(@NonNull @NotNull Collection<?> c) {
-        return removeIf(e -> c.contains(e));
+        return removeIf(c::contains);
     }
 
     @Override
@@ -180,7 +180,7 @@ public class ListSet<E> implements List<E>,Set<E> {
 
     @Override
     public void sort(@Nullable @org.jetbrains.annotations.Nullable Comparator<? super E> c) {
-        map.sort((o1, o2) -> c.compare(o1.getValue(), o2.getValue()));
+        map.sort(c==null ? null : (o1, o2) -> c.compare(o1.getValue(), o2.getValue()));
     }
 
     @NonNull

@@ -7,6 +7,7 @@ import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import static com.alex.json.java.JSON.filter;
 
@@ -75,7 +76,7 @@ public class Chapter{
         return chapters==null ? null : new JSON.Array<>(chapters.stream().map(Chapter::toJSON).collect(Collectors.toList()));
     }
     public static List<Chapter> fromJSON(List<JSON.Object> json){
-        return json==null ? null : json.stream().map(Chapter::fromJSON).collect(Collectors.toList());
+        return json==null ? null : json.stream().map(Chapter::fromJSON).filter(Objects::nonNull).collect(Collectors.toList());
     }
 
     public boolean equals(Object obj){return obj instanceof Chapter chapter && equals(chapter);}
