@@ -24,6 +24,7 @@ import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.logs.LogsActivity;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
@@ -55,11 +56,10 @@ public class SettingsActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.settings);
 
         switch(getIntent().getStringExtra(KEY)!=null ? getIntent().getStringExtra(KEY) : ""){
-            default:
-            case TYPE_LIST: type=SettingsFragment.Type.List; break;
-            case TYPE_GENERAL: type=SettingsFragment.Type.General; break;
-            case TYPE_READER: type=SettingsFragment.Type.Reader; break;
-            case TYPE_SHELF: type=SettingsFragment.Type.Shelf; break;
+            default -> type=SettingsFragment.Type.List;
+            case TYPE_GENERAL -> type=SettingsFragment.Type.General;
+            case TYPE_READER -> type=SettingsFragment.Type.Reader;
+            case TYPE_SHELF -> type=SettingsFragment.Type.Shelf;
         }
         switch (type){
             case List -> ((RecyclerView)findViewById(R.id.rv_list)).setAdapter(new ListAdapter(this));
@@ -134,6 +134,13 @@ public class SettingsActivity extends AppCompatActivity {
                     Utils.Activity.setLocale((String)newValue,preference.getContext());
                     Utils.Activity.restartActivity(getActivity());
                     return false;
+                });
+                setChangeListener("Timeout",(preference, newValue) -> {
+                    if(newValue instanceof Number number && number.intValue()>0){
+                        NetworkUtils.setNewTimeout(number.intValue()*1000L); return true;
+                    }else{
+                        return false;
+                    }
                 });
             }
             if(type==Type.Reader){

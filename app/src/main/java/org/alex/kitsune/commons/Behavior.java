@@ -17,8 +17,8 @@ public class Behavior <V extends View> extends CoordinatorLayout.Behavior<V> {
     public Behavior(Context context, AttributeSet attributeSet){super(context,attributeSet);}
 
     public void onScroll(V child,int dx,int dy){
-        child.setTranslationY(inRange(0,child.getTranslationY()+dy/2,maxY));
-        child.setTranslationX(inRange(0,child.getTranslationX()+dy/2,maxX));
+        child.setTranslationY(inRange(0,child.getTranslationY()+dy/2f,maxY));
+        child.setTranslationX(inRange(0,child.getTranslationX()+dy/2f,maxX));
     }
     @Override
     public boolean onLayoutChild(@NonNull CoordinatorLayout parent, @NonNull V child, int layoutDirection) {

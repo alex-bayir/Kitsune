@@ -23,7 +23,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.net.ssl.SSLException;
 import java.io.*;
 import java.net.SocketTimeoutException;
-import java.text.DateFormat;
+import org.alex.kitsune.utils.Utils;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -159,35 +159,27 @@ public class Logs {
                 return null;
             }
         }
-        public static final SimpleDateFormat simpleDateFormat=new SimpleDateFormat("ss:mm:HH dd.MM.yyyy");
-        public static String date(long date, DateFormat dateFormat){return dateFormat.format(new Date(date));}
-        public static String date(long date){return date(date,simpleDateFormat);}
+        public static final SimpleDateFormat simpleDateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ",Locale.US);
+        public static String date(long date){return Utils.date(date,simpleDateFormat);}
         public String date(){return date(date);}
     }
     public static class LogsAdapter extends RecyclerView.Adapter<LogHolder> {
-        interface OnCountChangeListener{
-            void onCountChange(int count);
-        }
         interface OnLogRemoveListener {
             void onItemRemove(Log log);
         }
         private final HolderClickListener listener;
         private final HolderClickListener clear=this::clearLog;
-        private final OnCountChangeListener onCountChangeListener;
         private final OnLogRemoveListener onRemove;
         final List<Log> logs;
 
-        public LogsAdapter(List<Log> logs, HolderClickListener listener, OnCountChangeListener onCountChangeListener, OnLogRemoveListener onRemove){
+        public LogsAdapter(List<Log> logs, HolderClickListener listener, OnLogRemoveListener onRemove){
             this.logs=logs;
             this.listener=listener;
-            this.onCountChangeListener=onCountChangeListener;
-            onCountChangeListener.onCountChange(getItemCount());
             this.onRemove=onRemove;
         }
         public void setLogs(List<Log> logs){
             this.logs.clear();
             this.logs.addAll(logs);
-            onCountChangeListener.onCountChange(getItemCount());
             notifyDataSetChanged();
         }
         public Log getLog(int pos){return logs.get(pos);}
@@ -196,14 +188,12 @@ public class Logs {
             Logs.clearLog(log.date);
             if(onRemove!=null){onRemove.onItemRemove(log);}
             notifyItemRemoved(position);
-            onCountChangeListener.onCountChange(getItemCount());
         }
         public void clearAll(){
             for(Log log:logs){Logs.clearLog(log.date);}
             int size=logs.size();
             logs.clear();
             notifyItemRangeRemoved(0,size);
-            onCountChangeListener.onCountChange(getItemCount());
         }
         @NonNull
         @NotNull

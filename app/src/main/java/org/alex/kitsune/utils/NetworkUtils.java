@@ -32,7 +32,7 @@ public class NetworkUtils {
     public static final Headers HEADERS_DEFAULT = new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).build();
     private static final CacheControl CACHE_CONTROL_DEFAULT = new CacheControl.Builder().maxAge(10, TimeUnit.MINUTES).build();
     private static final TreeMap<String,List<Cookie>> cookies=new TreeMap<>();
-    public static final OkHttpClient sHttpClient=new OkHttpClient.Builder().cookieJar(new CookieJar() {
+    public static OkHttpClient sHttpClient=new OkHttpClient.Builder().cookieJar(new CookieJar() {
         @Override
         public void saveFromResponse(@NotNull HttpUrl httpUrl, @NotNull List<Cookie> list) {
             cookies.put(httpUrl.host(),list);
@@ -43,7 +43,17 @@ public class NetworkUtils {
             List<Cookie> list=getCookies(httpUrl.host());
             return list!=null ? list : new LinkedList<>();
         }
-    }).readTimeout(60,TimeUnit.SECONDS).build();
+    }).readTimeout(15,TimeUnit.SECONDS).build();
+    public static void setNewTimeout(long timeout){
+        sHttpClient=sHttpClient.newBuilder()
+                .connectTimeout(timeout/2,TimeUnit.MILLISECONDS)
+                .readTimeout(timeout/2,TimeUnit.MILLISECONDS)
+                .writeTimeout(timeout/2,TimeUnit.MILLISECONDS)
+                .build();
+    }
+    public static void setTimeout(android.content.SharedPreferences prefs){
+        setNewTimeout(prefs.getInt("Timeout",15)*1000L);
+    }
     public static final OkHttpClient scrambledClient=sHttpClient.newBuilder().addInterceptor(new ScrambledInterceptor()).build();
     public static OkHttpClient getClient(boolean descramble){
         return descramble ? scrambledClient : sHttpClient;

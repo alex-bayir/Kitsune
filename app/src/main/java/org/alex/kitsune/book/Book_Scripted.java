@@ -80,7 +80,7 @@ public class Book_Scripted extends Book {
             }
             map.forEach((key,value)-> set(key,value instanceof String v ? fromHtml(v):value));
             if(chapters!=null){
-                updateChapters(chapters);
+                updateChapters(chapters.stream().filter(Objects::nonNull).collect(Collectors.toList()));
             }
             if(similar!=null){
                 updateSimilar(getSimilar(similar.stream().map(e->e instanceof Map<?,?> m? (Map<String,?>)m:null).collect(Collectors.toList())));

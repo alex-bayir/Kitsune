@@ -57,15 +57,15 @@ public class LogsActivity extends AppCompatActivity{
         send=more.findViewById(R.id.send);
         send.setOnClickListener(v -> Logs.sendLog(this,lastDate));
         log_text=more.findViewById(R.id.log_text);
-        log_text.setHorizontallyScrolling(true);
         log_date=more.findViewById(R.id.log_date);
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback(){@Override public void onPageSelected(int position){LogsActivity.this.onPageSelected(position);}});
         behavior=BottomSheetBehavior.from(more);
         behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+        behavior.setSkipCollapsed(true);
         behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
             public void onStateChanged(@NonNull @NotNull View bottomSheet, int newState) {
-                clearAllIcon.setVisible(!showingMore());
+                clearAllIcon.setVisible(!showingMore() && adapter.getItemCount()>0);
             }
 
             @Override
@@ -74,11 +74,17 @@ public class LogsActivity extends AppCompatActivity{
             }
         });
     }
-    private void onPageSelected(int position){if(clearAllIcon!=null && adapter.getItemCount()!=0){clearAllIcon.setVisible(adapter.getList(position).size()>0); clearAllText.setTitle(getString(R.string.clear_all)+" "+adapter.getTitle(position));}}
+    private void onPageSelected(int position){
+        if(clearAllIcon!=null){
+            clearAllIcon.setVisible(adapter.getItemCount()>0 && adapter.getList(position).size()>0);
+            clearAllText.setTitle(getString(R.string.clear_all)+(adapter.getItemCount()>0?" "+adapter.getTitle(position):""));
+            showMore(false);
+        }
+    }
     private boolean showingMore(){return behavior.getState()!=BottomSheetBehavior.STATE_HIDDEN;}
     private void showMore(boolean show){
         if(show){
-            behavior.setPeekHeight(more.getHeight(),true);
+            behavior.setPeekHeight(BottomSheetBehavior.PEEK_HEIGHT_AUTO,true);
             behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
         }else{
             behavior.setState(BottomSheetBehavior.STATE_HIDDEN);
@@ -105,7 +111,7 @@ public class LogsActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case android.R.id.home: if(showingMore()){showMore(false);}else{finish();} break;
-            case R.id.clear_all: adapter.clearAllIn(pager.getCurrentItem()); clearAllIcon.setVisible(adapter.getItemCount()!=0); if(pager.getCurrentItem()!=-1){onPageSelected(pager.getCurrentItem());} break;
+            case (R.id.clear_all): adapter.clearAllIn(pager.getCurrentItem()); clearAllIcon.setVisible(adapter.getItemCount()!=0); if(pager.getCurrentItem()!=-1){onPageSelected(pager.getCurrentItem());} break;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -119,17 +125,14 @@ public class LogsActivity extends AppCompatActivity{
     }
     public class LogsListHolder extends RecyclerView.ViewHolder{
         RecyclerView rv;
-        TextView nologs;
         Logs.LogsAdapter adapter;
         public LogsListHolder(@NonNull @NotNull ViewGroup parent, Logs.LogsAdapter.OnLogRemoveListener logRemoveListener) {
-            super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list,parent,false));
-            rv=itemView.findViewById(R.id.rv_list);
-            nologs=itemView.findViewById(R.id.text);
-            nologs.setText(R.string.no_logs);
+            super(new RecyclerView(parent.getContext()));
+            rv=(RecyclerView)itemView;
+            rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             rv.setLayoutManager(new StaggeredGridLayoutManager(2,StaggeredGridLayoutManager.VERTICAL));
-            adapter=new Logs.LogsAdapter(new ArrayList<>(), (v,position) -> ViewLog(adapter.getLog(position)), count -> nologs.setVisibility(count==0 ? View.VISIBLE : View.GONE),logRemoveListener);
+            adapter=new Logs.LogsAdapter(new ArrayList<>(), (v,position) -> ViewLog(adapter.getLog(position)),logRemoveListener);
             rv.setAdapter(adapter);
-            Utils.registerAdapterDataChangeRunnable(adapter,()->nologs.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
         }
         public void bind(List<Logs.Log> logs){
             adapter.setLogs(logs);
@@ -153,7 +156,7 @@ public class LogsActivity extends AppCompatActivity{
         }
 
         public String getTitle(int position){return map.keySet().toArray(new String[0])[position];}
-        public ArrayList getList(int position){return map.values().toArray(new ArrayList[0])[position];}
+        public List<Logs.Log> getList(int position){return map.get(map.keySet().toArray(new String[0])[position]);}
         public void clearAllIn(int position){
             String key=map.keySet().toArray(new String[0])[position];
             ArrayList<Logs.Log> logs=map.remove(key);

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/appearance">
 
@@ -38,6 +39,15 @@
                 android:title="@string/scripts_sources"
                 android:summary="@string/update_scripts_automatically"
                 android:defaultValue="true"
+        />
+        <SeekBarPreference
+                android:key="Timeout"
+                android:title="Timeout"
+                android:summary="@string/timeout_summary"
+                android:defaultValue="15"
+                app:min="5"
+                android:max="60"
+                app:showSeekBarValue="true"
         />
     </PreferenceCategory>
 </PreferenceScreen>

@@ -59,6 +59,6 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         markNew.setVisibility(book.isNew(chapter)? View.VISIBLE : View.INVISIBLE);
         itemView.setActivated(selected);
     }
-    public static java.text.SimpleDateFormat format=new java.text.SimpleDateFormat("dd.MM.yyyy");
+    public static java.text.SimpleDateFormat format=new java.text.SimpleDateFormat("dd.MM.yyyy",java.util.Locale.getDefault());
     public static String getDate(long date){return date>0 ? format.format(new java.util.Date(date)) : null;}
 }

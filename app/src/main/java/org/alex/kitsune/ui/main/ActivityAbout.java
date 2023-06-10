@@ -26,8 +26,6 @@ import org.alex.kitsune.commons.NeonShadowDrawable;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
 
 
@@ -77,7 +75,7 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
         version=findViewById(R.id.version);
         version.setText(getString(R.string.version,BuildConfig.VERSION_NAME,BuildConfig.VERSION_CODE));
         buildTime=findViewById(R.id.time);
-        buildTime.setText(getString(R.string.build_time,new SimpleDateFormat("HH:mm dd.MM.yyyy", Locale.getDefault()).format(new Date(BuildConfig.TIMESTAMP)),BuildConfig.BUILD_TYPE));
+        buildTime.setText(getString(R.string.build_time,Utils.date(BuildConfig.TIMESTAMP,"HH:mm dd.MM.yyyy"),BuildConfig.BUILD_TYPE));
         launcher=findViewById(R.id.launcher_icon);
         launcher.setOnClickListener(this);
         init(shimmer,findViewById(R.id.profile_in_vk));

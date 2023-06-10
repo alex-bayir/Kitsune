@@ -242,7 +242,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             long today_time=json.getLong("today time");
             long days=json.get("days",0L);
             String today=json.getString("today");
-            String date=new SimpleDateFormat("dd.MM.yyyy",Locale.getDefault(Locale.Category.FORMAT)).format(Calendar.getInstance().getTime());
+            String date=Utils.date(Calendar.getInstance().getTime().getTime(),"dd.MM.yyyy");
             if(date.equals(today)){
                 today_time+=new_time;
                 all_time+=new_time;

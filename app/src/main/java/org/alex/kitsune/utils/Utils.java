@@ -21,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -33,7 +34,6 @@ import androidx.recyclerview.selection.Selection;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.HttpException;
-import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.target.CustomViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 import org.alex.kitsune.BuildConfig;
@@ -141,7 +141,6 @@ public class Utils {
         public static void callPermissionsScreen(Context context,String settings){
             context.startActivity(new Intent(settings,Uri.parse("package:"+context.getPackageName())).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
         }
-        public static boolean checkInstalled(Context context, String packageName){return getPackageInfo(context,packageName)!=null;}
         public static Intent getIntentOfCallPlayMarketToInstall(String packageName){
             return new Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=" + packageName));
         }
@@ -205,11 +204,9 @@ public class Utils {
             setVisibleSystemUI(activity,!getVisibleSystemUI(activity));
         }
         public static void setColorBars(android.app.Activity activity,int color_statusBar,int color_navigationBar){
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-                activity.getWindow().setStatusBarColor(color_statusBar);
-                activity.getWindow().setNavigationBarColor(color_navigationBar);
-            }
+            activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            activity.getWindow().setStatusBarColor(color_statusBar);
+            activity.getWindow().setNavigationBarColor(color_navigationBar);
         }
 
         @Deprecated
@@ -229,13 +226,12 @@ public class Utils {
             View decorView=activity.getWindow().getDecorView();
             decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() | (sticky ? View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_IMMERSIVE) | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
         }
-        public static Context setLocale(String lang,Context context) {
+        public static void setLocale(String lang, Context context) {
             Configuration conf=context.getResources().getConfiguration();
             conf.setLocale(lang==null || "".equals(lang) ? null : new Locale(lang));
             context.getResources().updateConfiguration(conf,context.getResources().getDisplayMetrics());
-            return context;
         }
-        public static Context loadLocale(Context context){setLocale(PreferenceManager.getDefaultSharedPreferences(context).getString("language",null),context);return context;}
+        public static void loadLocale(Context context){setLocale(PreferenceManager.getDefaultSharedPreferences(context).getString("language",null),context);}
         public static void restartActivity(android.app.Activity activity) {
             restartActivity(activity,activity.getIntent());
         }
@@ -271,13 +267,10 @@ public class Utils {
         public static String getFileName(Uri uri, ContentResolver contentResolver) {
             String result = null;
             if (uri.getScheme().equals("content")) {
-                Cursor cursor = contentResolver.query(uri, null, null, null, null);
-                try {
+                try (Cursor cursor = contentResolver.query(uri, null, null, null, null)) {
                     if (cursor != null && cursor.moveToFirst()) {
                         result = cursor.getString(cursor.getColumnIndexOrThrow(OpenableColumns.DISPLAY_NAME));
                     }
-                } finally {
-                    cursor.close();
                 }
             }
             if (result == null) {
@@ -378,6 +371,7 @@ public class Utils {
             return f.format(tmp)+c;
         }
 
+        @RequiresApi(api = Build.VERSION_CODES.R)
         public static void callPermissionManageStorage(android.app.Activity activity){
             ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.MANAGE_EXTERNAL_STORAGE}, 1);
             if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.R && !Environment.isExternalStorageManager()) {
@@ -488,23 +482,7 @@ public class Utils {
     public static float inRange(float min,float number,float max){return min>number ? min : max<number ? max : number;}
 
     public static void setClipboard(Context context, CharSequence text) {
-        if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.HONEYCOMB) {
-            ((android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(android.content.ClipData.newPlainText("Copied Text", text));
-        } else {
-            ((android.text.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setText(text);
-        }
-    }
-
-    public static boolean isServiceRunning(Context context,String serviceClassName){
-        final ActivityManager activityManager = (ActivityManager) context.getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
-        final List<ActivityManager.RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
-        for (ActivityManager.RunningServiceInfo runningServiceInfo : services) {
-            android.util.Log.e(serviceClassName,runningServiceInfo.service.getClassName());
-            if (runningServiceInfo.service.getClassName().equals(serviceClassName)){
-                return true;
-            }
-        }
-        return false;
+        ((android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE)).setPrimaryClip(android.content.ClipData.newPlainText("Copied Text", text));
     }
 
     public static long parseDate(String date,String format){
@@ -514,8 +492,11 @@ public class Utils {
             return System.currentTimeMillis();
         }
     }
-    public static String toDate(long date,String format){
-        return new SimpleDateFormat(format,java.util.Locale.US).format(new Date(date));
+    public static String date(long date,java.text.DateFormat format){
+        return format.format(new Date(date));
+    }
+    public static String date(long date,String format){
+        return date(date,new SimpleDateFormat(format,java.util.Locale.getDefault(Locale.Category.FORMAT)));
     }
 
     public static boolean isUrl(String string){
@@ -595,10 +576,6 @@ public class Utils {
 
     public static Throwable getRootCause(Throwable throwable, int depth){
         return change_known_errors(throwable!=null && throwable.getCause()!=null && (depth>0||depth==-1)? getRootCause(throwable.getCause(),--depth) : throwable);
-    }
-    public static Throwable getRootCause(GlideException throwable, int depth){
-        List<Throwable> list;
-        return getRootCause(throwable!=null && (list=throwable.getRootCauses()).size()>0 && (depth>0||depth==-1)? list.get(0) : throwable,depth);
     }
     public static Throwable change_known_errors(Throwable throwable){
         return throwable instanceof HttpException h? new HttpStatusException(h.getStatusCode(),null) : throwable;

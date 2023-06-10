@@ -1,47 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:id="@+id/view_mode"
                 android:orientation="vertical"
                 android:background="?android:attr/colorBackground"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
-    <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/log_text"
-            android:paddingStart="8dp"
-            android:paddingEnd="8dp"
-            android:paddingTop="8dp"
-            android:enabled="true"
-            android:focusable="true"
-            android:longClickable="true"
-            android:textIsSelectable="true"
+                android:layout_height="match_parent">
+    <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentEnd="true"
-            android:layout_above="@+id/cancel"/>
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/cancel"
-            android:layout_alignParentStart="true"
-            android:layout_alignParentBottom="true"/>
-    <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/log_date"
-            android:gravity="center"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_toStartOf="@+id/send"
-            android:layout_toEndOf="@+id/cancel"
-            android:layout_below="@+id/log_text"
-            android:layout_alignBottom="@id/cancel"/>
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/send"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/send"
-            android:layout_alignParentEnd="true"
-            android:layout_alignParentBottom="true"/>
-</RelativeLayout>
+            android:layout_height="0dp"
+            android:layout_weight="1">
+        <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:scrollbars="none">
+            <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/log_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:paddingTop="8dp"
+                    android:enabled="true"
+                    android:focusable="true"
+                    android:longClickable="true"
+                    android:textIsSelectable="true"
+            />
+        </HorizontalScrollView>
+    </androidx.core.widget.NestedScrollView>
+    <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cancel"/>
+        <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/log_date"
+                android:gravity="center"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"/>
+        <com.google.android.material.button.MaterialButton
+                android:id="@+id/send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/send"/>
+    </LinearLayout>
+</LinearLayout>
 

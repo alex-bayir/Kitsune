@@ -8,6 +8,7 @@ import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.shelf.Catalogs;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -33,6 +34,7 @@ public class BookService {
     public static String init(Context context){
         clearCache(cacheDir=context.getExternalCacheDir().getAbsolutePath());
         SharedPreferences prefs=PreferenceManager.getDefaultSharedPreferences(context);
+        NetworkUtils.setTimeout(prefs);
         dir=prefs.getString(Constants.saved_path,context.getExternalFilesDir("saved").getAbsolutePath());
         copyScriptsFromAssets(context);
         Book_Scripted.setScripts(Catalogs.getBookScripts(context.getExternalFilesDir(Constants.scripts)));

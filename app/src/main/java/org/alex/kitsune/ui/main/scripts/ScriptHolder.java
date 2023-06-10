@@ -14,6 +14,7 @@ import org.alex.kitsune.commons.HolderMenuItemClickListener;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.commons.HolderListener;
+import org.alex.kitsune.utils.Utils;
 import java.io.File;
 
 public class ScriptHolder extends RecyclerView.ViewHolder{
@@ -74,5 +75,5 @@ public class ScriptHolder extends RecyclerView.ViewHolder{
             img.setImageDrawable(img.getContext().getDrawable(R.drawable.ic_code_file));
         }
     }
-    public static String getDate(long date){return date>0 ? new java.text.SimpleDateFormat("dd.MM.yyyy").format(new java.util.Date(date)) : null;}
+    public static String getDate(long date){return date>0 ? Utils.date(date,"dd.MM.yyyy") : null;}
 }
