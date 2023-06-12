@@ -7,10 +7,16 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 33
+        compileSdkPreview = "UpsideDownCake"
     }
 
     buildTypes.configureEach {
         minifyEnabled true
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 }
 
