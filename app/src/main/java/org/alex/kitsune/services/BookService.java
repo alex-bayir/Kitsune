@@ -183,7 +183,7 @@ public class BookService {
         };
     }
     public static ArrayList<Book> sort(ArrayList<Book> list, Type type){
-        Collections.sort(list,getComparator(type));
+        list.sort(getComparator(type));
         return list;
     }
     public static ArrayList<Book> getFavorites(String category){

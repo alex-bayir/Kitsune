@@ -389,13 +389,13 @@ public abstract class Book {
         return adapter!=null && getGenres()!=null ? adapter.getClickableSpans(getGenres(), listener) : getGenres();
     }
 
-    public static final Comparator<Book> HistoryComparator=(o1, o2)->Long.compare(o2.getHistoryDate(),o1.getHistoryDate());
-    public static final Comparator<Book> SavingTimeComparator=(o1, o2)->Long.compare(o2.getLastTimeSave(),o1.getLastTimeSave());
-    public static final Comparator<Book> CategoryTimeComparator=(o1, o2)->Long.compare(o2.getCategoryTime(),o1.getCategoryTime());
-    public static final Comparator<Book> AlphabeticalComparatorAlt=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(false),""),Objects.toString(o2.getAnyName(true),""));
-    public static final Comparator<Book> AlphabeticalComparator=(o1, o2)->String.CASE_INSENSITIVE_ORDER.compare(Objects.toString(o1.getAnyName(true),""),Objects.toString(o2.getAnyName(false),""));
-    public static final Comparator<Book> ImagesSizesComparator=(o1, o2)->Long.compare(o2.getImagesSize(),o1.getImagesSize());
-    public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating);
+    public static final Comparator<Book> HistoryComparator=Comparator.comparingLong(Book::getHistoryDate).reversed();
+    public static final Comparator<Book> SavingTimeComparator=Comparator.comparingLong(Book::getLastTimeSave).reversed();
+    public static final Comparator<Book> CategoryTimeComparator=Comparator.comparingLong(Book::getCategoryTime).reversed();
+    public static final Comparator<Book> AlphabeticalComparatorAlt=Comparator.comparing(book -> book.getAnyName(true),String.CASE_INSENSITIVE_ORDER);
+    public static final Comparator<Book> AlphabeticalComparator=Comparator.comparing(book -> book.getAnyName(false),String.CASE_INSENSITIVE_ORDER);
+    public static final Comparator<Book> ImagesSizesComparator=Comparator.comparingLong(Book::getImagesSize).reversed();
+    public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating).reversed();
     public static Comparator<Book> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}
 
     public final void set(String key,Object value){

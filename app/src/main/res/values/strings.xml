@@ -33,6 +33,7 @@
     <string name="show_source_status" translatable="false">Show status/source</string>
     <string name="Latest" translatable="false">Latest</string>
     <string name="Alphabetical" translatable="false">Alphabetical</string>
+    <string name="Alphabetical_Alt" translatable="false">Alphabetical (Alt)</string>
     <string name="size" translatable="false">Size</string>
     <string name="Source" translatable="false">Source</string>
     <string name="Status" translatable="false">Status</string>

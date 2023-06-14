@@ -81,6 +81,7 @@ public class FavoritesActivity extends AppCompatActivity {
             case (android.R.id.home) -> finish();
             case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.CategoryTimeComparator);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
+            case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt);}
             case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);

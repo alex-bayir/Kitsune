@@ -10,6 +10,8 @@
                       android:checked="true"/>
                 <item android:id="@+id/alphabetical"
                       android:title="@string/Alphabetical"/>
+                <item android:id="@+id/alphabetical_alt"
+                      android:title="@string/Alphabetical_Alt"/>
             </group>
         </menu>
     </item>

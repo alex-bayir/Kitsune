@@ -98,7 +98,7 @@ public class Shelf extends Fragment implements MenuProvider {
             p=0;
             //progress.setSmoothProgressDrawableColor(0);
             progress.progressiveStart();
-            final int size= BookService.getMap(BookService.Type.All).values().size();
+            final int size=BookService.getMap(BookService.Type.All).values().size();
             //ProgressDrawable pr=new ProgressDrawable().setMax(size);
             if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
             BookService.isUpdating=true;

@@ -87,12 +87,12 @@ public class HistoryActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.latest: item.setChecked(true); adapter.sort(Book.HistoryComparator,true); break;
-            case R.id.alphabetical: item.setChecked(true); adapter.sort(Book.AlphabeticalComparator, true); break;
-            case R.id.status:
-            case R.id.source: item.setChecked(true); adapter.setShowSource(item.getItemId()==R.id.source); break;
+        switch (item.getItemId()) {
+            case android.R.id.home -> finish();
+            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.HistoryComparator,true);}
+            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator,true);}
+            case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt,true);}
+            case (R.id.status),(R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId()==R.id.source);}
         }
         return super.onOptionsItemSelected(item);
     }

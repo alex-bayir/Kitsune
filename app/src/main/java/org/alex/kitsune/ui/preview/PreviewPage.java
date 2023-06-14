@@ -99,9 +99,9 @@ public class PreviewPage extends PreviewHolder {
         description.setOnClickListener(v-> description.changeSubtitleSingleLine());
         description.setOnLongClickListener(v-> {Utils.setClipboard(itemView.getContext(), description.getSubtitle()); Toast.makeText(itemView.getContext(),R.string.text_copied,Toast.LENGTH_SHORT).show(); return true;});
         RecyclerView rv=itemView.findViewById(R.id.rv_list);
-        similar=new BookAdapter(null, BookAdapter.Mode.GRID, m -> {
-            similar.add(BookService.getOrPutNewWithDir(m));
-            itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,m.hashCode()));
+        similar=new BookAdapter(null, BookAdapter.Mode.GRID, book -> {
+            similar.add(BookService.getOrPutNewWithDir(book));
+            itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
         Utils.setHorizontalInterceptorDisallow(rv,v->itemView.getParent());

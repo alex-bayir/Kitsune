@@ -93,6 +93,7 @@ public class SavedActivity extends AppCompatActivity {
                                 case (R.id.latest) -> adapter.add(0, book);
                                 case (R.id.images_size) -> adapter.addBySize(book);
                                 case (R.id.alphabetical) -> adapter.add(book, Book.AlphabeticalComparator);
+                                case (R.id.alphabetical_alt) -> adapter.add(book, Book.AlphabeticalComparatorAlt);
                             }
                             adapter.update(book);
                         }else{
@@ -124,6 +125,7 @@ public class SavedActivity extends AppCompatActivity {
             case (android.R.id.home) -> finish();
             case (R.id.latest) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.SavingTimeComparator);}
             case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparator);}
+            case (R.id.alphabetical_alt) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparatorAlt);}
             case (R.id.images_size) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.ImagesSizesComparator);}
         }
         return super.onOptionsItemSelected(item);
