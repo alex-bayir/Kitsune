@@ -15,7 +15,7 @@ import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Tag;
 import org.jsoup.select.Elements;
-import org.junit.Test;
+import org.testng.annotations.Test;
 
 public class ScriptsTests {
     public void print(String str){System.out.print(str);}
@@ -89,7 +89,7 @@ public class ScriptsTests {
     }
     @Test
     public void json() throws Throwable {
-        println(Utils.unescape_unicodes("uu0027u\\0027\\\\0027\\\"\\t\\n\\tstring\\\"\n\t u0423 \u043d\\0435u0451 \\u043du0435 u0432u0441u0451 u0432 u043fu043eu0440u044fu0434u043au0435 u0441 u0433u043eu043bu043eu0432u043eu0439 - u0440u0435u0436u0438u0441u0441u0451u0440u0441u043au0430u044f u0432u0435u0440u0441u0438u044f"));
+        //println(Utils.unescape_unicodes("uu0027u\\0027\\\\0027\\\"\\t\\n\\tstring\\\"\n\t u0423 \u043d\\0435u0451 \\u043du0435 u0432u0441u0451 u0432 u043fu043eu0440u044fu0434u043au0435 u0441 u0433u043eu043bu043eu0432u043eu0439 - u0440u0435u0436u0438u0441u0441u0451u0440u0441u043au0430u044f u0432u0435u0440u0441u0438u044f"));
         JSON.Object obj=new JSON.Object()
                 .put("tmp",null)
                 .put("l",System.currentTimeMillis())

@@ -245,7 +245,7 @@ public abstract class Book {
         return false;
     }
 
-    public int countSaved(){return (int)getChapters().stream().filter(this::checkChapter).count();}
+    public int countSaved(){return (int)getChapters().stream().parallel().filter(this::checkChapter).count();}
 
     public static int getNumChapter(List<Chapter> list,Chapter chapter){if(chapter!=null && list!=null){for(int i=0;i<list.size();i++){if(chapter.equals(list.get(i))){return i;}}}return -1;}
     public final int getNumChapter(Chapter chapter){return getNumChapter(getChapters(),chapter);}

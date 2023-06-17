@@ -502,6 +502,11 @@ public class Utils {
     public static boolean isUrl(String string){
         return string!=null && (string.startsWith("https://") || string.startsWith("http://"));
     }
+    /**
+     * Unescape unicodes from html formats: uxxxx,\xxxx,\\uxxxx  (x-hex digit).
+     * @param escaped String to unescape.
+     * @return unescaped string.
+     */
     public static String unescape_unicodes(String escaped) {
         if(escaped==null){return null;}
         StringBuilder unescaped=new StringBuilder(escaped.length());
@@ -510,8 +515,8 @@ public class Utils {
         for(int i=0;i<escaped.length();i++){
             char c=escaped.charAt(i);
             if(c=='\\' || c=='u'){
-                if(len==1 && (buffer[0]!='\\' || c!='u')){
-                    unescaped.append(buffer[--len]);  //len=0 - clear (rewrite) buffer
+                if(len>0 && (buffer[len-1]!='\\' || c!='u')){
+                    unescaped.append(buffer,0,len); len=0; //len=0 - clear (rewrite) buffer
                 }
                 buffer[len++]=c; parse=true;
             }else if(parse){
