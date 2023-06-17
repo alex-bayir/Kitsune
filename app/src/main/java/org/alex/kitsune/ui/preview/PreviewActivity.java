@@ -164,9 +164,9 @@ public class PreviewActivity extends AppCompatActivity{
     @SuppressLint("RestrictedApi")
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu_preview_activity,menu);
+        getMenuInflater().inflate(R.menu.menu_preview,menu);
         menu.findItem(R.id.show_log).setVisible(throwableTime !=0);
-        Utils.Menu.buildIntentSubmenu(this,new Intent(Intent.ACTION_VIEW, Uri.parse(book.getUrl_WEB())),menu.addSubMenu(R.string.action_open_in).setIcon(R.drawable.ic_earth));
+        Utils.Menu.buildIntentSubmenu(this,new Intent(Intent.ACTION_VIEW, Uri.parse(book.getUrl_WEB())),menu.addSubMenu(0,0,100,R.string.action_open_in).setIcon(R.drawable.ic_earth));
         if(throwable!=null){menu.findItem(R.id.show_log).setVisible(throwable!=null);}
         if(menu instanceof MenuBuilder){((MenuBuilder)menu).setOptionalIconsVisible(true);}
         return super.onCreateOptionsMenu(menu);
@@ -176,6 +176,7 @@ public class PreviewActivity extends AppCompatActivity{
     public boolean onOptionsItemSelected(MenuItem item) {
         return switch (item.getItemId()) {
             case android.R.id.home -> {finish(); yield true;}
+            case (R.id.action_open_folder) -> {startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(book.getDir()),"resource/folder")); yield true;}
             case (R.id.action_chapter_remove_all) -> {adapter.getChaptersPage().action(ChaptersPage.RA); yield true;}
             case (R.id.action_chapter_save_all) -> {adapter.getChaptersPage().action(ChaptersPage.SA); yield true;}
             case (R.id.action_chapter_remove_selected) -> {adapter.getChaptersPage().action(ChaptersPage.RS); yield true;}

@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item android:id="@+id/show_log" android:title="@string/show_log" android:icon="@drawable/ic_bug"/>
-    <item android:id="@+id/action_share" android:title="@string/share" android:icon="@drawable/ic_share" app:showAsAction="ifRoom"/>
-    <item android:id="@+id/action_create_shortcut" android:title="@string/create_shortcut" android:icon="@drawable/ic_create_shortcut"/>
-</menu>

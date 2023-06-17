@@ -48,6 +48,7 @@
     <string name="show_log" translatable="false">Show log</string>
     <string name="share">Share</string>
     <string name="create_shortcut">Create shortcut</string>
+    <string name="open_folder">Open folder</string>
     <string name="action_open_in">Open in</string>
     <string name="unable_create_shortcut">Unable to create a shortcut</string>
     <string name="read" translatable="false">Read</string>

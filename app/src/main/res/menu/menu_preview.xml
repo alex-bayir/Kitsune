@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/action_share" android:title="@string/share" android:icon="@drawable/ic_share" app:showAsAction="ifRoom" android:orderInCategory="0"/>
+    <item android:id="@+id/show_log" android:title="@string/show_log" android:icon="@drawable/ic_bug" android:orderInCategory="25"/>
+    <item android:id="@+id/action_open_folder" android:title="@string/open_folder" android:icon="@drawable/ic_folder" android:orderInCategory="50"/>
+    <item android:id="@+id/action_create_shortcut" android:title="@string/create_shortcut" android:icon="@drawable/ic_create_shortcut" android:orderInCategory="75"/>
+</menu>
