@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.*;
 import android.view.animation.LinearInterpolator;
 import android.widget.*;
@@ -39,8 +40,11 @@ import org.alex.kitsune.commons.HolderListener;
 import org.alex.kitsune.utils.*;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.alex.kitsune.ui.reader.ReaderPageHolder.ReaderMode;
+import org.alex.kitsune.ui.reader.ReaderPageHolder.ScaleMode;
 
 public class ReaderActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,SeekBar.OnSeekBarChangeListener{
 
@@ -67,10 +71,8 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     long start_read_time;
     TextView error_info;
     private static SharedPreferences prefs;
-    private static CustomSnackbar snackbar;
-
-    public static CustomSnackbar getSnackbar(){
-        return snackbar;
+    public CustomSnackbar getSnackbar(){
+        return CustomSnackbar.makeSnackbar(frame,CustomSnackbar.LENGTH_INDEFINITE).setBackgroundAlpha(192).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
     }
     public static SharedPreferences getSharedPreferences(){
         return prefs;
@@ -112,7 +114,6 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
         frame=findViewById(R.id.frame);
         root=findViewById(R.id.root);
-        snackbar=CustomSnackbar.makeSnackbar(frame,CustomSnackbar.LENGTH_INDEFINITE).setBackgroundAlpha(192).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
         Intent intent=getIntent();
         book=BookService.get(intent.getIntExtra(Constants.hash,savedState!=null ? savedState.getInt(Constants.hash,-1):-1));
         translate=findViewById(R.id.action_translate);
@@ -155,9 +156,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             num_chapter=book.getNumChapterHistory();
             page=book.getHistory().getPage();
         }
-        if(num_bookMark>=0 && book.getBookMarks()!=null && num_bookMark< book.getBookMarks().size()){
+        if(num_bookMark>=0 && book.getBookMarks()!=null && num_bookMark<book.getBookMarks().size()){
             final BookMark bookMark= book.getBookMarks().get(num_bookMark);
-            num_chapter= book.getNumChapter(bookMark);
+            num_chapter=book.getNumChapter(bookMark);
             page=bookMark.getPage();
             if(num_chapter<0 && NetworkUtils.isNetworkAvailable(this)){
                 book.update((updated) -> {
@@ -190,11 +191,20 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         progress_text=findViewById(R.id.progress_text);
         menu_button=findViewById(R.id.action_menu);
         menu_button.setOnClickListener(v -> {
-            PopupMenu popupMenu=new PopupMenu(ReaderActivity.this, menu_button,Gravity.START);
-            getMenuInflater().inflate(R.menu.options_reader,popupMenu.getMenu());
-            popupMenu.setOnMenuItemClickListener(this::onOptionsItemSelected);
-            popupMenu.setForceShowIcon(true);
-            popupMenu.show();
+            Drawable drawable=getDrawable(R.drawable.ic_checked);
+            drawable.setState(new int[]{android.R.attr.state_checked});
+            Drawable checked=drawable.getCurrent();
+
+            PopupMenu popup=new PopupMenu(ReaderActivity.this, menu_button,Gravity.START);
+            Menu menu=popup.getMenu();
+            getMenuInflater().inflate(R.menu.options_reader,popup.getMenu());
+            Arrays.stream(ReaderMode.values()).forEach(m->menu.findItem(m.id).setIcon(drawable));
+            Arrays.stream(ScaleMode.values()).forEach(m->menu.findItem(m.id).setIcon(drawable));
+            menu.findItem(ReaderMode.valueOf(adapter.getReaderMode()).id).setIcon(checked);
+            menu.findItem(ScaleMode.valueOf(adapter.getScaleMode()).id).setIcon(checked);
+            popup.setOnMenuItemClickListener(this::onOptionsItemSelected);
+            popup.setForceShowIcon(true);
+            popup.show();
         });
         {
             View view=getLayoutInflater().inflate(R.layout.dialog_reader_error,null);
@@ -260,7 +270,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
 
 
     public void initChapter(int num_chapter,int page){
-        if(num_chapter< book.getChapters().size() && num_chapter>=0){
+        if(num_chapter<book.getChapters().size() && num_chapter>=0){
             this.num_chapter=num_chapter;
             this.page=page;
             if(book.checkChapterInfo(num_chapter)){
@@ -289,17 +299,21 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         }
         FailedLoadPagesInfo.show();
     }
-    public void setModes(int modeR, int modeS){
+    public boolean setModes(ReaderMode R,ScaleMode S){
+        return R!=null && S!=null && setModes(R.ordinal(), S.ordinal());
+    }
+    public boolean setModes(int modeR, int modeS){
         prefs.edit().putInt(Constants.ReaderMode,modeR).putInt(Constants.ScaleMode,modeS).apply();
         adapter.setModes(modeR,modeS);
         seekBar.setLayoutDirection(reader.getLayoutDirection());
+        return true;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         useVolumeKeys=prefs.getBoolean(Constants.use_volume_keys,true);
-        setModes(prefs.getInt(Constants.ReaderMode,0),prefs.getInt(Constants.ScaleMode,ReaderPageHolder.ScaleType.FIT_X.ordinal()));
+        setModes(prefs.getInt(Constants.ReaderMode,0),prefs.getInt(Constants.ScaleMode,0));
         frame.setBackgroundColor(prefs.getInt(Constants.custom_background_color,0));
         statusBar.setIsActive(prefs.getBoolean(Constants.show_status_bar,true));
         reader.setKeepScreenOn(prefs.getBoolean(Constants.keep_screen_on,false));
@@ -352,16 +366,14 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             case android.R.id.home -> finish();
             case (R.id.action_chapters) -> {btn_next.setEnabled(num_chapter!= book.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show();}
             case (R.id.create_bookmark) -> book.addBookMark(chapter,page);
-            case (R.id.change_reader_mode) -> new AlertDialog.Builder(this).setTitle(R.string.reader_mode)
-                    .setSingleChoiceItems(R.array.reader_mode_entries, adapter.getReaderMode(), (dialog, i) -> {setModes(i, adapter.getScaleMode()); dialog.dismiss();})
-                    .setNegativeButton(android.R.string.cancel, null).create().show();
-            case (R.id.change_scale_mode) -> new AlertDialog.Builder(this).setTitle(R.string.scale_mode)
-                    .setSingleChoiceItems(R.array.scale_mode_entries, adapter.getScaleMode(), (dialog, i) -> {setModes(adapter.getReaderMode(),i); dialog.dismiss();})
-                    .setNegativeButton(android.R.string.cancel, null).create().show();
             case (R.id.share_page) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),((BitmapDrawable)((ImageView)reader.getChildAt(reader.getChildCount()-1).findViewById(R.id.image)).getDrawable()).getBitmap());
             case (R.id.share_screen) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),Utils.Bitmap.screenView(reader));
             case (R.id.settings) -> startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_READER));
-            default -> {}
+            default -> {
+                if( setModes(ReaderMode.fromId(item.getItemId()), ScaleMode.valueOf(adapter.getScaleMode())) | setModes(ReaderMode.valueOf(adapter.getScaleMode()), ScaleMode.fromId(item.getItemId())) ){
+                    item.setChecked(true);
+                }
+            }
         }
         return true;
     }

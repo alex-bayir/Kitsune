@@ -40,7 +40,8 @@
     <string name="scale_mode">Масштабирование</string>
     <string name="left_to_right">Слева на право</string>
     <string name="right_to_left">Справа на лево</string>
-    <string name="top_to_bottom">Сверху вниз</string>
+    <string name="vertical">Вертикально</string>
+    <string name="vertical_web">Веб-комикс</string>
     <string name="default_mode">Режимы читалки</string>
     <string name="fit_to_width">По ширине</string>
     <string name="fit_to_height">По высоте</string>

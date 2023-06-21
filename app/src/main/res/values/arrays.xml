@@ -25,13 +25,15 @@
     <string-array name="reader_mode_entries">
         <item>@string/left_to_right</item>
         <item>@string/right_to_left</item>
-        <item>@string/top_to_bottom</item>
+        <item>@string/vertical</item>
+        <item>@string/vertical_web</item>
     </string-array>
 
     <integer-array name="reader_mode_values">
         <item>0</item>
         <item>1</item>
         <item>2</item>
+        <item>3</item>
     </integer-array>
 
     <string-array name="scale_mode_entries">

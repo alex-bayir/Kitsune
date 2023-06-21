@@ -5,11 +5,13 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.*;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Chapter;
+import org.alex.kitsune.ui.reader.ReaderPageHolder.Modes;
+import org.jetbrains.annotations.NotNull;
 
 public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
     Book book;
     Chapter chapter=null;
-    private ReaderPageHolder.ScaleType scaleType=ReaderPageHolder.ScaleType.FIT_X;
+    private Modes modes=new Modes(ReaderPageHolder.ReaderMode.HorizontalRight, ReaderPageHolder.ScaleMode.FIT_X);
     final View.OnClickListener visibleUIListener,leftClick,rightClick;
     private final  LinearLayoutManager layoutManager;
     private final SnapHelper snapHelper=new PagerSnapHelper();
@@ -29,16 +31,10 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
         this.rv.setAdapter(this);
     }
     public LinearLayoutManager getLayoutManager(){return layoutManager;}
-    public void setChapter(int chapter){this.chapter= book.getChapters().get(chapter); notifyDataSetChanged();}
-    public ReaderPageHolder.ScaleType getScaleType(){return scaleType;}
-    public boolean isReverse(){return rv.getLayoutDirection()==View.LAYOUT_DIRECTION_RTL;}
+    public void setChapter(int chapter){this.chapter=book.getChapters().get(chapter); notifyDataSetChanged();}
     public int getOrientation(){return layoutManager.getOrientation();}
-    public void setOrientation(int orientation,boolean reverse){
-        layoutManager.setOrientation(orientation); rv.setLayoutDirection(reverse ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR); snapHelper.attachToRecyclerView(orientation==RecyclerView.HORIZONTAL ? rv : null);
-    }
-    public void setScaleType(ReaderPageHolder.ScaleType scaleType){
-        this.scaleType=scaleType!=null ? scaleType : ReaderPageHolder.ScaleType.FIT_X;
-        notifyItemRangeChanged(0,getItemCount());
+    private void setOrientation(int orientation,boolean snap,boolean reverse){
+        layoutManager.setOrientation(orientation); rv.setLayoutDirection(reverse ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR); snapHelper.attachToRecyclerView(snap ? rv : null);
     }
     public void setShowTranslate(boolean show){
         showTranslate=show;
@@ -48,28 +44,30 @@ public class ReaderPageAdapter extends RecyclerView.Adapter<ReaderPageHolder> {
         setShowTranslate(!isShowTranslate());
     }
     public boolean isShowTranslate(){return showTranslate;}
-    public int getReaderMode(){return getOrientation()==RecyclerView.HORIZONTAL ? (isReverse() ? 1 : 0) : 2;}
-    public int getScaleMode(){return scaleType.ordinal();}
+    public int getReaderMode(){return modes.R.ordinal();}
+    public int getScaleMode(){return modes.S.ordinal();}
     public void setModes(int modeR, int modeS){
-        switch (modeR){
-            default:
-            case 0: setOrientation(RecyclerView.HORIZONTAL,false); break;
-            case 1: setOrientation(RecyclerView.HORIZONTAL,true); break;
-            case 2: setOrientation(RecyclerView.VERTICAL,false); break;
+        this.modes=new ReaderPageHolder.Modes(modeR,modeS);
+        switch (this.modes.R) {
+            case HorizontalRight -> setOrientation(RecyclerView.HORIZONTAL, true,false);
+            case HorizontalLeft -> setOrientation(RecyclerView.HORIZONTAL, true,true);
+            case Vertical -> setOrientation(RecyclerView.VERTICAL,true, false);
+            case VerticalWeb -> setOrientation(RecyclerView.VERTICAL,false, false);
         }
-        setScaleType(ReaderPageHolder.ScaleType.valueOf(modeS));
+        notifyAllChanged();
     }
 
-    @Override public int getItemViewType(int position){return getOrientation();}
+    @Override public int getItemViewType(int position){return modes.hashCode();}
 
+    @NotNull
     @Override
-    public ReaderPageHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new ReaderPageHolder(parent,viewType==RecyclerView.VERTICAL, book,visibleUIListener,leftClick,rightClick);
+    public ReaderPageHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
+        return new ReaderPageHolder(parent,ReaderPageHolder.Modes.valueOf(viewType),book,visibleUIListener,leftClick,rightClick);
     }
 
     @Override
     public void onBindViewHolder(ReaderPageHolder holder, int position) {
-        holder.onBind(position,chapter,scaleType,showTranslate);
+        holder.onBind(position,chapter,showTranslate);
     }
 
     @Override

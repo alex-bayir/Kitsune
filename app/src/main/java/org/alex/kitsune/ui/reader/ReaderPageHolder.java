@@ -15,7 +15,7 @@ import android.os.LocaleList;
 import android.view.*;
 import android.view.textclassifier.*;
 import android.widget.Button;
-import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,21 +39,67 @@ import java.util.Locale;
 import java.util.Random;
 
 public class ReaderPageHolder extends RecyclerView.ViewHolder {
-    public enum ScaleType {
-        FIT_X(),
-        FIT_Y(),
-        FIT_XY(),
-        CENTER();
+    public enum ReaderMode {
+        HorizontalRight(R.id.left_to_right),
+        HorizontalLeft(R.id.right_to_left),
+        Vertical(R.id.vertical),
+        VerticalWeb(R.id.vertical_web);
 
-        ScaleType(){}
+        final int id;
+        ReaderMode(int id){
+            this.id=id;
+        }
 
-        public static ScaleType valueOf(int mode){
+        public static ReaderMode valueOf(int mode){
+            return switch (mode) {
+                default -> HorizontalRight;
+                case 1 -> HorizontalLeft;
+                case 2 -> Vertical;
+                case 3 -> VerticalWeb;
+            };
+        }
+        public static ReaderMode fromId(int id){
+            for(ReaderMode m:values()){if(m.id==id){return m;}} return null;
+        }
+    }
+    public enum ScaleMode {
+        FIT_X(R.id.fit_to_width),
+        FIT_Y(R.id.fit_to_height),
+        FIT_XY(R.id.fit_screen),
+        CENTER(R.id.source_size);
+        final int id;
+        ScaleMode(int id){
+            this.id=id;
+        }
+
+        public static ScaleMode valueOf(int mode){
             return switch (mode) {
                 default -> FIT_X;
                 case 1 -> FIT_Y;
                 case 2 -> FIT_XY;
                 case 3 -> CENTER;
             };
+        }
+        public static ScaleMode fromId(int id){
+            for(ScaleMode m:values()){if(m.id==id){return m;}} return null;
+        }
+    }
+    public static class Modes{
+        public final ReaderMode R;
+        public final ScaleMode S;
+        public Modes(int R, int S){
+            this(ReaderMode.valueOf(R), ScaleMode.valueOf(S));
+        }
+        public Modes(ReaderMode R, ScaleMode S){
+            this.R=R;
+            this.S=S;
+        }
+        public static Modes valueOf(int value){
+            return new Modes(value/10,value%10);
+        }
+        @Override
+        public int hashCode() {
+            return R.ordinal()*10+S.ordinal();
         }
     }
 
@@ -72,12 +118,12 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     int position;
     final int colorProgress;
     private static final int[] colors=new int[]{0xFFFF0000,0xFFFFFF00,0xFF00FF00};
-    private final boolean vertical;
-    final Dialog dialog; TextView input;
+    private final Modes mode;
+    private final Dialog dialog; TextView input;
     private boolean showTranslated=false;
 
     @SuppressLint("ClickableViewAccessibility")
-    ReaderPageHolder(ViewGroup parent, boolean vertical, Book book, View.OnClickListener centerClick, View.OnClickListener leftClick, View.OnClickListener rightClick){
+    ReaderPageHolder(ViewGroup parent, Modes mode, Book book, View.OnClickListener centerClick, View.OnClickListener leftClick, View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
         image=itemView.findViewById(R.id.image);
         text=itemView.findViewById(R.id.text);
@@ -126,7 +172,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             }
         });
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
-            CustomSnackbar snackbar=ReaderActivity.getSnackbar();
+            CustomSnackbar snackbar=((ReaderActivity)text.getContext()).getSnackbar();
             text.setTextClassifier(new Classifier(
                     text->{
                         if(text!=null){
@@ -165,9 +211,9 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         load_info.setVisibility(View.GONE);
         retry_layout.setVisibility(View.GONE);
         this.book=book;
-        this.vertical=vertical;
-        itemView.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
-        image.getLayoutParams().height=vertical ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT;
+        this.mode=mode;
+        itemView.getLayoutParams().height=(mode.R==ReaderMode.VerticalWeb ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT);
+        image.getLayoutParams().height=(mode.R==ReaderMode.VerticalWeb ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     private void retry(){
@@ -176,14 +222,14 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         draw(input.getText().toString());
     }
 
-    public void onBind(int position,Chapter chapter,ScaleType scaleType,boolean showTranslate){
+    public void onBind(int position,Chapter chapter,boolean showTranslate){
         if(this.position!=position || this.chapter!=chapter){
             this.position=position;
             this.chapter=chapter;
             this.showTranslated=showTranslate;
             if(this.chapter!=null){
-                file= book.getPage(this.chapter,page=this.chapter.getPage(position));
-                draw(page.getUrl(),scaleType,vertical,showTranslate);
+                file=book.getPage(this.chapter,page=this.chapter.getPage(position));
+                draw(page.getUrl(),showTranslate);
             }else{
                 image.setImageDrawable(null);}
         }else if(this.showTranslated!=showTranslate){
@@ -196,17 +242,16 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         }
     }
     public void draw(String url){
-        draw(url,null,vertical,showTranslated);
+        draw(url,showTranslated);
     }
-    public void draw(String url,ScaleType scaleType,boolean vertical,boolean showTranslate){
+    public void draw(String url,boolean showTranslate){
         if(file.exists()){
-            image.setAdjustViewBounds(true);
             Drawable drawable=loadDrawable(file);
             image.setImageDrawable(drawable,file);
             if(drawable instanceof Animatable animatable){
                 animatable.start();
             }
-            setScaleType(scaleType,vertical);
+            setScaleType(mode.S, mode.R==ReaderMode.VerticalWeb);
             if(showTranslate){
                 image.show();
             }else{
@@ -234,7 +279,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                         retry_layout.setVisibility(View.GONE);
                         book.setLastTimeSave();
                         itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.load));
-                        draw(url,scaleType,vertical,showTranslate);
+                        draw(url,showTranslate);
                     });
                 },null,(read, length)->{
                     float p = read / (float)length;
@@ -289,18 +334,18 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         return bitmap;
     }
 
-    public void setScaleType(ScaleType scaleType,boolean vertical){
+    public void setScaleType(ScaleMode scaleMode, boolean wrap_content){
         Drawable drawable=image.getDrawable();
         if(drawable!=null){
-            switch (scaleType!=null ? scaleType : ScaleType.FIT_X) {
-                case CENTER -> setScaleType(false, ImageView.ScaleType.CENTER);
-                case FIT_XY -> setScaleType(vertical, ImageView.ScaleType.CENTER_CROP);
-                case FIT_X -> setScaleType(vertical, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() > proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
-                case FIT_Y -> setScaleType(vertical, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ImageView.ScaleType.CENTER_CROP : ImageView.ScaleType.FIT_CENTER);
+            switch (scaleMode !=null ? scaleMode : ScaleMode.FIT_X) {
+                case CENTER -> setScaleType(wrap_content, ScaleType.CENTER);
+                case FIT_XY -> setScaleType(wrap_content, ScaleType.CENTER_CROP);
+                case FIT_X -> setScaleType(wrap_content, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() > proportion ? ScaleType.CENTER_CROP : ScaleType.FIT_CENTER);
+                case FIT_Y -> setScaleType(wrap_content, drawable.getMinimumHeight() / (float) drawable.getMinimumWidth() < proportion ? ScaleType.CENTER_CROP : ScaleType.FIT_CENTER);
             }
         }
     }
-    private void setScaleType(boolean adjustViewBounds,ImageView.ScaleType scaleType){
+    private void setScaleType(boolean adjustViewBounds,ScaleType scaleType){
         image.setScaleType(scaleType);
         image.setAdjustViewBounds(adjustViewBounds);
     }

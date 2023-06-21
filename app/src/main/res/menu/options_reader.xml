@@ -16,10 +16,36 @@
           android:title="@string/create_bookmark"/>
     <item android:id="@+id/change_reader_mode"
           android:icon="@drawable/ic_reader_mode"
-          android:title="@string/reader_mode"/>
+          android:title="@string/reader_mode">
+        <menu>
+            <group>
+                <item android:id="@+id/left_to_right"
+                      android:title="@string/left_to_right"/>
+                <item android:id="@+id/right_to_left"
+                      android:title="@string/right_to_left"/>
+                <item android:id="@+id/vertical"
+                      android:title="@string/vertical"/>
+                <item android:id="@+id/vertical_web"
+                      android:title="@string/vertical_web"/>
+            </group>
+        </menu>
+    </item>
     <item android:id="@+id/change_scale_mode"
           android:icon="@drawable/ic_aspect_ratio"
-          android:title="@string/scale_mode"/>
+          android:title="@string/scale_mode">
+        <menu>
+            <group>
+                <item android:id="@+id/fit_to_width"
+                      android:title="@string/fit_to_width"/>
+                <item android:id="@+id/fit_to_height"
+                      android:title="@string/fit_to_height"/>
+                <item android:id="@+id/fit_screen"
+                      android:title="@string/fit_screen"/>
+                <item android:id="@+id/source_size"
+                      android:title="@string/source_size"/>
+            </group>
+        </menu>
+    </item>
     <item android:id="@+id/settings"
           android:icon="@drawable/ic_settings"
           android:title="@string/settings"/>

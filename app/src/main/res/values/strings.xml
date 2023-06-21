@@ -109,7 +109,8 @@
     <string name="reader_mode">Reader mode</string>
     <string name="left_to_right">Left to Right</string>
     <string name="right_to_left">Right to Left</string>
-    <string name="top_to_bottom">Top to Bottom</string>
+    <string name="vertical">Vertical</string>
+    <string name="vertical_web">Web comics</string>
     <string name="scale_mode">Scale mode</string>
     <string name="fit_to_width">Fit to width</string>
     <string name="fit_to_height">Fit to height</string>
