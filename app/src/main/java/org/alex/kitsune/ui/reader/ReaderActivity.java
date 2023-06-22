@@ -79,7 +79,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     }
 
     private void setData(int num_chapter){
-        chapter= book.getChapters().get(num_chapter);
+        chapter=book.getChapters().get(num_chapter);
         if(chapter!=null){
             toolBar.setTitle(book.getName());
             toolBar.setSubtitle(chapter.text(toolBar.getContext()));
@@ -88,7 +88,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                 adapter.setChapter(num_chapter);
                 if(page==-1){page=chapter.getPages().size()-1;}
                 reader.scrollToPosition(page);
-                book.createHistory(chapter,page);
+                if(!prefs.getBoolean("incognito",false)){
+                    book.createHistory(chapter,page);
+                }
                 book.seen(num_chapter);
                 seekBar.setProgress(page);
             }else{
@@ -325,7 +327,9 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onStop() {
         super.onStop();
-        book.createHistory(chapter,page);
+        if(!prefs.getBoolean("incognito",false)){
+            book.createHistory(chapter,page);
+        }
         BookService.allocate(book,false);
         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.history));
         StatisticsFragment.Statistics.updateReading(prefs,System.currentTimeMillis()-start_read_time);

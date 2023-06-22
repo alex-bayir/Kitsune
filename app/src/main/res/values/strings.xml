@@ -129,6 +129,8 @@
     <string name="use_another_translator">Use third-party translator</string>
     <string name="scripts_sources">Scripts/Sources</string>
     <string name="timeout_summary">Maximum response waiting time in seconds</string>
+    <string name="incognito_mode">Incognito mode</string>
+    <string name="pauses_reading_history">Pauses the reading history</string>
 
 
     <!-- Search -->

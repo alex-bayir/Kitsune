@@ -20,6 +20,12 @@
                 android:defaultValue="0"
                 android:icon="@drawable/ic_aspect_ratio"
         />
+        <SwitchPreference
+            android:key="incognito"
+            android:title="@string/incognito_mode"
+            android:summary="@string/pauses_reading_history"
+            android:icon="@drawable/ic_glasses"
+        />
 
     </PreferenceCategory>
 
