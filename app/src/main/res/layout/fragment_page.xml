@@ -13,9 +13,11 @@
                 android:minHeight="512dp"
                 android:adjustViewBounds="false"
                 android:scaleType="centerCrop"/>
-        <com.google.android.material.textview.MaterialTextView
+        <org.alex.kitsune.commons.ZoomTextView
                 android:id="@+id/text"
                 android:visibility="gone"
+                android:paddingTop="16sp"
+                android:paddingBottom="16sp"
                 android:paddingStart="8sp"
                 android:paddingEnd="8sp"
                 android:textIsSelectable="true"

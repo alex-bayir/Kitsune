@@ -29,6 +29,7 @@ import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Page;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
+import org.alex.kitsune.commons.ZoomTextView;
 import org.alex.kitsune.ocr.OCRImageView;
 import org.alex.kitsune.ocr.Translate;
 import org.alex.kitsune.ui.main.Constants;
@@ -108,7 +109,8 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     Chapter chapter;
     Page page;
     File file;
-    TextView text,progress,text_faces, text_info;
+    ZoomTextView text;
+    TextView progress,text_faces, text_info;
     BaseCurveProgressView progressBar;
     Button retry, change_url;
     View load_info,retry_layout;
@@ -147,28 +149,21 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                 }
             }
         });
-
-        text.setOnTouchListener(new View.OnTouchListener() {
-            final GestureDetector detector=new GestureDetector(text.getContext(),new GestureDetector.SimpleOnGestureListener(){
-                @Override
-                public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
-                    float x=e.getX(),y=e.getY(); View view=text;
-                    int width=view.getWidth(),length=width/3;
-                    if(x<length){
-                        leftClick.onClick(view);
-                    }else{
-                        if(x>width-length){
-                            rightClick.onClick(view);
-                        }else{
-                            centerClick.onClick(view);
-                        }
-                    }
-                    return true;
-                }
-            });
+        text.setGestureListener(new GestureDetector.SimpleOnGestureListener(){
             @Override
-            public boolean onTouch(View view, MotionEvent event) {
-                return detector.onTouchEvent(event);
+            public boolean onSingleTapConfirmed(@NonNull MotionEvent e) {
+                float x=e.getX(),y=e.getY(); View view=text;
+                int width=view.getWidth(),length=width/3;
+                if(x<length){
+                    leftClick.onClick(view);
+                }else{
+                    if(x>width-length){
+                        rightClick.onClick(view);
+                    }else{
+                        centerClick.onClick(view);
+                    }
+                }
+                return true;
             }
         });
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
@@ -189,6 +184,9 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                         }
                     })
             );
+            text.setOnFocusChangeListener((view, b) -> {
+                if(!b){snackbar.dismiss();}
+            });
         }
         View view=LayoutInflater.from(itemView.getContext()).inflate(R.layout.dialog_input_url, null);
         dialog=new AlertDialog.Builder(itemView.getContext()).setView(view).create();
@@ -213,7 +211,6 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         this.book=book;
         this.mode=mode;
         itemView.getLayoutParams().height=(mode.R==ReaderMode.VerticalWeb ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT);
-        image.getLayoutParams().height=(mode.R==ReaderMode.VerticalWeb ? ViewGroup.LayoutParams.WRAP_CONTENT : ViewGroup.LayoutParams.MATCH_PARENT);
     }
 
     private void retry(){
