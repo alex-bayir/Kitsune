@@ -7,7 +7,7 @@ import android.content.IntentFilter;
 import android.view.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.Toolbar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -17,21 +17,21 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.shelf.Catalogs;
-import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
-public class RecommendationsActivity extends AppCompatActivity {
+public class RecommendationsActivity extends Activity {
     Toolbar toolbar;
     ViewPager2 pager;
     Adapter adapter;
 
     int[] stringIds={R.string.sort_popular,R.string.sort_latest,R.string.sort_updated};
     ArrayList<Catalogs.Container> catalogs;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recomendations);
         catalogs=Catalogs.getCatalogs(PreferenceManager.getDefaultSharedPreferences(this));
@@ -53,14 +53,6 @@ public class RecommendationsActivity extends AppCompatActivity {
                 adapter.update(intent.getIntExtra(Constants.hash,-1));
             }
         },new IntentFilter(Constants.action_Update));
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home -> finish();
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public class Adapter extends RecyclerView.Adapter<Adapter.Holder>{

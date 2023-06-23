@@ -9,7 +9,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.tabs.TabLayout;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import com.google.android.material.tabs.TabLayoutMediator;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.book.Book;
@@ -18,13 +18,12 @@ import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.preview.PreviewActivity;
-import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class FavoritesActivity extends AppCompatActivity {
+public class FavoritesActivity extends Activity {
 
     Toolbar toolbar;
     ViewPager2 viewPager;
@@ -32,9 +31,10 @@ public class FavoritesActivity extends AppCompatActivity {
     TabLayout tabs;
     ArrayList<String> categories;
 
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
         toolbar=findViewById(R.id.toolbar);
@@ -57,8 +57,7 @@ public class FavoritesActivity extends AppCompatActivity {
         }
 
         new TabLayoutMediator(tabs, viewPager, true, (tab, position) -> tab.setText(categories.get(position))).attach();
-        String tmp=getIntent().getStringExtra(Constants.category);
-        if(tmp!=null){viewPager.setCurrentItem(Math.max(categories.indexOf(tmp), 0));}
+        viewPager.setCurrentItem(Math.max(categories.indexOf(getIntent().getStringExtra(Constants.category)), 0),false);
     }
     @Override
     protected void onResume() {
@@ -78,7 +77,6 @@ public class FavoritesActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case (android.R.id.home) -> finish();
             case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.CategoryTimeComparator);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
             case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt);}
@@ -114,7 +112,7 @@ public class FavoritesActivity extends AppCompatActivity {
         @NotNull
         @Override
         public CategoryHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
-            return new CategoryHolder(parent, add(new BookAdapter(null, BookAdapter.Mode.LIST, book -> startActivity(new Intent(FavoritesActivity.this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode())))));
+            return new CategoryHolder(parent, add(new BookAdapter(null, BookAdapter.Mode.LIST, book -> startActivity(new Intent(FavoritesActivity.this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()),Gravity.START,Gravity.END))));
         }
 
         @Override
@@ -125,7 +123,7 @@ public class FavoritesActivity extends AppCompatActivity {
         @Override
         public int getItemCount(){return categories.size();}
 
-        public class CategoryHolder extends RecyclerView.ViewHolder{
+        public static class CategoryHolder extends RecyclerView.ViewHolder{
             final BookAdapter adapter;
             public CategoryHolder(@NonNull @NotNull ViewGroup parent, BookAdapter adapter) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_recyclerview_list, parent, false));

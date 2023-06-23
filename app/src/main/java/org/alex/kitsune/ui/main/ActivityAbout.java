@@ -2,19 +2,16 @@ package org.alex.kitsune.ui.main;
 
 import android.app.AlertDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
-import android.view.MenuItem;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
-import androidx.preference.PreferenceManager;
 import com.alex.shimmer.Shimmer;
 import com.alex.shimmer.ShimmerTextView;
 import com.alex.json.java.JSON;
@@ -29,11 +26,10 @@ import org.alex.kitsune.utils.Utils;
 import java.util.Locale;
 
 
-public class ActivityAbout extends AppCompatActivity implements View.OnClickListener{
+public class ActivityAbout extends Activity implements View.OnClickListener{
     Toolbar toolbar;
     TextView version,buildTime,progress,downloads;
     ImageView launcher,update;
-    SharedPreferences prefs;
     Callback<JSON.Object> ucs= json -> {
         update.setImageDrawable(Updater.getStatusIcon(this));
         update.setEnabled(json!=null);
@@ -55,12 +51,12 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
     });
     private final String card=BuildConfig.card;
     private static JSON.Object json=null;
+    @Override public int getAnimationGravityIn(){return Gravity.BOTTOM;}
+    @Override public int getAnimationGravityOut(){return Gravity.TOP;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
-        prefs=PreferenceManager.getDefaultSharedPreferences(this);
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar=getSupportActionBar();
@@ -97,20 +93,20 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
             case 3->new NeonShadowDrawable.RoundRect(8*Utils.DP).padding(Utils.toDP(8)).background(0xff000000).build(true);
             default -> null;
         });
-        if(json!=null && json.size()>0){
+        if(json!=null && !json.isEmpty()){
             downloads.setText(format_downloads(json));
         }else{
             new Thread(()->{
-                try {json=count_downloads(JSON.Object.create(prefs.getString("downloads","")));} catch (Throwable e) {e.printStackTrace();}
+                try {json=count_downloads(JSON.Object.create(getSharedPreferences().getString("downloads","")));} catch (Throwable e) {e.printStackTrace();}
                 if(json!=null){
                     NetworkUtils.getMainHandler().post(()->{
-                        prefs.edit().putString("downloads",json.toString()).apply();
+                        getSharedPreferences().edit().putString("downloads",json.toString()).apply();
                         downloads.setText(format_downloads(json));
                     });
                 }else{
                     NetworkUtils.getMainHandler().post(()->{
                         try{
-                            downloads.setText(format_downloads(JSON.Object.create(prefs.getString("downloads",""))));
+                            downloads.setText(format_downloads(JSON.Object.create(getSharedPreferences().getString("downloads",""))));
                         }catch (Exception e) {
                             ((View)downloads.getParent()).setVisibility(View.GONE);
                             e.printStackTrace();
@@ -121,14 +117,6 @@ public class ActivityAbout extends AppCompatActivity implements View.OnClickList
         }
     }
     private ShimmerTextView init(Shimmer shimmer,ShimmerTextView v){v.setOnClickListener(this); shimmer.start(v); return v;}
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home->finish();
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
     @Override
     public void onClick(View v) {

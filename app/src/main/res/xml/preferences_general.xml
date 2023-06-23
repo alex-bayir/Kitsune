@@ -30,6 +30,11 @@
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/common_parameters">
         <SwitchPreferenceCompat
+                android:key="animations"
+                android:summary="@string/animations"
+                android:defaultValue="true"
+        />
+        <SwitchPreferenceCompat
                 android:key="update_on_start"
                 android:summary="@string/update_on_start"
                 android:defaultValue="true"

@@ -20,6 +20,8 @@ import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.jetbrains.annotations.NotNull;
 
+import static org.alex.kitsune.Activity.animation;
+
 public class NewFragment extends Fragment implements MenuProvider {
     RecyclerView rv;
     BookAdapter adapter;
@@ -35,8 +37,8 @@ public class NewFragment extends Fragment implements MenuProvider {
         rv=root.findViewById(R.id.rv_list);
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new BookAdapter(null, BookAdapter.Mode.LIST,
-                book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
-                book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
+                book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),animation(requireActivity(),Gravity.START,Gravity.END)),
+                book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true),animation(requireActivity(),Gravity.TOP,Gravity.BOTTOM))
         );
         adapter.setShowSource(false);
         adapter.setShowCheckedNew(false);

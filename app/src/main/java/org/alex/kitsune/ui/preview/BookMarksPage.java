@@ -1,10 +1,8 @@
 package org.alex.kitsune.ui.preview;
 
+import android.app.Activity;
 import android.content.Intent;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.widget.TextView;
 import androidx.recyclerview.widget.*;
 import org.alex.kitsune.commons.HolderListener;
@@ -15,6 +13,8 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.book.BookMark;
 import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.utils.Utils;
+
+import static org.alex.kitsune.Activity.animation;
 
 public class BookMarksPage extends PreviewHolder implements HolderListener, HolderMenuItemClickListener {
     RecyclerView rv;
@@ -39,7 +39,7 @@ public class BookMarksPage extends PreviewHolder implements HolderListener, Hold
 
     @Override
     public void onItemClick(View v, int index) {
-        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.bookmark, index));
+        itemView.getContext().startActivity(new Intent(itemView.getContext(), ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.bookmark, index), animation((Activity)v.getContext(),Gravity.TOP,Gravity.BOTTOM));
     }
 
     @Override

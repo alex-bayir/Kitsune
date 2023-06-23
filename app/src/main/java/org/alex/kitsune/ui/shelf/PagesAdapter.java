@@ -1,9 +1,11 @@
 package org.alex.kitsune.ui.shelf;
 
+import android.app.Activity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
 public class PagesAdapter {
+    Activity activity;
     FragmentManager fragmentManager;
     Shelf shelf;
     NewFragment n;
@@ -11,22 +13,32 @@ public class PagesAdapter {
     int id;
 
     int current=-1;
-    public PagesAdapter(FragmentManager fragmentManager,int containerId) {
-        this.fragmentManager=fragmentManager;
-        id=containerId;
+    public PagesAdapter(Activity activity,FragmentManager manager,int containerId){
+        this.activity=activity;
+        this.fragmentManager=manager;
+        this.id=containerId;
     }
 
     public Fragment get(int position){
-        switch(position){
-            default: return shelf!=null ? shelf : (shelf=new Shelf());
-            case 1: return n!=null ? n : (n=new NewFragment());
-            case 2: return new Catalogs();
-            case 3: return s!=null ? s : (s=new StatisticsFragment());
-        }
+        return switch(position){
+            default -> shelf!=null ? shelf : (shelf=new Shelf());
+            case 1 -> n!=null ? n : (n=new NewFragment());
+            case 2 -> new Catalogs();
+            case 3 -> s!=null ? s : (s=new StatisticsFragment());
+        };
     }
     public void setCurrentItem(int position){
         current=position;
-        fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out).replace(id,get(position)).commit();
+        Fragment fragment=get(position);
+        if(org.alex.kitsune.Activity.isAnimationsEnable()){
+            fragment.setEnterTransition(activity.getWindow().getEnterTransition());
+            fragment.setExitTransition(activity.getWindow().getExitTransition());
+            fragment.setReturnTransition(activity.getWindow().getReturnTransition());
+            fragment.setReenterTransition(activity.getWindow().getReenterTransition());
+            fragmentManager.beginTransaction().replace(id,fragment).commit();
+        }else{
+            fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out).replace(id,fragment).commit();
+        }
     }
 
     public Fragment getCurrent(){return get(current);}

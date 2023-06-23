@@ -1,5 +1,6 @@
 package org.alex.kitsune.ui.search;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -23,6 +24,8 @@ import org.alex.kitsune.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
+import static org.alex.kitsune.Activity.animation;
 
 public class SourceSearchAdapter extends RecyclerView.Adapter<SourceSearchAdapter.SourceSearchHolder>{
     final List<String> sources;
@@ -95,7 +98,8 @@ public class SourceSearchAdapter extends RecyclerView.Adapter<SourceSearchAdapte
         View.OnClickListener show=v->v.getContext().startActivity(
                 new Intent(v.getContext(), SearchResultsActivity.class)
                         .putExtra("source",title.getText())
-                        .putExtras(new Binder<>(adapter.getList()).toBundle("books"))
+                        .putExtras(new Binder<>(adapter.getList()).toBundle("books")),
+                animation((Activity)v.getContext(),Gravity.START,Gravity.END)
         );
         public SourceSearchHolder(ViewGroup parent, boolean intercept_scrolling) {
             super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_source_search,parent,false));
@@ -106,7 +110,7 @@ public class SourceSearchAdapter extends RecyclerView.Adapter<SourceSearchAdapte
 
             adapter=new BookAdapter(new ArrayList<>(0), BookAdapter.Mode.GRID,book->{
                 adapter.add(BookService.getOrPutNewWithDir(book));
-                itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
+                itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),animation((Activity)itemView.getContext(),Gravity.START,Gravity.END));
             });
             adapter.initRV(rv,1,RecyclerView.HORIZONTAL,false);
             rv.setHorizontalScrollBarEnabled(true);

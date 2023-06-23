@@ -9,7 +9,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.utils.NetworkUtils;
-import org.alex.kitsune.utils.Utils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attributes;
 import org.jsoup.nodes.Element;

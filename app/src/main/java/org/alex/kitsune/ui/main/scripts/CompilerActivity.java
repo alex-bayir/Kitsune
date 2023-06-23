@@ -7,7 +7,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import com.blacksquircle.ui.editorkit.model.UndoStack;
 import com.blacksquircle.ui.editorkit.plugin.autoindent.AutoIndentPlugin;
 import com.blacksquircle.ui.editorkit.plugin.base.PluginSupplier;
@@ -28,7 +28,7 @@ import org.alex.kitsune.utils.Utils;
 import org.alex.kitsune.R;
 import java.io.*;
 
-public class CompilerActivity extends AppCompatActivity {
+public class CompilerActivity extends Activity {
 
     View fab;
     File file;
@@ -37,9 +37,10 @@ public class CompilerActivity extends AppCompatActivity {
     CircularProgressBar progressBar;
     BottomSheetBehavior<TextView> b;
     int mode=R.id.base_functions;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compiler);
         file=new File(getIntent().getStringExtra(Constants.file));
@@ -129,8 +130,7 @@ public class CompilerActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case (android.R.id.home) -> finish();
-            case (R.id.action_open_api) -> startActivity(new Intent(this, ApiActivity.class));
+            case (R.id.action_open_api) -> startActivity(new Intent(this, ApiActivity.class),Gravity.START,Gravity.END);
             case (R.id.base_functions), (R.id.advanced_search_functions) -> {item.setChecked(true);mode = item.getItemId();}
         }
         return super.onOptionsItemSelected(item);

@@ -3,9 +3,7 @@ package org.alex.kitsune.ui.preview;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.SearchManager;
+import android.app.*;
 import android.content.*;
 import android.net.Uri;
 import android.os.*;
@@ -14,7 +12,7 @@ import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
@@ -30,18 +28,20 @@ import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.CustomSnackbar;
 import java.io.FileOutputStream;
 import java.io.IOException;
-
+import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
 import org.alex.kitsune.logs.Logs;
+import org.alex.kitsune.ui.main.MainActivity;
 import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
+import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 
-public class PreviewActivity extends AppCompatActivity{
+public class PreviewActivity extends Activity {
     PreviewPagerAdapter adapter;
     SmoothProgressBar progressBar;
     ViewPager2 pager;
@@ -58,7 +58,11 @@ public class PreviewActivity extends AppCompatActivity{
     private final Callback<Throwable> errorCallback=(throwable) -> {
         progressBar.progressiveStop(); this.throwable=throwable;
         if(throwable!=null && throwable.getCause() instanceof IOException e){
-            Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+            if(e instanceof HttpStatusException http){
+                Toast.makeText(this,http.message("%d - %s"),Toast.LENGTH_LONG).show();
+            }else{
+                Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();
+            }
             adapter.bindPages();
         }else{
             throwableTime=Logs.saveLog(throwable);
@@ -77,19 +81,15 @@ public class PreviewActivity extends AppCompatActivity{
             invalidateOptionsMenu();
         }
         adapter.bindPages();
-        Utils.Activity.clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
+        clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
     };
     public void updateContent(){
         updateCallback.call(book.isUpdated());
     }
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Logs.init(this);
-        Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
-            Logs.saveLog(paramThrowable);
-            System.exit(2);
-        });
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
         toolbar=findViewById(R.id.toolbar);
@@ -111,17 +111,14 @@ public class PreviewActivity extends AppCompatActivity{
         bottomBar.setOnMenuItemClickListener(PreviewActivity.this::onOptionsItemSelected);
         onPrepareBottomBarMenu(bottomBar.getMenu());
         bottomBar.setBackgroundColor(ContextCompat.getColor(this,R.color.black_overlay));
-        Utils.Activity.setColorBars(this,getWindow().getStatusBarColor(),Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
+        setColorBars(getWindow().getStatusBarColor(),Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
 
-        if(!BookService.isInited()){
-            BookService.init(this);
-            hash =-1;
-        }
         book=BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
         hash=book!=null ? book.hashCode() : -1;
         if(book==null){finish();}
         if(!book.getDir().startsWith(BookService.getDir())){
-            book.moveTo(BookService.getDir());}
+            book.moveTo(BookService.getDir());
+        }
 
         adapter=new PreviewPagerAdapter(book);
         pager=findViewById(R.id.pager);
@@ -172,10 +169,21 @@ public class PreviewActivity extends AppCompatActivity{
         return super.onCreateOptionsMenu(menu);
     }
 
+    private void toMain(){
+        startActivity(new Intent(this, MainActivity.class), animation(Gravity.START,Gravity.END));
+    }
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return switch (keyCode){
+            case KeyEvent.KEYCODE_BACK -> {if(isTaskRoot()){toMain();} yield super.onKeyUp(keyCode,event);}
+            default -> super.onKeyUp(keyCode,event);
+        };
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NotNull MenuItem item) {
         return switch (item.getItemId()) {
-            case android.R.id.home -> {finish(); yield true;}
+            case android.R.id.home -> {if(isTaskRoot()){toMain();} yield super.onOptionsItemSelected(item);}
             case (R.id.action_open_folder) -> {startActivity(new Intent(Intent.ACTION_VIEW).setDataAndType(Uri.parse(book.getDir()),"resource/folder")); yield true;}
             case (R.id.action_chapter_remove_all) -> {adapter.getChaptersPage().action(ChaptersPage.RA); yield true;}
             case (R.id.action_chapter_save_all) -> {adapter.getChaptersPage().action(ChaptersPage.SA); yield true;}
@@ -218,13 +226,13 @@ public class PreviewActivity extends AppCompatActivity{
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
         super.onActivityResult(requestCode,resultCode,data);
         switch(requestCode){
-            case PERMISSION_REQUEST_CODE: break;
-            case CALL_FILE_STORE:
+            case PERMISSION_REQUEST_CODE -> {}
+            case CALL_FILE_STORE -> {
                 if(resultCode==RESULT_OK){
                     try{Utils.File.copy(getContentResolver().openInputStream(data.getData()),new FileOutputStream(book.getCoverPath()));}catch(Exception e){e.printStackTrace();}
                     updateContent();
                 }
-                break;
+            }
         }
     }
     public void setSelectMode(boolean select_mode){

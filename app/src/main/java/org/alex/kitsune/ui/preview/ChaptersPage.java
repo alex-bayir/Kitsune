@@ -1,10 +1,12 @@
 package org.alex.kitsune.ui.preview;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +27,8 @@ import org.alex.kitsune.ui.reader.ReaderActivity;
 import org.alex.kitsune.utils.Utils;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
+
+import static org.alex.kitsune.Activity.animation;
 
 public class ChaptersPage extends PreviewHolder implements HolderListener {
     RecyclerView rv;
@@ -62,7 +66,7 @@ public class ChaptersPage extends PreviewHolder implements HolderListener {
         if(adapter.getTracker().hasSelection()){
             select_deselect(adapter.getTracker(),Integer.toUnsignedLong(index));
         }else{
-            itemView.getContext().startActivity(new Intent(itemView.getContext(),ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.chapter, index));
+            v.getContext().startActivity(new Intent(v.getContext(),ReaderActivity.class).putExtra(Constants.hash,adapter.book.hashCode()).putExtra(Constants.chapter, index),animation((Activity)v.getContext(), Gravity.START,Gravity.END));
         }
     }
 

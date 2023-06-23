@@ -1,22 +1,21 @@
 package org.alex.kitsune.ui.main.scripts;
 
 import android.os.Bundle;
-import android.view.MenuItem;
+import android.view.Gravity;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import org.alex.kitsune.R;
-import org.alex.kitsune.utils.Utils;
 
-public class ApiActivity extends AppCompatActivity {
+public class ApiActivity extends Activity {
     Toolbar toolbar;
     TextView text;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_api);
         toolbar=findViewById(R.id.toolbar);
@@ -31,13 +30,6 @@ public class ApiActivity extends AppCompatActivity {
         text=findViewById(R.id.text);
         text.setHorizontallyScrolling(true);
         text.setText(getText());
-    }
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home: finish(); break;
-        }
-        return super.onOptionsItemSelected(item);
     }
     private String getText(){
         return "API для скриптов (примеры скриптов смотрите в разделе редактирования):\n" +

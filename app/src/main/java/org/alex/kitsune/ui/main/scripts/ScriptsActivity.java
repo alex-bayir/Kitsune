@@ -6,7 +6,7 @@ import android.view.*;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -26,16 +26,17 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 
-public class ScriptsActivity extends AppCompatActivity {
+public class ScriptsActivity extends Activity {
     Toolbar toolbar;
     RecyclerView rv;
     ScriptsAdapter adapter;
     TextView noScripts;
     View fab;
     File dir;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scripts);
         toolbar=findViewById(R.id.toolbar);
@@ -46,14 +47,14 @@ public class ScriptsActivity extends AppCompatActivity {
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        Utils.Activity.setColorBars(this,0,0);
-        Utils.Activity.setActivityFullScreen(this);
+        setColorBars(0,0);
+        setActivityFullScreen();
         AppBarLayout barLayout=findViewById(R.id.app_bar);
         barLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
                 if(state!=State.IDLE){
-                    Utils.Activity.setVisibleSystemUI(ScriptsActivity.this,state==State.COLLAPSED);
+                    setVisibleSystemUI(ScriptsActivity.this,state==State.COLLAPSED);
                 }
             }
         });
@@ -81,7 +82,7 @@ public class ScriptsActivity extends AppCompatActivity {
         }, new HolderListener() {
             @Override
             public void onItemClick(View v, int index) {
-                startActivity(new Intent(ScriptsActivity.this,CompilerActivity.class).putExtra(Constants.file,adapter.getFiles().get(index).getAbsolutePath()));
+                startActivity(new Intent(ScriptsActivity.this,CompilerActivity.class).putExtra(Constants.file,adapter.getFiles().get(index).getAbsolutePath()),Gravity.START,Gravity.END);
             }
 
             @Override
@@ -101,7 +102,7 @@ public class ScriptsActivity extends AppCompatActivity {
         rv.setLayoutManager(new LinearLayoutManager(this));
         Utils.registerAdapterDataChangeRunnable(adapter,()->noScripts.setVisibility(adapter.getItemCount()==0?View.VISIBLE:View.GONE));
         fab=findViewById(R.id.fab);
-        fab.setOnClickListener(v -> Utils.Activity.callFilesStore(ScriptsActivity.this,1,"text/plain",0));
+        fab.setOnClickListener(v -> callFilesStore(ScriptsActivity.this,1,"text/plain",0));
         CustomSnackbar.makeSnackbar((ViewGroup) fab.getParent(), Snackbar.LENGTH_LONG).setText(R.string.scripts_updates).setIcon(R.drawable.ic_caution_yellow).setGravity(Gravity.CENTER).show();
     }
 
@@ -121,9 +122,8 @@ public class ScriptsActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-            case R.id.action_create_script: startActivity(new Intent(this,CompilerActivity.class).putExtra(Constants.file,dir.getAbsolutePath()+"/newScript"+System.currentTimeMillis()+".lua")); break;
-            case R.id.action_open_api: startActivity(new Intent(this,ApiActivity.class)); break;
+            case R.id.action_create_script -> startActivity(new Intent(this, CompilerActivity.class).putExtra(Constants.file, dir.getAbsolutePath() + "/newScript" + System.currentTimeMillis() + ".lua"),Gravity.START,Gravity.END);
+            case R.id.action_open_api -> startActivity(new Intent(this, ApiActivity.class),Gravity.START,Gravity.END);
         }
         return super.onOptionsItemSelected(item);
     }

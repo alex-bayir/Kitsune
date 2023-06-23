@@ -23,7 +23,7 @@ import androidx.appcompat.widget.SearchView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.OrientationHelper;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import fr.castorflex.android.circularprogressbar.CircularProgressBar;
@@ -46,7 +46,7 @@ import java.net.SocketTimeoutException;
 import org.alex.kitsune.commons.HttpStatusException;
 
 
-public class AdvancedSearchActivity extends AppCompatActivity implements Callback<String> {
+public class AdvancedSearchActivity extends Activity implements Callback<String> {
     Toolbar toolbar;
     FilterDialogFragment filters;
     RecyclerView rv;
@@ -59,9 +59,10 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
     private boolean enableLoadMore=false;
     private int page=0;
     CircularProgressBar progressBar;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_advanced_search);
         toolbar=findViewById(R.id.toolbar);
@@ -103,7 +104,7 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
             adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
-            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
+            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END);
         });
         adapter.initRV(rv,1);
         rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
@@ -215,7 +216,6 @@ public class AdvancedSearchActivity extends AppCompatActivity implements Callbac
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home -> finish();
             case (R.id.list) -> {item.setChecked(true);adapter.setSpanCount(1);}
             case (R.id.largeGrid) -> {item.setChecked(true);adapter.setSpanCount(2);}
             case (R.id.mediumGrid) -> {item.setChecked(true);adapter.setSpanCount(3);}

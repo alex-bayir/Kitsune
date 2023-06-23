@@ -3,15 +3,16 @@ package org.alex.kitsune.ui.shelf.history;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.snackbar.Snackbar;
+import org.alex.kitsune.Activity;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.BookService;
@@ -19,18 +20,20 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.book.views.BookAdapter;
 import org.alex.kitsune.commons.SwipeRemoveHelper;
 import org.alex.kitsune.ui.preview.PreviewActivity;
-import org.alex.kitsune.utils.Utils;
 
-public class HistoryActivity extends AppCompatActivity {
+public class HistoryActivity extends Activity {
 
     Toolbar toolbar;
     RecyclerView rv;
     BookAdapter adapter;
     Snackbar sn=null;
     Book tmp=null,updateOnReturn=null;
+
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
         toolbar=findViewById(R.id.toolbar);
@@ -44,7 +47,7 @@ public class HistoryActivity extends AppCompatActivity {
         toolbar.setTitle(R.string.History);
         rv=findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter=new BookAdapter(BookService.getSorted(BookService.Type.History), BookAdapter.Mode.LIST, book -> {startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode())); updateOnReturn=book;});
+        adapter=new BookAdapter(BookService.getSorted(BookService.Type.History), BookAdapter.Mode.LIST, book -> {startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END); updateOnReturn=book;});
         adapter.initRV(rv,1);
         SwipeRemoveHelper.setup(rv,new SwipeRemoveHelper(HistoryActivity.this,R.color.error,R.drawable.ic_trash_white,24, i -> {
             sn=Snackbar.make(toolbar,"Clear History: "+adapter.get(i).getName(),Snackbar.LENGTH_LONG).setAction("Cancel", v -> {if(sn!=null){sn.dismiss();}});
@@ -88,7 +91,6 @@ public class HistoryActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home -> finish();
             case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.HistoryComparator,true);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator,true);}
             case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt,true);}

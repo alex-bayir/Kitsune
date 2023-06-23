@@ -16,7 +16,7 @@ import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.ui.main.Constants;
@@ -32,7 +32,7 @@ import java.util.Comparator;
 import java.util.Random;
 
 
-public class SavedActivity extends AppCompatActivity {
+public class SavedActivity extends Activity {
 
     Toolbar toolbar;
     CollapsingToolbarLayout toolBarLayout;
@@ -41,10 +41,10 @@ public class SavedActivity extends AppCompatActivity {
     ImageView backdrop;
     int currentSort=R.id.latest;
     final Random r=new Random();
-
+    @Override public int getAnimationGravityIn(){return Gravity.BOTTOM;}
+    @Override public int getAnimationGravityOut(){return Gravity.TOP;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_saved);
         toolbar=findViewById(R.id.toolbar);
@@ -55,14 +55,14 @@ public class SavedActivity extends AppCompatActivity {
             actionBar.setDisplayShowHomeEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
         }
-        Utils.Activity.setColorBars(this,0,Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
-        Utils.Activity.setActivityFullScreen(this);
+        setColorBars();
+        setActivityFullScreen();
         AppBarLayout barLayout=findViewById(R.id.app_bar);
         barLayout.addOnOffsetChangedListener(new AppBarStateChangeListener() {
             @Override
             public void onStateChanged(AppBarLayout appBarLayout, State state) {
                 if(state!=State.IDLE){
-                    Utils.Activity.setVisibleSystemUI(SavedActivity.this,state==State.COLLAPSED);
+                    setVisibleSystemUI(SavedActivity.this,state==State.COLLAPSED);
                     if(state==State.COLLAPSED){toolBarLayout.setExpandedTitleColor(Color.HSVToColor(new float[]{r.nextFloat()*360,1,1}));}
                 }
             }
@@ -76,7 +76,7 @@ public class SavedActivity extends AppCompatActivity {
         toolBarLayout.setExpandedTitleColor(Color.HSVToColor(new float[]{r.nextFloat()*360,1,1}));
         backdrop=findViewById(R.id.backdrop);
         rv=findViewById(R.id.rv_list);
-        adapter=new BookAdapter(BookService.getSorted(BookService.Type.Saved), BookAdapter.Mode.GRID, book -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode())));
+        adapter=new BookAdapter(BookService.getSorted(BookService.Type.Saved), BookAdapter.Mode.GRID, book -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END));
         adapter.initRV(rv,3);
         adapter.recalculateFullSize();
         backdrop.setImageDrawable(createBackDrop(adapter));
@@ -122,7 +122,6 @@ public class SavedActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case (android.R.id.home) -> finish();
             case (R.id.latest) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.SavingTimeComparator);}
             case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparator);}
             case (R.id.alphabetical_alt) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparatorAlt);}

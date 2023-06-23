@@ -124,6 +124,7 @@
     <string name="adjust_brightness_value">Brightness</string>
     <string name="common_parameters">Common parameters</string>
     <string name="update_on_start">Check new chapters on start app</string>
+    <string name="animations">Animations of transitions between actions</string>
     <string name="update_scripts_automatically">Update scripts automatically</string>
     <string name="target_lang">Target translate language</string>
     <string name="use_another_translator">Use third-party translator</string>

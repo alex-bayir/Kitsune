@@ -34,6 +34,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.alex.kitsune.BuildConfig;
 
+import static org.alex.kitsune.Activity.animation;
+
 public class Updater {
     private static JSON.Object updateInfo=null;
     private static boolean actual_version=false;
@@ -106,7 +108,7 @@ public class Updater {
                     thread.start();
                     try{thread.join();}catch(InterruptedException ignored){}
                 }
-                if(set.size()>0){
+                if(!set.isEmpty()){
                     prefs.edit().putStringSet(Constants.scripts_hashes,set).apply();
                 }
             }catch (IOException e){
@@ -125,8 +127,8 @@ public class Updater {
                         boolean updated=updateScripts(activity);
                         NetworkUtils.getMainHandler().post(()->{
                             if(updated){
-                                if(BookService.getAll().size()>0){
-                                    Utils.Activity.restartActivity(activity);
+                                if(!BookService.getAll().isEmpty()){
+                                    ((org.alex.kitsune.Activity)activity).restart();
                                 }else{
                                     BookService.init(activity);
                                 }
@@ -215,7 +217,7 @@ public class Updater {
         return createSnackBarUpdate(parent,gravity,duration,parent.getContext().getString(R.string.new_version_founded)+" "+updateInfo.getString("version"),update);
     }
     public static CustomSnackbar createSnackBarUpdate(ViewGroup parent){
-        return createSnackBarUpdate(parent,Gravity.CENTER,Snackbar.LENGTH_LONG,v->v.getContext().startActivity(new Intent(v.getContext(), ActivityAbout.class).putExtra("update",true)));
+        return createSnackBarUpdate(parent,Gravity.CENTER,Snackbar.LENGTH_LONG,v->v.getContext().startActivity(new Intent(v.getContext(), ActivityAbout.class).putExtra("update",true),animation((Activity) v.getContext(),Gravity.START,Gravity.END)));
     }
     public static Dialog createDialogUpdate(Context context, View.OnClickListener update){
         Dialog dialog=new Dialog(context);

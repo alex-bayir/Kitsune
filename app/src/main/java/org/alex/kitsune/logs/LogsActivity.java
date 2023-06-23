@@ -6,7 +6,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,13 +15,12 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.tabs.TabLayoutMediator;
 import org.alex.kitsune.R;
-import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class LogsActivity extends AppCompatActivity{
+public class LogsActivity extends Activity {
     Toolbar toolbar;
     ViewPager2 pager;
     TextView log_text,log_date;
@@ -31,9 +30,10 @@ public class LogsActivity extends AppCompatActivity{
     MenuItem clearAllIcon,clearAllText;
     long lastDate=0;
     BottomSheetBehavior<View> behavior;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_logs);
         toolbar=findViewById(R.id.toolbar);
@@ -109,11 +109,25 @@ public class LogsActivity extends AppCompatActivity{
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: if(showingMore()){showMore(false);}else{finish();} break;
-            case (R.id.clear_all): adapter.clearAllIn(pager.getCurrentItem()); clearAllIcon.setVisible(adapter.getItemCount()!=0); if(pager.getCurrentItem()!=-1){onPageSelected(pager.getCurrentItem());} break;
-        }
-        return super.onOptionsItemSelected(item);
+        return switch (item.getItemId()) {
+            case android.R.id.home -> {
+                if (showingMore()) {
+                    showMore(false);
+                    yield true;
+                } else {
+                    yield super.onOptionsItemSelected(item);
+                }
+            }
+            case (R.id.clear_all) -> {
+                adapter.clearAllIn(pager.getCurrentItem());
+                clearAllIcon.setVisible(adapter.getItemCount() != 0);
+                if (pager.getCurrentItem() != -1) {
+                    onPageSelected(pager.getCurrentItem());
+                }
+                yield false;
+            }
+            default -> super.onOptionsItemSelected(item);
+        };
     }
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {

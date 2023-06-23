@@ -18,16 +18,14 @@ import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.navigation.NavigationView;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.snackbar.Snackbar;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.CustomSnackbar;
 import org.alex.kitsune.commons.DrawerLayout;
-import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Book_Scripted;
 import org.alex.kitsune.services.BookService;
@@ -45,13 +43,13 @@ import java.io.FileOutputStream;
 import java.net.URLDecoder;
 
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider {
+public class MainActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider {
     private static final int PERMISSION_REQUEST_CODE=1;
     private static final int CALL_FILE_STORE=2;
     private static final int PERMISSION_READ_REQUEST_CODE=3;
     private String headerImagePath;
     Toolbar toolbar;
-    NavigationView navigationView;
+    NavigationView navigation;
     DrawerLayout drawer;
     PagesAdapter adapter;
     public static boolean shouldUpdate=false;
@@ -65,12 +63,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                     query=URLDecoder.decode(query.substring(start,end!=-1?end:query.length()));
                     Book book=BookService.getOrPutNewWithDir(Book_Scripted.determinate(query.trim()));
                     if(book !=null){
-                        startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()));
+                        startActivity(new Intent(MainActivity.this, PreviewActivity.class).putExtra(Constants.hash, book.hashCode()),Gravity.START,Gravity.END);
                     }else{
                         CustomSnackbar.makeSnackbar((ViewGroup) drawer.getParent(), Snackbar.LENGTH_LONG).setGravity(Gravity.CENTER).setText(getString(R.string.sourcenotdefined,query.trim())).setIcon(R.drawable.ic_caution_yellow).setBackgroundAlpha(200).show();
                     }
                 }else{
-                    startActivity(new Intent(MainActivity.this, SearchActivity.class).putExtra("query",query.trim()));
+                    startActivity(new Intent(MainActivity.this, SearchActivity.class).putExtra("query",query.trim()),Gravity.START,Gravity.END);
                 }
             }
             return false;
@@ -80,24 +78,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(newBase);
-        Utils.Activity.loadLocale(this);
+        loadLocale(this);
     }
-
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Logs.init(this);
 
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
         getWindow().setNavigationBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
-        Updater.init(this);
 
-        PreferenceManager.getDefaultSharedPreferences(this).edit().putString(Constants.saved_path, BookService.init(this)).apply();
-        adapter=new PagesAdapter(this.getSupportFragmentManager(),R.id.pager);
+        adapter=new PagesAdapter(this,getSupportFragmentManager(),R.id.pager);
         headerImagePath=getExternalFilesDir(null).getAbsolutePath()+File.separator+"header";
         drawer=findViewById(R.id.drawer_layout);
         drawer.addHamburger(this,toolbar);
@@ -108,17 +103,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 drawer.getContent().setTranslationX(drawerView.getWidth()*slideOffset*drawer.getDirection());
             }
         });
-        navigationView=findViewById(R.id.nav_view);
-        navigationView.setCheckedItem(R.id.nav_shelf);
-        navigationView.setNavigationItemSelectedListener(this);
+        navigation=findViewById(R.id.nav_view);
+        navigation.setCheckedItem(R.id.nav_shelf);
+        navigation.setNavigationItemSelectedListener(this);
         findViewById(R.id.progress).setVisibility(View.GONE);
-        onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
-        View headerImage=navigationView.getHeaderView(0);
+        onNavigationItemSelected(navigation.getMenu().findItem(R.id.nav_shelf));
+        getHeader(navigation).setOnClickListener(view -> callFilesStore(MainActivity.this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE));
         updateMenu();
-        headerImage.setOnClickListener(view -> Utils.Activity.callFilesStore(MainActivity.this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE));
         executeIntent(getIntent());
     }
 
+    private static ImageView getHeader(NavigationView nav){
+        return ((ImageView)nav.getHeaderView(0));
+    }
     @Override
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
@@ -131,7 +128,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     public void setNew(int count){
-        TextView counter=(TextView) navigationView.getMenu().findItem(R.id.nav_new).getActionView();
+        TextView counter=(TextView) navigation.getMenu().findItem(R.id.nav_new).getActionView();
         counter.setGravity(Gravity.CENTER_VERTICAL);
         counter.setTypeface(null, Typeface.BOLD);
         counter.setTextColor(0xffff0000);
@@ -164,7 +161,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         switch (item.getItemId()){
-            case (R.id.action_add_source)->{startActivity(new Intent(this, ScriptsActivity.class)); return true;}
+            case (R.id.action_add_source)->{startActivity(new Intent(this, ScriptsActivity.class),Gravity.START,Gravity.END); return true;}
             default -> {return false;}
         }
     }
@@ -174,26 +171,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onResume();
         if(shouldUpdate){
             shouldUpdate=false;
-            Utils.Activity.restartActivity(this,new Intent(this,MainActivity.class));
+            restart(new Intent(this,MainActivity.class));
         }
         removeMenuProvider(this);
         addMenuProvider(this);
     }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        File[] listF=new File(BookService.getCacheDir()).listFiles();
-        if(listF!=null){for(File f:listF){Utils.File.delete(f);}}
-    }
     public void updateMenu(){
         if(new File(headerImagePath).exists()){
             Drawable drawable=Drawable.createFromPath(headerImagePath);
-            ((ImageView)navigationView.getHeaderView(0)).setImageDrawable(drawable);
+            getHeader(navigation).setImageDrawable(drawable);
             if(drawable instanceof Animatable animatable){
                 animatable.start();
             }
-            RecyclerView rv=(RecyclerView) navigationView.getChildAt(0);
+            RecyclerView rv=((RecyclerView) navigation.getChildAt(0));
             rv.scrollToPosition(rv.getAdapter().getItemCount()-1);
         }
     }
@@ -205,13 +195,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         switch (requestCode) {
             case PERMISSION_READ_REQUEST_CODE -> {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    Utils.Activity.callFilesStore(this, CALL_FILE_STORE, "image/*", PERMISSION_REQUEST_CODE);
+                    callFilesStore(this, CALL_FILE_STORE, "image/*", PERMISSION_REQUEST_CODE);
                 }
             }
             case PERMISSION_REQUEST_CODE -> {
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                     finish();
-                    startActivity(new Intent(this, MainActivity.class));
+                    startActivity(new Intent(this, MainActivity.class),Gravity.TOP,Gravity.BOTTOM);
                 }
             }
         }
@@ -243,9 +233,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case (R.id.nav_new) -> adapter.setCurrentItem(1);
             case (R.id.nav_catalogs) -> adapter.setCurrentItem(2);
             case (R.id.nav_statistics) -> adapter.setCurrentItem(3);
-            case (R.id.nav_recommendations) -> {startActivity(new Intent(this, RecommendationsActivity.class));return true;}
-            case (R.id.nav_settings) -> {startActivity(new Intent(this, SettingsActivity.class));return true;}
-            case (R.id.nav_about) -> {startActivity(new Intent(this, ActivityAbout.class));return true;}
+            case (R.id.nav_recommendations) -> {startActivity(new Intent(this, RecommendationsActivity.class),Gravity.START,Gravity.END);return true;}
+            case (R.id.nav_settings) -> {startActivity(new Intent(this, SettingsActivity.class),Gravity.START,Gravity.END);return true;}
+            case (R.id.nav_about) -> {startActivity(new Intent(this, ActivityAbout.class),Gravity.BOTTOM,Gravity.TOP);return true;}
             case (R.id.nav_version) -> {Updater.showWhatisNew(this, false);return true;}
         }
         item.setChecked(true);
@@ -254,15 +244,21 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onBackPressed() {
-        if(drawer.isDrawerOpen()){
-            drawer.closeDrawer();
-        }else{
-            if(adapter.getCurrentIndex()==0){
-                super.onBackPressed();
-            }else{
-                onNavigationItemSelected(navigationView.getMenu().findItem(R.id.nav_shelf));
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        return switch (keyCode){
+            case KeyEvent.KEYCODE_BACK -> {
+                if(drawer.isDrawerOpen()){
+                    drawer.closeDrawer();
+                }else{
+                    if(adapter.getCurrentIndex()==0){
+                        yield super.onKeyUp(keyCode,event);
+                    }else{
+                        onNavigationItemSelected(navigation.getMenu().findItem(R.id.nav_shelf));
+                    }
+                }
+                yield true;
             }
-        }
+            default -> super.onKeyUp(keyCode,event);
+        };
     }
 }

@@ -40,6 +40,8 @@ import java.io.IOException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.alex.kitsune.Activity.animation;
+
 public class Catalogs extends Fragment implements MenuProvider {
     RecyclerView rv;
     CatalogsAdapter adapter;
@@ -54,7 +56,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
-        adapter=new CatalogsAdapter(init(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index))));
+        adapter=new CatalogsAdapter(init(prefs), (v, index) -> requireContext().startActivity(new Intent(getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog,adapter.getSource(index)),animation(requireActivity(),Gravity.START,Gravity.END)));
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
@@ -99,7 +101,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem item) {
         return switch (item.getItemId()) {
-            case (R.id.action_add_source) -> {startActivity(new Intent(getContext(), ScriptsActivity.class)); yield true;}
+            case (R.id.action_add_source) -> {startActivity(new Intent(getContext(), ScriptsActivity.class),animation(requireActivity(),Gravity.START,Gravity.END)); yield true;}
             case (R.id.action_update_sctips) -> {
                 Updater.getUpdate(getContext(),json->{
                     if(json!=null){

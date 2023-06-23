@@ -14,12 +14,11 @@ import android.view.animation.LinearInterpolator;
 import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.content.ContextCompat;
-import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -46,7 +45,7 @@ import java.util.stream.Collectors;
 import org.alex.kitsune.ui.reader.ReaderPageHolder.ReaderMode;
 import org.alex.kitsune.ui.reader.ReaderPageHolder.ScaleMode;
 
-public class ReaderActivity extends AppCompatActivity implements View.OnSystemUiVisibilityChangeListener,SeekBar.OnSeekBarChangeListener{
+public class ReaderActivity extends Activity implements View.OnSystemUiVisibilityChangeListener,SeekBar.OnSeekBarChangeListener{
 
     ViewGroup root,frame;
     ReaderStatusBar statusBar;
@@ -70,12 +69,8 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     Throwable lastThrowable;
     long start_read_time;
     TextView error_info;
-    private static SharedPreferences prefs;
     public CustomSnackbar getSnackbar(){
         return CustomSnackbar.makeSnackbar(frame,CustomSnackbar.LENGTH_INDEFINITE).setBackgroundAlpha(192).setIcon(R.drawable.ic_translate_yandex_transparent).setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL).setMargins(0,96,0,0);
-    }
-    public static SharedPreferences getSharedPreferences(){
-        return prefs;
     }
 
     private void setData(int num_chapter){
@@ -88,7 +83,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
                 adapter.setChapter(num_chapter);
                 if(page==-1){page=chapter.getPages().size()-1;}
                 reader.scrollToPosition(page);
-                if(!prefs.getBoolean("incognito",false)){
+                if(!getSharedPreferences().getBoolean("incognito",false)){
                     book.createHistory(chapter,page);
                 }
                 book.seen(num_chapter);
@@ -106,14 +101,14 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         outState.putBoolean(Constants.history,true);
     }
 
+    @Override public int getAnimationGravityIn(){return Gravity.TOP;}
+    @Override public int getAnimationGravityOut(){return Gravity.BOTTOM;}
     @SuppressLint("ClickableViewAccessibility")
     @Override
     protected void onCreate(Bundle savedState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedState);
         setContentView(R.layout.activity_reader);
         lastBrightness=getBrightness();
-        prefs=PreferenceManager.getDefaultSharedPreferences(this);
         frame=findViewById(R.id.frame);
         root=findViewById(R.id.root);
         Intent intent=getIntent();
@@ -145,7 +140,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         });
         translate.setOnClickListener(v -> adapter.invertShowTranslate());
         reader=findViewById(R.id.reader);
-        adapter=new ReaderPageAdapter(book,reader, v -> Utils.Activity.inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});
+        adapter=new ReaderPageAdapter(book,reader, v -> inverseVisibleSystemUI(this), v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){prev();}else{next();}}, v -> {if(reader.getLayoutDirection()!=View.LAYOUT_DIRECTION_RTL){next();}else{prev();}});
         reader.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull @NotNull RecyclerView recyclerView, int newState) {
@@ -174,8 +169,8 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
             }
         }
         int color=ContextCompat.getColor(this,R.color.transparent_dark);
-        Utils.Activity.setColorBars(this,color,color);
-        Utils.Activity.setActivityFullScreen(this);
+        setColorBars(color,color);
+        setActivityFullScreen();
         getWindow().getDecorView().setOnSystemUiVisibilityChangeListener(this);
         statusBar=findViewById(R.id.statusBar);
         statusBar.setIsActive(true);
@@ -305,7 +300,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
         return R!=null && S!=null && setModes(R.ordinal(), S.ordinal());
     }
     public boolean setModes(int modeR, int modeS){
-        prefs.edit().putInt(Constants.ReaderMode,modeR).putInt(Constants.ScaleMode,modeS).apply();
+        getSharedPreferences().edit().putInt(Constants.ReaderMode,modeR).putInt(Constants.ScaleMode,modeS).apply();
         adapter.setModes(modeR,modeS);
         seekBar.setLayoutDirection(reader.getLayoutDirection());
         return true;
@@ -314,6 +309,7 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onResume() {
         super.onResume();
+        SharedPreferences prefs=getSharedPreferences();
         useVolumeKeys=prefs.getBoolean(Constants.use_volume_keys,true);
         setModes(prefs.getInt(Constants.ReaderMode,0),prefs.getInt(Constants.ScaleMode,0));
         frame.setBackgroundColor(prefs.getInt(Constants.custom_background_color,0));
@@ -327,12 +323,12 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     protected void onStop() {
         super.onStop();
-        if(!prefs.getBoolean("incognito",false)){
+        if(!getSharedPreferences().getBoolean("incognito",false)){
             book.createHistory(chapter,page);
         }
         BookService.allocate(book,false);
         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.history));
-        StatisticsFragment.Statistics.updateReading(prefs,System.currentTimeMillis()-start_read_time);
+        StatisticsFragment.Statistics.updateReading(getSharedPreferences(),System.currentTimeMillis()-start_read_time);
     }
 
     @Override
@@ -367,15 +363,16 @@ public class ReaderActivity extends AppCompatActivity implements View.OnSystemUi
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home -> finish();
             case (R.id.action_chapters) -> {btn_next.setEnabled(num_chapter!= book.getChapters().size()-1); rv.scrollToPosition(num_chapter); chaptersAdapter.notifyDataSetChanged(); Chapters.show();}
             case (R.id.create_bookmark) -> book.addBookMark(chapter,page);
             case (R.id.share_page) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),((BitmapDrawable)((ImageView)reader.getChildAt(reader.getChildCount()-1).findViewById(R.id.image)).getDrawable()).getBitmap());
             case (R.id.share_screen) -> Utils.Bitmap.shareBitmap(this,chapter.getName(),Utils.Bitmap.screenView(reader));
-            case (R.id.settings) -> startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_READER));
+            case (R.id.settings) -> startActivity(new Intent(this, SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_READER),Gravity.START,Gravity.END);
             default -> {
                 if( setModes(ReaderMode.fromId(item.getItemId()), ScaleMode.valueOf(adapter.getScaleMode())) | setModes(ReaderMode.valueOf(adapter.getScaleMode()), ScaleMode.fromId(item.getItemId())) ){
                     item.setChecked(true);
+                }else{
+                    super.onOptionsItemSelected(item);
                 }
             }
         }

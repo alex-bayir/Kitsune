@@ -5,6 +5,7 @@ import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Animatable;
@@ -21,6 +22,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.graphics.ColorUtils;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.vlad1m1r.lemniscate.base.BaseCurveProgressView;
 import org.alex.kitsune.R;
@@ -123,10 +125,12 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     private final Modes mode;
     private final Dialog dialog; TextView input;
     private boolean showTranslated=false;
+    private SharedPreferences prefs;
 
     @SuppressLint("ClickableViewAccessibility")
     ReaderPageHolder(ViewGroup parent, Modes mode, Book book, View.OnClickListener centerClick, View.OnClickListener leftClick, View.OnClickListener rightClick){
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_page, parent, false));
+        prefs=PreferenceManager.getDefaultSharedPreferences(itemView.getContext());
         image=itemView.findViewById(R.id.image);
         text=itemView.findViewById(R.id.text);
         image.setMaximumScale(10);
@@ -136,7 +140,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
 
         image.setOnViewTapListener((view, x, y) -> {
             int width=view.getWidth(),length=width/3;
-            boolean internal=!ReaderActivity.getSharedPreferences().getBoolean(Constants.use_another_translator,true);
+            boolean internal=!prefs.getBoolean(Constants.use_another_translator,true);
             if(!image.showDialogTranslateIfTextExists(x,y,internal)){
                 if(x<length){
                     leftClick.onClick(view);

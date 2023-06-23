@@ -4,13 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.preference.Preference;
@@ -29,19 +29,18 @@ import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 
-public class SettingsActivity extends AppCompatActivity {
+public class SettingsActivity extends Activity {
     public static final String KEY="TYPE";
-    public static final String TYPE_LIST="LIST";
-    public static final String TYPE_SHELF="SHELF";
-    public static final String TYPE_READER="READER";
-    public static final String TYPE_GENERAL="GENERAL";
+    public static final String TYPE_SHELF=SettingsFragment.Type.Shelf.name();
+    public static final String TYPE_READER=SettingsFragment.Type.Reader.name();
+    public static final String TYPE_GENERAL=SettingsFragment.Type.General.name();
     Toolbar toolbar;
     SettingsFragment.Type type;
     private static boolean shouldUpdate=false;
-
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
 
@@ -55,12 +54,8 @@ public class SettingsActivity extends AppCompatActivity {
         }
         toolbar.setTitle(R.string.settings);
 
-        switch(getIntent().getStringExtra(KEY)!=null ? getIntent().getStringExtra(KEY) : ""){
-            default -> type=SettingsFragment.Type.List;
-            case TYPE_GENERAL -> type=SettingsFragment.Type.General;
-            case TYPE_READER -> type=SettingsFragment.Type.Reader;
-            case TYPE_SHELF -> type=SettingsFragment.Type.Shelf;
-        }
+        String name=getIntent().getStringExtra(KEY);
+        type=SettingsFragment.Type.valueOf(name!=null?name:SettingsFragment.Type.List.name());
         switch (type){
             case List -> ((RecyclerView)findViewById(R.id.rv_list)).setAdapter(new ListAdapter(this));
             case Shelf -> replace(new SettingsShelf());
@@ -79,7 +74,7 @@ public class SettingsActivity extends AppCompatActivity {
         super.onPostResume();
         if(type==SettingsFragment.Type.List && MainActivity.shouldUpdate && shouldUpdate){
             shouldUpdate=false;
-            Utils.Activity.restartActivity(this);
+            restart();
         }
     }
 
@@ -87,14 +82,6 @@ public class SettingsActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         if(type==SettingsFragment.Type.Shelf){sendBroadcast(new Intent(Constants.action_Update_Shelf));}
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch(item.getItemId()){
-            case android.R.id.home: finish(); break;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     public static class SettingsFragment extends PreferenceFragmentCompat {
@@ -125,14 +112,14 @@ public class SettingsActivity extends AppCompatActivity {
                 setChangeListener("THEME",(preference, newValue) -> {
                     MainActivity.shouldUpdate=true;
                     shouldUpdate=true;
-                    Utils.Activity.restartActivity(getActivity());
+                    ((SettingsActivity)requireActivity()).restart();
                     return false;
                 });
                 setChangeListener("language",(preference, newValue) -> {
                     MainActivity.shouldUpdate=true;
                     shouldUpdate=true;
-                    Utils.Activity.setLocale((String)newValue,preference.getContext());
-                    Utils.Activity.restartActivity(getActivity());
+                    setLocale((String)newValue,preference.getContext());
+                    ((SettingsActivity)requireActivity()).restart();
                     return false;
                 });
                 setChangeListener("Timeout",(preference, newValue) -> {
@@ -151,7 +138,7 @@ public class SettingsActivity extends AppCompatActivity {
 
                 Preference translator=findPreference(Constants.use_another_translator);
                 if(translator!=null){
-                    boolean exists=Utils.Translator.getTextTranslators(getContext(),resolveInfo->resolveInfo).size()>0;
+                    boolean exists=!Utils.Translator.getTextTranslators(getContext(), resolveInfo -> resolveInfo).isEmpty();
                     translator.setOnPreferenceClickListener(
                             preference -> {
                                 if(!exists && preference instanceof TwoStatePreference sp){
@@ -193,7 +180,7 @@ public class SettingsActivity extends AppCompatActivity {
             settings.add(new Container(res.getString(R.string.reader_options),R.drawable.ic_chrome_reader_mode_24dp,new Intent(context,SettingsActivity.class).putExtra(KEY,TYPE_READER)));
             settings.add(new Container(res.getString(R.string.action_settings_shelf),R.drawable.ic_shelf,new Intent(context,SettingsActivity.class).putExtra(SettingsActivity.KEY,SettingsActivity.TYPE_SHELF)));
             if(Logs.getDir()==null){Logs.init(SettingsActivity.this);}
-            if(Logs.getLogs().size()>0){
+            if(!Logs.getLogs().isEmpty()){
                 settings.add(new Container(res.getString(R.string.logs),R.drawable.ic_code_24dp,new Intent(context, LogsActivity.class)));
             }
         }
@@ -218,7 +205,7 @@ public class SettingsActivity extends AppCompatActivity {
             public ListItem(@NonNull @NotNull View itemView) {
                 super(itemView);
                 item=(ListItemView) itemView;
-                item.setOnClickListener(v -> startActivity(intent));
+                item.setOnClickListener(v -> startActivity(intent,Gravity.START,Gravity.END));
             }
             public void bind(Container container){
                 intent=container.intent;

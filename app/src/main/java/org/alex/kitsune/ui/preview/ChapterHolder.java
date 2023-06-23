@@ -1,9 +1,11 @@
 package org.alex.kitsune.ui.preview;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +21,8 @@ import org.alex.kitsune.R;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.search.AdvancedSearchActivity;
 import java.util.Map;
+
+import static org.alex.kitsune.Activity.animation;
 
 public class ChapterHolder extends RecyclerView.ViewHolder {
     private final TextView title, subtitle,date,download;
@@ -46,7 +50,7 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
             for(Map.Entry<String,String> entry:chapter.getTranslators().entrySet()){
                 if(!first){str.append(", ");} first=false;
                 if(entry.getValue()!=null){
-                    str.append(entry.getKey(),new ClickSpan(entry.getValue(),(view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null))), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    str.append(entry.getKey(),new ClickSpan(entry.getValue(),(view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 }else{
                     str.append(entry.getKey());
                 }

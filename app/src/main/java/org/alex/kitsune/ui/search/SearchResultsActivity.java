@@ -4,11 +4,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,17 +20,17 @@ import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.preview.PreviewActivity;
 import org.alex.kitsune.utils.Binder;
-import org.alex.kitsune.utils.Utils;
 
 import java.util.List;
 
-public class SearchResultsActivity extends AppCompatActivity {
+public class SearchResultsActivity extends Activity {
     Toolbar toolbar;
     RecyclerView rv;
     BookAdapter adapter;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         String source=getIntent().getStringExtra("source");
@@ -46,7 +47,7 @@ public class SearchResultsActivity extends AppCompatActivity {
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(books, BookAdapter.Mode.LIST, book -> {
             adapter.add(BookService.getOrPutNewWithDir(book));
-            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
+            startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END);
         });
         adapter.initRV(rv,1);
         registerReceiver(new BroadcastReceiver() {
@@ -67,7 +68,6 @@ public class SearchResultsActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home -> finish();
             case (R.id.list) -> {item.setChecked(true); adapter.setSpanCount(1);}
             case (R.id.largeGrid) -> {item.setChecked(true); adapter.setSpanCount(2);}
             case (R.id.mediumGrid) -> {item.setChecked(true); adapter.setSpanCount(3);}

@@ -42,6 +42,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static org.alex.kitsune.Activity.animation;
+import static org.alex.kitsune.Activity.callFilesStore;
 import static org.alex.kitsune.ui.preview.PreviewActivity.CALL_FILE_STORE;
 import static org.alex.kitsune.ui.preview.PreviewActivity.PERMISSION_REQUEST_CODE;
 
@@ -66,7 +68,7 @@ public class PreviewPage extends PreviewHolder {
         backdrop=itemView.findViewById(R.id.backdrop);
         cover=itemView.findViewById(R.id.cover);
         cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
-        cover.setOnLongClickListener(v->{Utils.Activity.callFilesStore((Activity)v.getContext(),CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE); return true;});
+        cover.setOnLongClickListener(v->{callFilesStore((Activity)v.getContext(),CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE); return true;});
         caution=cover.getDrawable();
         info=itemView.findViewById(R.id.info);
         info.setMovementMethod(LinkMovementMethod.getInstance());
@@ -101,7 +103,7 @@ public class PreviewPage extends PreviewHolder {
         RecyclerView rv=itemView.findViewById(R.id.rv_list);
         similar=new BookAdapter(null, BookAdapter.Mode.GRID, book -> {
             similar.add(BookService.getOrPutNewWithDir(book));
-            itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()));
+            itemView.getContext().startActivity(new Intent(itemView.getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()), animation((Activity)itemView.getContext(),Gravity.START,Gravity.END));
         });
         similar.initRV(rv,1,RecyclerView.HORIZONTAL,false);
         Utils.setHorizontalInterceptorDisallow(rv,v->itemView.getParent());
@@ -177,12 +179,12 @@ public class PreviewPage extends PreviewHolder {
         });
         info.setText(createText(info.getContext(), book,full));
         ratingBar.setRating(book.getRating(),true);
-        genres.setSubtitle(book.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null))));
+        genres.setSubtitle(book.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))));
 
         averageTime.setSubtitle(full ? calculateTime(itemView.getResources(), book.getChapters().size()) : averageTime.getResources().getString(R.string.calculating));
         description.setSubtitle(full ? (book.isUpdated() || book.getDescription()!=null ? book.getDescription(Html.FROM_HTML_MODE_COMPACT,description.getResources().getString(R.string.no_description)) : description.getResources().getString(R.string.error_has_occurred)) : description.getResources().getString(R.string.loading));
         if(book.getHistory()!=null && book.getNumChapterHistory()>=0){read.setText(R.string.CONTINUE);}
-        read.setOnClickListener(v -> v.getContext().startActivity(new Intent(v.getContext(),ReaderActivity.class).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.history,true)));
+        read.setOnClickListener(v -> v.getContext().startActivity(new Intent(v.getContext(),ReaderActivity.class).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.history,true),animation((Activity)v.getContext(),Gravity.TOP,Gravity.BOTTOM)));
         read.setEnabled(book.getChapters().size()>0);
         favorite.setOnClickListener(v -> createDialog(v.getContext(), book).show());
         similar.replace(BookService.replaceIfExists(book.getSimilar(), BookService.getAll()));
@@ -237,7 +239,7 @@ public class PreviewPage extends PreviewHolder {
                 if(count.getAndIncrement()>0){
                     builder.append(", ");
                 }
-                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,(String)entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,(String)entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             });
         }else if(book.getAuthor() instanceof String str){
             builder.append("\n");

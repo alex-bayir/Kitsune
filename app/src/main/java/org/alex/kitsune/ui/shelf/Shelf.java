@@ -2,6 +2,8 @@ package org.alex.kitsune.ui.shelf;
 
 import android.content.*;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
@@ -35,6 +37,8 @@ import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static org.alex.kitsune.Activity.animation;
 
 
 public class Shelf extends Fragment implements MenuProvider {
@@ -127,7 +131,7 @@ public class Shelf extends Fragment implements MenuProvider {
     @Override
     public void onResume() {
         super.onResume();
-        while(tasks.size()>0){
+        while(!tasks.isEmpty()){
             tasks.removeFirst().run();
         }
         if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated()){
@@ -137,9 +141,7 @@ public class Shelf extends Fragment implements MenuProvider {
             getActivity().invalidateOptionsMenu();
             progress.setVisibility(BookService.isUpdating?View.VISIBLE:View.GONE);
         }
-        if(adapter!=null){
-            adapter.setEnableUpdate(true);
-        }
+        new Handler(Looper.myLooper()).postDelayed(()->{if(adapter!=null){adapter.setEnableUpdate(true);}},100);
     }
 
     @Override
@@ -150,40 +152,34 @@ public class Shelf extends Fragment implements MenuProvider {
         }
     }
 
-    public Wrapper createWrapper(String key, SettingsShelf.Container value){
-        return switch (key){
+    private Wrapper createWrapper(String key, SettingsShelf.Container value){
+        return (switch (key){
             case History-> new Wrapper(
                     key,
-                    v->v.getContext().startActivity(new Intent(v.getContext(), HistoryActivity.class)),
+                    v->v.getContext().startActivity(new Intent(v.getContext(), HistoryActivity.class), animation(requireActivity(),Gravity.START,Gravity.END)),
                     BookService.getSorted(BookService.Type.History),4,value.count,value.first
-            ).init(
-                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
-                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
             case Saved  -> new Wrapper(
                     key,
-                    v->v.getContext().startActivity(new Intent(v.getContext(), SavedActivity.class)),
+                    v->v.getContext().startActivity(new Intent(v.getContext(), SavedActivity.class), animation(requireActivity(),Gravity.TOP,Gravity.START)),
                     BookService.getSorted(BookService.Type.Saved),4,value.count,value.first
-            ).init(
-                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
-                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
             default     -> new Wrapper(
                     key,
-                    v->v.getContext().startActivity(new Intent(v.getContext(), FavoritesActivity.class).putExtra(Constants.category,key)),
+                    v->v.getContext().startActivity(new Intent(v.getContext(), FavoritesActivity.class).putExtra(Constants.category,key), animation(requireActivity(),Gravity.START,Gravity.END)),
                     BookService.getFavorites(key),3,value.count,value.first
-            ).init(
-                    book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode())),
-                    book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true))
             );
-        };
+        }).init(
+                book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()), animation(requireActivity(),Gravity.START,Gravity.END)),
+                book -> startActivity(new Intent(getContext(), ReaderActivity.class).putExtra(Constants.hash,book.hashCode()).putExtra(Constants.history,true), animation(requireActivity(),Gravity.BOTTOM,Gravity.TOP))
+        );
     }
 
-    public List<Wrapper> createWrappers(boolean changed_sequence){
+    private List<Wrapper> createWrappers(boolean changed_sequence){
         shelf_sequence=shelf_sequence==null || changed_sequence ? SettingsShelf.getShelfSequence(prefs) : shelf_sequence;
         return createWrappers(shelf_sequence);
     }
-    public List<Wrapper> createWrappers(LinkedHashMap<String, SettingsShelf.Container> shelf_sequence){
+    private List<Wrapper> createWrappers(LinkedHashMap<String, SettingsShelf.Container> shelf_sequence){
         List<Wrapper> list=new LinkedList<>();
         for(Map.Entry<String,SettingsShelf.Container> entry:shelf_sequence.entrySet()){
             list.add(createWrapper(entry.getKey(),entry.getValue()));

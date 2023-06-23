@@ -10,9 +10,8 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.*;
 import android.widget.Toast;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.app.AppCompatActivity;
+import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
@@ -27,12 +26,11 @@ import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.R;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
-import org.alex.kitsune.utils.Utils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class SearchActivity extends AppCompatActivity implements SearchView.OnQueryTextListener{
+public class SearchActivity extends Activity implements SearchView.OnQueryTextListener{
 
     Toolbar toolbar;
     RecyclerView rv;
@@ -40,9 +38,10 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
     ArrayList<Catalogs.Container> catalogs;
     String query;
     MenuItem search_item;
+    @Override public int getAnimationGravityIn(){return Gravity.END;}
+    @Override public int getAnimationGravityOut(){return Gravity.START;}
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_search);
         catalogs=Catalogs.getCatalogs(PreferenceManager.getDefaultSharedPreferences(this));
@@ -89,14 +88,6 @@ public class SearchActivity extends AppCompatActivity implements SearchView.OnQu
         });
         if(menu instanceof MenuBuilder){((MenuBuilder)menu).setOptionalIconsVisible(true);}
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home -> finish();
-        }
-        return super.onOptionsItemSelected(item);
     }
     public static void search(Context context,String query,int order,List<String> sources,Callback2<String,List<Book>> callback,Callback2<String,Throwable> error_callback){
         if(NetworkUtils.isNetworkAvailable(context)){

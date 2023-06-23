@@ -75,10 +75,22 @@ public class Logs {
                         .putExtra(Intent.EXTRA_TEXT,log.stackTrace)
         ,context.getString(R.string.send_log)));
     }
-    public static void e(Object log){e(log!=null?log.toString():"null");}
-    public static void d(Object log){d(log!=null?log.toString():"null");}
+    public static void e(Object log){e(log!=null?toString(log):"null");}
+    public static void d(Object log){d(log!=null?toString(log):"null");}
     public static void e(String log){android.util.Log.e("Debug",log!=null?log:"null");}
     public static void d(String log){android.util.Log.d("Debug",log!=null?log:"null");}
+    private static String toString(Object obj){
+        return obj==null?"null":(obj instanceof Object[] objs?arr_to_string(objs):obj.toString());
+    }
+    public static String arr_to_string(Object[] objs){
+        StringBuilder builder=new StringBuilder("[");
+        boolean first=true;
+        for(Object obj:objs){
+            if(first){first=false;}else{builder.append(",");} builder.append(obj);
+        }
+        builder.append("]");
+        return builder.toString();
+    }
 
     public static boolean clearLog(long date){
         return new File(dir+"/"+date).delete();
