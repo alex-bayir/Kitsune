@@ -130,12 +130,11 @@ public class LogsActivity extends Activity {
         };
     }
     @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
         if(keyCode==KeyEvent.KEYCODE_BACK){
-            if(showingMore()){showMore(false);}else{finish();}
-            return true;
+            if(showingMore()){showMore(false); return true;}
         }
-        return super.onKeyDown(keyCode, event);
+        return super.onKeyUp(keyCode, event);
     }
     public class LogsListHolder extends RecyclerView.ViewHolder{
         RecyclerView rv;

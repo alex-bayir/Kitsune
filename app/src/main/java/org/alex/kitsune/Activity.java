@@ -9,9 +9,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
-import android.transition.ChangeBounds;
-import android.transition.Slide;
-import android.transition.Transition;
+import android.transition.*;
 import android.util.Pair;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -24,11 +22,13 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
+import com.google.android.material.transition.platform.Hold;
 import org.alex.kitsune.utils.Utils;
 
 import java.util.Locale;
 
 public abstract class Activity extends AppCompatActivity {
+    private static final boolean[] animations=new boolean[4];
     private static boolean enable_animations=true;
     private SharedPreferences prefs;
     public final SharedPreferences getSharedPreferences(){
@@ -42,13 +42,17 @@ public abstract class Activity extends AppCompatActivity {
     }
     private void init(){
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
-        enable_animations=prefs.getBoolean("animations",true);
+        isEnableAnimations();
         if(isEnableAnimations()){
             setAnimations(getAnimationGravityOut(),getAnimationGravityIn());
         }
     }
     private boolean isEnableAnimations(){
-        return enable_animations=prefs.getBoolean("animations",true);
+        animations[0]=prefs.getBoolean("animations_slide",true);
+        animations[1]=prefs.getBoolean("animations_explode",true);
+        animations[2]=prefs.getBoolean("animations_hold",true);
+        animations[3]=prefs.getBoolean("animations_fade",true);
+        return enable_animations=animations[0]||animations[1]||animations[2]||animations[3];
     }
     public static boolean isAnimationsEnable(){return enable_animations;}
 
@@ -71,6 +75,19 @@ public abstract class Activity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        switch (keyCode){
+            case KeyEvent.KEYCODE_BACK -> {
+                if(isEnableAnimations()){
+                    finishAfterTransition();
+                }else{
+                    finish();
+                }
+            }
+        }
+        return super.onKeyUp(keyCode, event);
+    }
 
     public void setColorBars(){
         setColorBars(0,Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
@@ -100,8 +117,8 @@ public abstract class Activity extends AppCompatActivity {
         setAnimations(this,gravity_out,gravity_in);
     }
     public static void setAnimations(android.app.Activity activity, int gravity_out, int gravity_in){
-        Transition in=new Slide(gravity_in);
-        Transition out=new Slide(gravity_out);
+        Transition in=getTransition((int)(System.currentTimeMillis()/1000%animations.length),gravity_in);
+        Transition out=getTransition((int)(System.currentTimeMillis()/1000%animations.length),gravity_out);
         Transition in_shared=new ChangeBounds();
         Transition out_shared=new ChangeBounds();
         in.setDuration(1000);
@@ -114,7 +131,7 @@ public abstract class Activity extends AppCompatActivity {
         out_shared.setInterpolator(new AccelerateDecelerateInterpolator());
         activity.getWindow().setExitTransition(out);
         activity.getWindow().setEnterTransition(in);
-        if(System.currentTimeMillis()/1000%2==0){
+        if(System.currentTimeMillis()/100%2==0){
             activity.getWindow().setReenterTransition(in);
             activity.getWindow().setReturnTransition(out);
         }
@@ -122,6 +139,14 @@ public abstract class Activity extends AppCompatActivity {
         activity.getWindow().setSharedElementEnterTransition(in_shared);
     }
 
+    private static Transition getTransition(int i, int gravity){
+        return animations[i]?switch (i){
+            case 0->new Slide(gravity);
+            case 1->new Explode();
+            case 2->new Hold();
+            default->new Fade();
+        }:getTransition((i+1)%animations.length,gravity);
+    }
     public void setActivityFullScreen(){
         setActivityFullScreen(this);
     }
