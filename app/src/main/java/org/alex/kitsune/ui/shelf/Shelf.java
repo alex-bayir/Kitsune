@@ -47,7 +47,7 @@ public class Shelf extends Fragment implements MenuProvider {
     LinkedHashMap<String, SettingsShelf.Container> shelf_sequence=new LinkedHashMap<>();
     SharedPreferences prefs;
     public SmoothProgressBar progress;
-    private int p=0;
+    private int p=-1;
     RecyclerView root;
     Adapter adapter;
     MainActivity mainActivity;
@@ -134,7 +134,7 @@ public class Shelf extends Fragment implements MenuProvider {
         while(!tasks.isEmpty()){
             tasks.removeFirst().run();
         }
-        if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated()){
+        if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated() && p<0){
             check_for_updates();
         }
         if(getActivity()!=null){
