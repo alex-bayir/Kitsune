@@ -33,10 +33,14 @@ public class Logs {
     public static String getDir(){return dir;}
     public static void init(Context context){
         dir=context.getExternalFilesDir("logs").getAbsolutePath();
+        //getLogs().stream().filter(log -> log.date > System.currentTimeMillis() - 1 * 1000).max(Comparator.comparingLong(l -> l.date)).ifPresent(log -> sendLog(context, log));
         Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
             Logs.saveLog(paramThrowable);
             System.exit(2);
         });
+    }
+    public static void sendLogOnStart(Context context){
+        getLogs().stream().filter(log -> log.date > System.currentTimeMillis() - 10 * 1000).max(Comparator.comparingLong(l -> l.date)).ifPresent(log -> sendLog(context, log));
     }
     public static long saveLog(Throwable throwable){return saveLog(throwable,true);}
     public static long saveLog(Throwable throwable, boolean checkNetworkErrors){
@@ -67,13 +71,19 @@ public class Logs {
         return sw.toString();
     }
     public static void sendLog(Context context,long date){
-        Log log=new Log(new File(dir+"/"+date));
+        sendLog(context,new Log(new File(dir+"/"+date)));
+    }
+    public static void sendLog(Context context,Log log){
+        sendLog(context,log.getType(),log.stackTrace);
+    }
+    public static void sendLog(Context context,String subject,String log){
         context.startActivity(Intent.createChooser(
                 new Intent(Intent.ACTION_SENDTO,new Uri.Builder().scheme("mailto").build())
-                        .putExtra(Intent.EXTRA_EMAIL,new String[]{"alex8888499@gmail.com"})
-                        .putExtra(Intent.EXTRA_SUBJECT,"Kitsune logs "+log.getType())
-                        .putExtra(Intent.EXTRA_TEXT,log.stackTrace)
-        ,context.getString(R.string.send_log)));
+                        .putExtra(Intent.EXTRA_EMAIL,new String[]{"kitsune.logs@gmail.com"})
+                        .putExtra(Intent.EXTRA_SUBJECT,"Kitsune logs "+subject)
+                        .putExtra(Intent.EXTRA_TEXT,log)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                ,context.getString(R.string.send_log)));
     }
     public static void e(Object log){e(log!=null?toString(log):"null");}
     public static void d(Object log){d(log!=null?toString(log):"null");}

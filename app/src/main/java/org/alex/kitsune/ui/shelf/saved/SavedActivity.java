@@ -130,10 +130,25 @@ public class SavedActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
     private void start(Comparator<Book> comparator){
-        adapter.sort(comparator, comparator== Book.ImagesSizesComparator ? 1:3);
+        adapter.sort(comparator, comparator==Book.ImagesSizesComparator ? 1:3);
         new Thread(()->{
             Drawable drawable=createBackDrop(adapter);
             NetworkUtils.getMainHandler().post(()->backdrop.setImageDrawable(drawable));
         }).start();
+    }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
     }
 }

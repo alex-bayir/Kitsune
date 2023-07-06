@@ -121,7 +121,7 @@ function loadSimilar(manga)
     local array=JSONObject:create(network:load(manga["url"].."/similar")):getArray("content")
     local similar={}
     for i=0,array:size()-1,1 do
-        local jo=array:getObject(i)
+        local jo=array:getObject(i):getObject("title")
         similar[i]={
             ["url"]=host.."/api/titles/"..jo:getString("dir"),
             ["url_web"]="https://"..domain.."/manga/"..jo:getString("dir"),

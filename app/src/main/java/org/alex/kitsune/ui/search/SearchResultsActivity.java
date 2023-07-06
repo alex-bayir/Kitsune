@@ -76,4 +76,19 @@ public class SearchResultsActivity extends Activity {
         }
         return super.onOptionsItemSelected(item);
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
+    }
 }

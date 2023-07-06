@@ -88,7 +88,18 @@ public class NewFragment extends Fragment implements MenuProvider {
     public void onResume() {
         super.onResume();
         bind();
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
         if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
     }
 
     @Override

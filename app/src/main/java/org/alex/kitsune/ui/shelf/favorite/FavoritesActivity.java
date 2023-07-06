@@ -30,6 +30,7 @@ public class FavoritesActivity extends Activity {
     CategoriesAdapter adapter;
     TabLayout tabs;
     ArrayList<String> categories;
+    private DiffCallback<String> notify=new DiffCallback<>();
 
     @Override public int getAnimationGravityIn(){return Gravity.END;}
     @Override public int getAnimationGravityOut(){return Gravity.START;}
@@ -94,7 +95,7 @@ public class FavoritesActivity extends Activity {
             setCategories(categories);
         }
         public void setCategories(List<String> categories){
-            new DiffCallback<>(this.categories,categories).updateAfter(()->this.categories=categories,this);
+            notify.init(new ArrayList<>(this.categories),this.categories=categories,false).notifyUpdate(this);
         }
         public void setShowSource(boolean showSource){
             this.showSource=showSource;
@@ -104,7 +105,7 @@ public class FavoritesActivity extends Activity {
         public void sort(Comparator<Book> comparator){
             this.comparator=comparator;
             for(BookAdapter adapter:adapters){
-                adapter.sort(comparator,true);
+                adapter.sort(comparator);
             }
         }
         private BookAdapter add(BookAdapter adapter){adapters.add(adapter); return adapter;}

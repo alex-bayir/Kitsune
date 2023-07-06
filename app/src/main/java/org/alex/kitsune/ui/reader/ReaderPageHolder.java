@@ -274,7 +274,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             retry_layout.setVisibility(View.GONE);
             progress.setText(R.string.loading);
             new Thread(()->{
-                book.loadPage(chapter,page, f->{
+                book.loadPage(chapter,page,url, f->{
                     NetworkUtils.getMainHandler().post(()->{
                         load_info.setVisibility(View.GONE);
                         retry_layout.setVisibility(View.GONE);

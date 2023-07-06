@@ -7,7 +7,6 @@ import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
-
 import java.io.File;
 
 public class App extends Application {

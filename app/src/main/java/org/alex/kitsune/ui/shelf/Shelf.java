@@ -2,8 +2,6 @@ package org.alex.kitsune.ui.shelf;
 
 import android.content.*;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
@@ -141,7 +139,9 @@ public class Shelf extends Fragment implements MenuProvider {
             getActivity().invalidateOptionsMenu();
             progress.setVisibility(BookService.isUpdating?View.VISIBLE:View.GONE);
         }
-        new Handler(Looper.myLooper()).postDelayed(()->{if(adapter!=null){adapter.setEnableUpdate(true);}},100);
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
     }
 
     @Override
@@ -192,8 +192,14 @@ public class Shelf extends Fragment implements MenuProvider {
         List<Object> objects=new ArrayList<>(100);
         List<Integer> spans=new ArrayList<>(100);
         GridLayoutManager grid;
-        private boolean enableUpdate=true;
+        private boolean enable_update=true;
         private List<Object> old;
+        private DiffCallback<Object> notify=new DiffCallback<>(){
+            @Override
+            public boolean areContentsTheSame(int old_pos, int new_pos) {
+                return isCheckContentsTheSame() && o.get(old_pos) instanceof BookHolder.Data oldD && n.get(new_pos) instanceof BookHolder.Data newD && BookHolder.Data.areSame(oldD,newD);
+            }
+        };
         public Adapter(Context context,List<Wrapper> wrappers){
             grid=new GridLayoutManager(context,12);
             grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -204,15 +210,17 @@ public class Shelf extends Fragment implements MenuProvider {
             });
             update(all=wrappers);
         }
-        public void setEnableUpdate(boolean enableUpdate){
-            if(this.enableUpdate!=enableUpdate){
-                this.enableUpdate=enableUpdate;
-                update(old,all);
-                old=enableUpdate?null:objects;
+        public void setEnableUpdate(boolean enable_update){
+            if(this.enable_update!=enable_update){
+                this.enable_update=enable_update;
+                if(enable_update){
+                    update(old,all);
+                }
+                old=enable_update?null:objects;
             }
         }
         public boolean isEnableUpdate(){
-            return enableUpdate;
+            return enable_update;
         }
         public Adapter initRV(RecyclerView rv){
             rv.setAdapter(this);
@@ -225,7 +233,7 @@ public class Shelf extends Fragment implements MenuProvider {
             update(all);
         }
         public void update(List<Wrapper> wrappers){
-            if(enableUpdate){
+            if(enable_update){
                 update(objects,wrappers);
             }else{
                 update(null,wrappers);
@@ -236,7 +244,7 @@ public class Shelf extends Fragment implements MenuProvider {
             objects=wrappers!=null?convert(wrappers):new ArrayList<>();
             calculateSpans();
             if(old!=null){
-                new DiffCallback<>(old,objects).notifyUpdate(this,true);
+                notify.init(old,objects,BookHolder.Data.areSameBooks(old,objects)).notifyUpdate(this);
             }
         }
 
@@ -256,25 +264,15 @@ public class Shelf extends Fragment implements MenuProvider {
         public List<Object> convert(List<Wrapper> wrappers){
             return wrappers.stream().flatMap(
                     w-> Math.min(w.list.size(),w.max)==0 ?
-                            Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max))
+                            Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max).map(BookHolder.Data::new))
             ).collect(Collectors.toList());
         }
-        public List<Book> getList(String key){
-            return all.stream().filter(wrap->wrap.title.equals(key)).map(wrap->wrap.list).findFirst().orElse(null);
-        }
-        public void update(String key, Callback<List<Book>> callback){
-            List<Book> list=getList(key);
-            if(list!=null){
-                callback.call(list);
-                update();
-            }
-        }
-        public void update(Book book){
-            if(book !=null){
-                for(int i=0;i<objects.size();i++){
-                    if(objects.get(i).equals(book)){
-                        notifyItemChanged(i);
-                    }
+        private void update(Book book){
+            BookHolder.Data data=new BookHolder.Data(book);
+            for(int i=0;i<objects.size();i++){
+                if(data.equals(objects.get(i))){
+                    objects.set(i,data);
+                    notifyItemChanged(i);
                 }
             }
         }
@@ -291,7 +289,7 @@ public class Shelf extends Fragment implements MenuProvider {
         @Override
         public int getItemViewType(int position) {
             Object obj=objects.get(position);
-            boolean full=obj instanceof Book && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
+            boolean full=obj instanceof BookHolder.Data && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
             return obj instanceof Wrapper ? 0 : (full?1:2);
         }
 
@@ -311,13 +309,13 @@ public class Shelf extends Fragment implements MenuProvider {
             Object obj=objects.get(position);
             if(holder instanceof TitleHolder th && obj instanceof Wrapper wrap){
                 th.bind(wrap);
-            }else if(holder instanceof BookHolder mh && obj instanceof Book book){
+            }else if(holder instanceof BookHolder bh && obj instanceof BookHolder.Data data){
                 Wrapper wrap=getWrapper(position);
-                mh.setOnClickListeners(
-                        wrap.item!=null? (v, p) -> wrap.item.call(book):null,
-                        wrap.button!=null? (v, p)-> wrap.button.call(book):null
+                bh.setOnClickListeners(
+                        wrap.item!=null? (v, p) -> wrap.item.call(data.book):null,
+                        wrap.button!=null? (v, p)-> wrap.button.call(data.book):null
                 );
-                mh.bind(book,false,true,0);
+                bh.bind(data.book,false,true,0);
             }
         }
 
@@ -366,6 +364,10 @@ public class Shelf extends Fragment implements MenuProvider {
         @Override
         public boolean equals(@Nullable @org.jetbrains.annotations.Nullable Object obj) {
             return obj instanceof Wrapper wrap && Objects.equals(this.title,wrap.title);
+        }
+        @Override
+        public int hashCode() {
+            return title.hashCode();
         }
     }
 }

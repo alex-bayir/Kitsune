@@ -114,17 +114,17 @@ public class Book_Scripted extends Book {
     }
 
     @Override
-    public boolean loadPage(Chapter chapter, Page page, Callback<File> done, Boolean cancel_flag, Callback2<Long, Long> process, Callback<Throwable> onBreak) {
+    public boolean loadPage(Chapter chapter, Page page, String data, Callback<File> done, Boolean cancel_flag, Callback2<Long, Long> process, Callback<Throwable> onBreak) {
         if(page==null){return false;}
         File save=getPage(chapter, page);
         if(page.getUrl()!=null){
-            if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),page.getUrl(),getDomain(),save,cancel_flag,process,onBreak,false)){
+            if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),data==null?page.getUrl():data,getDomain(),save,cancel_flag,process,onBreak,false)){
                 done.call(save);
                 return true;
             }
         }else if(page.getText()!=null){
             try{
-                Utils.File.writeFile(save,page.getText(),false);
+                Utils.File.writeFile(save,data==null?page.getText():data,false);
                 done.call(save);
                 return true;
             }catch (IOException e){
@@ -134,7 +134,7 @@ public class Book_Scripted extends Book {
             try{
                 int index=chapter.getPages().indexOf(page);
                 getPages(chapter);
-                return loadPage(chapter,chapter.getPage(index),done,cancel_flag,process,onBreak);
+                return loadPage(chapter,chapter.getPage(index),data,done,cancel_flag,process,onBreak);
             }catch (IOException e){
                 e.printStackTrace();
             }

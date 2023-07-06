@@ -29,6 +29,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
     SelectionTracker<Long> tracker;
     private boolean selectable=true;
     Function<Book,List<T>> getItems;
+    private DiffCallback<T> notify=new DiffCallback<>();
 
     public CustomAdapter(int holder_layout_id, HolderListener listener, HolderMenuItemClickListener menuListener,RecyclerView rv,String selectionId){
         this.ResourceId=holder_layout_id;
@@ -66,7 +67,7 @@ public class CustomAdapter <T> extends RecyclerView.Adapter<RecyclerView.ViewHol
         setList(getItems.apply(this.book=book));
     }
     private void setList(List<T> list){
-        new DiffCallback<>(items, list).updateAfter(()->items=new ArrayList<>(list),this);
+        notify.init(items,items=new ArrayList<>(list),false).notifyUpdate(this,true);
     }
 
     public List<T> getList(){return items;}

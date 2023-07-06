@@ -1,7 +1,10 @@
 package org.alex.kitsune.ui.shelf.history;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.Menu;
@@ -27,7 +30,7 @@ public class HistoryActivity extends Activity {
     RecyclerView rv;
     BookAdapter adapter;
     Snackbar sn=null;
-    Book tmp=null,updateOnReturn=null;
+    Book tmp=null;
 
     @Override public int getAnimationGravityIn(){return Gravity.END;}
     @Override public int getAnimationGravityOut(){return Gravity.START;}
@@ -47,7 +50,7 @@ public class HistoryActivity extends Activity {
         toolbar.setTitle(R.string.History);
         rv=findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(this));
-        adapter=new BookAdapter(BookService.getSorted(BookService.Type.History), BookAdapter.Mode.LIST, book -> {startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END); updateOnReturn=book;});
+        adapter=new BookAdapter(BookService.getSorted(BookService.Type.History), BookAdapter.Mode.LIST, book -> {startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END);});
         adapter.initRV(rv,1);
         SwipeRemoveHelper.setup(rv,new SwipeRemoveHelper(HistoryActivity.this,R.color.error,R.drawable.ic_trash_white,24, i -> {
             sn=Snackbar.make(toolbar,"Clear History: "+adapter.get(i).getName(),Snackbar.LENGTH_LONG).setAction("Cancel", v -> {if(sn!=null){sn.dismiss();}});
@@ -64,7 +67,14 @@ public class HistoryActivity extends Activity {
             clear();
             tmp=adapter.remove(i);
         }));
-
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(Constants.action_Update.equals(intent.getAction())){
+                    adapter.update(BookService.get(intent.getIntExtra(Constants.hash,-1)));
+                }
+            }
+        },new IntentFilter(Constants.action_Update));
     }
 
     public void clear(){
@@ -76,9 +86,19 @@ public class HistoryActivity extends Activity {
     }
 
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
-        adapter.add(updateOnReturn, Book.HistoryComparator);
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
     }
 
     @Override
@@ -91,9 +111,9 @@ public class HistoryActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.HistoryComparator,true);}
-            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator,true);}
-            case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt,true);}
+            case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.HistoryComparator);}
+            case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
+            case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt);}
             case (R.id.status),(R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId()==R.id.source);}
         }
         return super.onOptionsItemSelected(item);

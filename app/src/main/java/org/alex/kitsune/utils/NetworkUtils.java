@@ -69,7 +69,19 @@ public class NetworkUtils {
         return getHeadersDefault(getDomain(null,url),url);
     }
     public static Headers getHeadersDefault(String domain,String url){
-        return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add(HEADER_REFERER,getDomain(domain,url)).build();
+        return new Headers.Builder().add(HEADER_USER_AGENT, USER_AGENT_DEFAULT).add(HEADER_REFERER,getDomain(domain,url)).add("Cookie",cookies(getDomain(domain,url))).build();
+    }
+    public static String cookies(String domain){
+        if(domain!=null && getCookies(domain)!=null){
+            StringBuilder cookies=new StringBuilder();
+            for(Cookie cookie:getCookies(domain)){
+                if(cookies.length()>0){cookies.append("; ");}
+                cookies.append(cookie);
+            }
+            return cookies.toString();
+        }else{
+            return "";
+        }
     }
     public static String getDomain(String domain,String url){return domain!=null ? domain : url.substring(url.indexOf('/')+2,url.indexOf('/',8));}
     public static String getString(String url) throws IOException {

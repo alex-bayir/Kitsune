@@ -10,6 +10,9 @@ import org.alex.kitsune.commons.ListSet;
 import org.alex.kitsune.book.Book;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.alex.kitsune.book.views.BookHolder.Data;
 
 public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     public enum Mode{
@@ -18,18 +21,26 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         MIXED;
         Mode(){}
     }
-    protected final ListSet<Book> list=new ListSet<>(new ArrayList<>());
-    private final HolderClickListener listener,buttonListener;
+    protected final ListSet<Data> data=new ListSet<>(new ArrayList<>());
+    private List<Data> old=new ArrayList<>();
+    private final HolderClickListener holder, button;
     private Mode mode;
     private boolean showSource;
     private boolean showCheckedNew=true;
     private long full_size;
+    private boolean enable_update=true;
+    private DiffCallback<Data> notify=new DiffCallback<>(){
+        @Override
+        public boolean areContentsTheSame(int old_pos, int new_pos) {
+            return isCheckContentsTheSame() && Data.areSame(o.get(old_pos),n.get(new_pos));
+        }
+    };
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> clickListener){this(books,mode,clickListener,null);}
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> holder, Callback<Book> button){
-        if(books !=null){this.list.addAll(books);}
+        if(books!=null){this.data.addAll(books.stream().map(Data::new).collect(Collectors.toList()));}
         this.mode=mode;
-        this.listener=(v,position) -> holder.call(list.get(position));
-        this.buttonListener=button!=null ? (v,position) -> button.call(list.get(position)) : null;
+        this.holder=(v, position) -> holder.call(data.get(position).book);
+        this.button=button!=null ? (v, position) -> button.call(data.get(position).book) : null;
     }
     private GridLayoutManager grid;
     public void setLayoutManager(GridLayoutManager grid){this.grid=grid; if(grid!=null){setOrientation(grid.getOrientation()); if(this.mode!=Mode.MIXED && grid.getOrientation()==RecyclerView.VERTICAL){setSpanCount(grid.getSpanCount());}}}
@@ -64,116 +75,121 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     @NotNull
     @Override
     public BookHolder onCreateViewHolder(@NotNull ViewGroup parent, int viewType) {
-        return new BookHolder(parent,listener,buttonListener,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
+        return new BookHolder(parent, holder, button,viewType==1,grid.getOrientation()==RecyclerView.HORIZONTAL);
     }
 
     @Override
     public void onBindViewHolder(BookHolder holder, int position) {
-        holder.bind(list.get(position),showSource, showCheckedNew, full_size);
+        holder.bind(data.get(position).book,showSource, showCheckedNew, full_size);
     }
 
     @Override
-    public int getItemCount(){return list.size();}
-
-    public void sort(Comparator<Book> comparator){sort(comparator,false);}
-    public void sort(Comparator<Book> comparator, boolean update){
-        if(update){
-            new DiffCallback<>(list, ()-> list.sort(comparator)).notifyUpdate(this);
-        }else{
-            list.sort(comparator);
-        }
+    public int getItemCount(){return data.size();}
+    public void sort(Comparator<Book> comparator){
+        notify(data.stream().map(Data::update).sorted((o1, o2) -> comparator.compare(o1.book,o2.book)).collect(Collectors.toList()));
     }
     public void sort(Comparator<Book> comparator, int spanCount){
         setSpanCount(spanCount,false);
-        sort(comparator,true);
+        sort(comparator);
     }
     public void setShowCheckedNew(boolean showCheckedNew){this.showCheckedNew=showCheckedNew;}
     public boolean isShowCheckedNew(){return showCheckedNew;}
-    public List<Book> getList(){return this.list;}
-    public Book get(int index){return list.get(index);}
-    public int get(Book book){return list.indexOf(book);}
+    public List<Book> getList(){return this.data.stream().map(d->d.book).collect(Collectors.toList());}
+    public Book get(int index){return data.get(index).book;}
+    public int get(Book book){
+        return data.indexOf(book!=null?new Data(book):null);
+    }
     public void replace(List<Book> list, Comparator<Book> comparator, boolean recalculateSize){
         if(comparator!=null){list.sort(comparator);}
         replace(list,recalculateSize);
     }
     public void replace(List<Book> list){replace(list,false);}
     public void replace(List<Book> list, boolean recalculateSize){
-        new DiffCallback<>(this.list, () -> {this.list.clear(); this.list.addAll(list); if(recalculateSize){recalculateFullSize();}}).notifyUpdate(this);
+        List<Data> updated=list.stream().map(Data::new).collect(Collectors.toList());
+        if(recalculateSize){recalculateFullSize(updated);}
+        notify(updated);
     }
-    public final boolean add(Book book){return add(list.size(), book,false);}
-    public boolean add(int pos, Book book){return add(pos, book,true);}
-    public boolean add(Book book, Comparator<Book> comparator){return book!=null && add(getPositionToInsert(list.listIterator(), comparator, book), book,true);}
-    public boolean add(int pos, Book book, boolean moveIfExist){
-        return book!=null && notifyOnAddMoveChange(list.add(pos, book,moveIfExist),pos,moveIfExist);
+    public final void add(Book book){add(data.size(), book,false);}
+    public void add(int pos, Book book){add(pos, book,true);}
+    public void add(Book book, Comparator<Book> comparator){
+        add(((o1, o2) -> comparator.compare(o1.book,o2.book)),book);
     }
-    public <E> int getPositionToInsert(ListIterator<E> iterator, Comparator<E> comparator, E e){
-        boolean f=false;
-        while (iterator.hasNext()){
-            int c=comparator.compare(e,iterator.next());
-            if(c<0){
-                return iterator.nextIndex()-(f ? 2:1);
-            }else if(c==0){
-                f=true;
-            }
+    private void add(Comparator<Data> comparator,Book book){
+        if(book!=null){
+            notify(data->{data.add(new Data(book),true); data.sort(comparator); return data;});
         }
-        return iterator.nextIndex()-(f ? 1:0);
     }
-
-    protected boolean notifyOnAddMoveChange(int old, int pos, boolean moveIfExist){
-        if(old==-1){
-            notifyItemInserted(pos);
-        }else{
-            if(!moveIfExist){pos=old;}
-            if(old!=pos){notifyItemMoved(old,pos);}
-            notifyItemChanged(pos);
+    public void add(int pos, Book book, boolean moveIfExist){
+        if(book!=null){
+            notify(data->{data.add(pos,new Data(book),moveIfExist); return data;});
         }
-        return old!=pos && moveIfExist;
     }
-    public boolean addAll(Collection<Book> collection){
-        int last=list.size();
-        if(list.addAll(collection)){
-            notifyItemRangeChanged(last,list.size()-last);
-            return true;
-        }
-        return false;
+    public void addAll(Collection<Book> collection){
+        notify(data->{data.addAll(collection.stream().map(Data::new).collect(Collectors.toList())); return data;});
     }
-    public boolean addAll(Collection<Book> collection, Comparator<Book> comparator){
-        return new DiffCallback<>(list, ()-> {
-            list.addAll(collection);
-            list.sort(comparator);
-        }).notifyUpdate(this).getOldListSize()!=list.size();
+    public void addAll(Collection<Book> collection, Comparator<Book> comparator){
+        notify(data->{data.addAll(collection.stream().map(Data::new).sorted(((o1, o2) -> comparator.compare(o1.book,o2.book))).collect(Collectors.toList())); return data;});
     }
     public int update(Book book){
-        int index=book!=null ? get(book) : -1;
-        if(index!=-1){notifyItemChanged(index);}
+        if(book==null){return -1;}
+        Data data=new Data(book);
+        int index=this.data.indexOf(data);
+        if(index!=-1 && !Data.areSame(data,this.data.get(index))){
+            add(index,book,true);
+        }
         return index;
     }
 
     public Book remove(int index){
-        if(index>=0 && index<list.size()){
-            Book book=list.remove(index);
-            notifyItemRemoved(index);
+        if(index>=0 && index<data.size()){
+            List<Data> old=new ArrayList<>(data);
+            Book book=data.remove(index).book;
+            notify(old,data);
             return book;
         }else{
             return null;
         }
     }
-    public Book remove(Book book){
-        return remove(get(book));
+    public void remove(Book book){
+        remove(get(book));
     }
     public void clear(){
-        notifyItemRangeRemoved(0,list.size());
-        list.clear();
+        notifyItemRangeRemoved(0,data.size());
+        data.clear();
     }
 
-    public void recalculateFullSize(){full_size=0; for(Book book :list){full_size+= book.recalculateImagesSize();}}
-    public void calculateFullSize(long offset){full_size=offset; for(Book book :list){full_size+= book.getImagesSize();}}
+    public void recalculateFullSize(){recalculateFullSize(data);}
+    private void recalculateFullSize(List<Data> list){full_size=0; for(Data data:list){full_size+=data.book.recalculateImagesSize();}}
+    public void calculateFullSize(long offset){full_size=offset; for(Data data:data){full_size+=data.book.getImagesSize();}}
     public void addBySize(Book book){
         calculateFullSize(book.recalculateImagesSize());
         add(book, Book.ImagesSizesComparator);
         notifyAllChanged();
     }
     public void notifyAllChanged(){notifyItemRangeChanged(0,getItemCount());}
+    public void notify(List<Data> n){
+        notify(new ArrayList<>(data), n);
+    }
+    public void notify(Function<ListSet<Data>,ListSet<Data>> f){
+        notify(new ArrayList<>(data),f.apply(data));
+    }
+    public void notify(List<Data> o,List<Data>n){
+        if(o!=null){
+            if(n!=data){data.clear(); data.addAll(n);}
+            if(enable_update){
+                notify.init(o,n,Data.areSameBooks(o,n)).notifyUpdate(this);
+            }
+        }
+    }
+    public void setEnableUpdate(boolean enable_update){
+        if(this.enable_update!=enable_update){
+            this.enable_update=enable_update;
+            if(enable_update){
+                notify(old,data);
+            }
+            old=enable_update?null:new ArrayList<>(data);
+        }
+    }
 
     public void setSpanChanger(RecyclerView rv){
         rv.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {

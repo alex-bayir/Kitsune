@@ -26,6 +26,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     private final Script script;
     private final Options[] options;
     private final ArrayList<StringPair> pairs=new ArrayList<>(200);
+    private DiffCallback<StringPair> notify=new DiffCallback<>();
     public FilterSortAdapter(Script script,List<Options> options){
         this(script,options!=null ? options.toArray(new Options[0]) : new Options[0]);
     }
@@ -37,17 +38,17 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     }
 
     public void update_pairs(){
-        new DiffCallback<>(pairs,()->{
-            pairs.clear();
-            for(Options option: options){
-                if(option!=null){
-                    pairs.add(option.title);
-                    if(option.title.getChecked()==0){
-                        pairs.addAll(Arrays.asList(option.values));
-                    }
+        List<Options.StringPair> old=new ArrayList<>(pairs);
+        pairs.clear();
+        for(Options option: options){
+            if(option!=null){
+                pairs.add(option.title);
+                if(option.title.getChecked()==0){
+                    pairs.addAll(Arrays.asList(option.values));
                 }
             }
-        }).notifyUpdate(this,true);
+        }
+        notify.init(old,pairs,false).notifyUpdate(this);
     }
     public Options[] getOptions(){return options;}
     private Options getOptions(int index){

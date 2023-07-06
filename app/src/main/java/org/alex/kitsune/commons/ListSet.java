@@ -67,7 +67,7 @@ public class ListSet<E> implements List<E>,Set<E> {
             int old=entry!=null ? map.indexOf(entry) : -1;
             if(entry!=null){
                 entry.setValue(e);
-                if(moveIfExist && index!=old){map.remove(entry); map.add(index,entry);}
+                if(moveIfExist && index!=old){map.remove(entry); map.add(index>old?index-1:index,entry);}
             }else{
                 map.add(index,new AbstractMap.SimpleEntry<>(e.hashCode(), e));
             }

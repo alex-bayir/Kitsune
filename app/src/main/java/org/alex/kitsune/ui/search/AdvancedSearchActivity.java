@@ -4,8 +4,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
@@ -51,7 +53,6 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
     FilterDialogFragment filters;
     RecyclerView rv;
     BookAdapter adapter;
-    Book updateOnReturn=null;
     FilterSortAdapter sortAdapter;
     String query=null;
     String source;
@@ -103,7 +104,7 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
         });
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(null, BookAdapter.Mode.LIST, book -> {
-            adapter.add(updateOnReturn= BookService.getOrPutNewWithDir(book));
+            adapter.add(BookService.getOrPutNewWithDir(book));
             startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END);
         });
         adapter.initRV(rv,1);
@@ -114,6 +115,14 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
             }
         });
         call(query);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                if(Constants.action_Update.equals(intent.getAction())){
+                    adapter.update(BookService.get(intent.getIntExtra(Constants.hash,-1)));
+                }
+            }
+        },new IntentFilter(Constants.action_Update));
     }
 
     @Override
@@ -144,7 +153,9 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
                     NetworkUtils.getMainHandler().post(()->{
                         if(books!=null){
                             BookService.setCacheDirIfNull(books);
-                            if(adapter.addAll(books)){
+                            int old=adapter.getItemCount();
+                            adapter.addAll(books);
+                            if(adapter.getItemCount()>old){
                                 page++;
                                 enableLoadMore=true;
                             }else{
@@ -184,10 +195,19 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
         }
     }
     @Override
-    protected void onResume() {
+    public void onResume() {
         super.onResume();
-        adapter.update(updateOnReturn);
-        updateOnReturn=null;
+        if(adapter!=null){
+            adapter.setEnableUpdate(true);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if(adapter!=null){
+            adapter.setEnableUpdate(false);
+        }
     }
 
     @Override

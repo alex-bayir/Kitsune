@@ -139,20 +139,23 @@ public abstract class Book {
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
     }
     public Drawable getPage(Chapter chapter,int page){return Drawable.createFromPath(getPagePath(chapter,page));}
-    public abstract boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak);
+    public boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak){
+        return loadPage(chapter,page,null,done,cancel_flag,process,onBreak);
+    };
+    public abstract boolean loadPage(Chapter chapter,Page page,String data, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak);
     public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
-    public static void loadThumbnail(String path,String url,Callback<Drawable> callback){
+    public static void loadThumbnail(String path,String url,String domain,Callback<Drawable> callback){
         new Thread(() -> {
             Drawable loaded=Drawable.createFromPath(path);
-            if(loaded==null && NetworkUtils.load(url,null,new File(path))){
+            if(loaded==null && NetworkUtils.load(url,domain,new File(path))){
                 loaded=Drawable.createFromPath(path);
             }
             Drawable drawable=loaded;
             NetworkUtils.getMainHandler().post(()->callback.call(drawable));
         }).start();
     }
-    public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),getThumbnail(),callback);}
+    public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),getThumbnail(),get("domain",null),callback);}
 
     private List<Chapter> filter(boolean full, List<Chapter> chapters){
         return full ? chapters : chapters.stream().filter(this::checkChapter).collect(Collectors.toList());
