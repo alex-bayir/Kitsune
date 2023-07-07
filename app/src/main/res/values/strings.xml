@@ -185,6 +185,11 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
+        Version 1.8.2:\n
+        \t-Added animations (can be disabled).\n
+        \t-Added incognito mode.\n
+        \t-The reader interface has been slightly improved. \n
+        \t-Optimization and error correction.\n\n
         Version 1.8.0-1.8.1:\n
         \t-Showing search and recommendations results in a convenient form.\n
         \t-The first English sources have been added.\n
