@@ -19,7 +19,7 @@ Tags={["Насилие"]="9516",["Вдова/Вдовец"]="9637",["Семья"
 
 function update(url)
     local e=network:load_as_Document(url):selectFirst("div.leftContent")
-    local list=e:select("table.table-hover"):select("tr")
+    local list=e:select("table.table-hover"):select("tr.item-row")
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
         local elem=list:get(i);
@@ -36,7 +36,7 @@ function update(url)
         ["name"]=utils:text(e:selectFirst("span.eng-name"),e:selectFirst("span.name"):text()),
         ["name_alt"]=utils:text(e:selectFirst("span.name")),
         ["author"]=author,
-        ["genres"]=utils:text(e:select("span.elem_genre"),""):gsub(" ,",","),
+        ["genres"]=utils:text(e:select("div.subject-meta"):select("span.badge"),""):gsub(" ,",","),
         ["rating"]=num(e:selectFirst("span.rating-block"):attr("data-score")),
         ["status"]=status:find("завершено") and "2" or (status:find("выпуск продолжается") and "1" or "0"),
         ["description"]=utils:text(e:selectFirst("div.manga-description")),
