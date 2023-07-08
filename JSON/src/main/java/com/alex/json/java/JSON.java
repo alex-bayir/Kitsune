@@ -12,6 +12,7 @@ public interface JSON {
     Object object();
     Array<?> array();
     Writer json(Writer writer, int spaces) throws IOException;
+    Writer json(Writer writer, int spaces, int depth) throws IOException;
     String json(int spaces) throws IOException;
     File json(File file, int spaces) throws IOException;
     final class Object extends TreeMap<String, java.lang.Object> implements JSON {
@@ -113,8 +114,11 @@ public interface JSON {
             json(new FileWriter(json),spaces).close(); return json;
         }
         public Writer json(Writer writer,int spaces) throws IOException {
-            String line=spaces>0?"\n"+new String(new char[spaces-1]).replace("\0", "\t"):"";
-            String tab=spaces>0?"\n"+new String(new char[spaces]).replace("\0", "\t"):"";
+            return json(writer,spaces,0);
+        }
+        public Writer json(Writer writer,int spaces,int depth) throws IOException {
+            String line=spaces>0?"\n"+new String(new char[depth*spaces]).replace("\0", "\t"):"";
+            String tab=spaces>0?"\n"+new String(new char[(depth+1)*spaces]).replace("\0", "\t"):"";
             boolean delimiter=false;
             writer.write('{');
             for(Map.Entry<String,java.lang.Object> entry:entrySet()){
@@ -124,7 +128,7 @@ public interface JSON {
                 writer.write(entry.getKey());
                 writer.write('"');
                 writer.write(':');
-                JSON.json(writer,entry.getValue(),spaces>0?spaces+1:0);
+                JSON.json(writer,entry.getValue(),spaces,depth+1);
                 delimiter=true;
             }
             writer.write(line);
@@ -260,14 +264,17 @@ public interface JSON {
             json(new FileWriter(json),spaces).close(); return json;
         }
         public Writer json(Writer writer,int spaces) throws IOException {
-            String line=spaces>0?"\n"+new String(new char[spaces-1]).replace("\0", "\t"):"";
-            String tab=spaces<=0?"":"\n"+new String(new char[spaces]).replace("\0", "\t");
+            return json(writer,spaces,0);
+        }
+        public Writer json(Writer writer,int spaces,int depth) throws IOException {
+            String line=spaces>0?"\n"+new String(new char[depth*spaces]).replace("\0", "\t"):"";
+            String tab=spaces<=0?"":"\n"+new String(new char[(depth+1)*spaces]).replace("\0", "\t");
             boolean delimiter=false;
             writer.write('[');
             for(java.lang.Object value:this){
                 if(delimiter){writer.write(',');}
                 writer.write(tab);
-                JSON.json(writer,value,spaces>0?spaces+1:0);
+                JSON.json(writer,value,spaces,depth+1);
                 delimiter=true;
             }
             writer.write(line);
@@ -352,6 +359,8 @@ public interface JSON {
                         }else{
                             o=new Object();
                         }
+                    }else{
+                        buffer.append(c);
                     }
                 }
                 case '['->{
@@ -363,6 +372,8 @@ public interface JSON {
                         }else{
                             o=new Array<>(); rv=true;
                         }
+                    }else{
+                        buffer.append(c);
                     }
                 }
                 case ':'->{
@@ -451,7 +462,7 @@ public interface JSON {
             }
         }
         if(o==null){
-            return switch (clz.getName()){
+            return switch (clz!=null?clz.getName():""){
                 case "com.alex.json.java.JSON$Object"-> new JSON.Object();
                 case "com.alex.json.java.JSON$Array"-> new JSON.Array<>();
                 default -> null;
@@ -478,15 +489,15 @@ public interface JSON {
             }
         };
     }
-    static void json(Writer writer, java.lang.Object value, int spaces) throws IOException {
+    static void json(Writer writer, java.lang.Object value, int spaces,int depth) throws IOException {
         if(value instanceof JSON json){
-            json.json(writer,spaces);
+            json.json(writer,spaces,depth);
         }else if(value instanceof Number || value instanceof Boolean){
             writer.write(String.valueOf(value));
         }else if(value instanceof Map<?,?> map){
-            new Object(JSON.filter(map,java.lang.Object.class)).json(writer,spaces);
+            new Object(JSON.filter(map,java.lang.Object.class)).json(writer,spaces,depth);
         }else if(value instanceof Collection<?> arr){
-            new Array<>(arr).json(writer,spaces);
+            new Array<>(arr).json(writer,spaces,depth);
         }else if(value!=null){
             if(value.getClass().isArray()){
                 if(value instanceof java.lang.Object[] arr){
