@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+import org.acra.ACRA;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.HttpStatusException;
@@ -33,24 +34,26 @@ public class Logs {
     public static String getDir(){return dir;}
     public static void init(Context context){
         dir=context.getExternalFilesDir("logs").getAbsolutePath();
-        //getLogs().stream().filter(log -> log.date > System.currentTimeMillis() - 1 * 1000).max(Comparator.comparingLong(l -> l.date)).ifPresent(log -> sendLog(context, log));
-        Thread.setDefaultUncaughtExceptionHandler((paramThread, paramThrowable) -> {
-            Logs.saveLog(paramThrowable);
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            saveLog(throwable);
             System.exit(2);
         });
     }
-    public static void sendLogOnStart(Context context){
-        getLogs().stream().filter(log -> log.date > System.currentTimeMillis() - 10 * 1000).max(Comparator.comparingLong(l -> l.date)).ifPresent(log -> sendLog(context, log));
-    }
     public static long saveLog(Throwable throwable){return saveLog(throwable,true);}
     public static long saveLog(Throwable throwable, boolean checkNetworkErrors){
+        return saveLog(System.currentTimeMillis(),throwable,checkNetworkErrors);
+    }
+    public static long saveLog(long time,Throwable throwable, boolean checkNetworkErrors){
+        return saveLog(dir+File.separator+time,time,throwable,checkNetworkErrors);
+    }
+
+    public static long saveLog(String path,long time,Throwable throwable, boolean checkNetworkErrors){
         if(throwable==null){return 0;}
         if(checkNetworkErrors && (checkType(throwable,SocketTimeoutException.class) || checkType(throwable,SSLException.class)) || checkType(throwable,HttpStatusException.class)){
-            return System.currentTimeMillis();
+            return time;
         }
         try{
-            long time=System.currentTimeMillis();
-            PrintWriter w=new PrintWriter(dir+File.separator+time);
+            PrintWriter w=new PrintWriter(path);
             throwable.printStackTrace(w);
             throwable.printStackTrace();
             w.close();
@@ -82,8 +85,8 @@ public class Logs {
                         .putExtra(Intent.EXTRA_EMAIL,new String[]{"kitsune.logs@gmail.com"})
                         .putExtra(Intent.EXTRA_SUBJECT,"Kitsune logs "+subject)
                         .putExtra(Intent.EXTRA_TEXT,log)
-                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                ,context.getString(R.string.send_log)));
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                ,context.getString(R.string.send_log)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
     public static void e(Object log){e(log!=null?toString(log):"null");}
     public static void d(Object log){d(log!=null?toString(log):"null");}
@@ -151,7 +154,10 @@ public class Logs {
         }
 
         public Log(File file){
-            this(readFile(file),Long.parseLong(file.getName()));
+            this(file,Long.parseLong(file.getName()));
+        }
+        public Log(File file,long time){
+            this(readFile(file),time);
         }
         public Log(String stackTrace,long date){
             throwable=null;

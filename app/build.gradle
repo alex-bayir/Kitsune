@@ -77,6 +77,9 @@ dependencies {
     implementation 'com.github.douglasjunior:android-simple-tooltip:1.1.0'
     //implementation 'com.google.mlkit:text-recognition:16.0.0-beta6'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:19.0.0'
+    implementation "ch.acra:acra-core:5.10.1"
+    annotationProcessor 'com.google.auto.service:auto-service:1.1.1'
+    compileOnly 'com.google.auto.service:auto-service-annotations:1.1.1'
     // tests
     testImplementation(files('../JSON/build/libs/JSON.jar'))
     testImplementation 'org.slf4j:slf4j-simple:2.0.7'

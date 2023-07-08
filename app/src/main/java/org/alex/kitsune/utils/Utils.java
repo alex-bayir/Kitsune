@@ -460,12 +460,15 @@ public class Utils {
         return builder.toString();
     }
     public static String group(String text, String regex){
+        return group(text,regex,"");
+    }
+    public static String group(String text, String regex,String delimiter){
         StringBuilder builder=new StringBuilder();
         Matcher matcher=Pattern.compile(regex).matcher(text);
         while(matcher.find()){
-            builder.append(matcher.group(1));
+            builder.append(delimiter).append(matcher.group(1));
         }
-        return builder.toString();
+        return builder.substring(delimiter.length());
     }
     public static boolean checkPermissions(Context context, String... permissions){
         for (String permission : permissions){
