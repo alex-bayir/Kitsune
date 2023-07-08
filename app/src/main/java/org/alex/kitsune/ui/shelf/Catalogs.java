@@ -123,7 +123,7 @@ public class Catalogs extends Fragment implements MenuProvider {
 
     public static ArrayList<Container> getCatalogs(SharedPreferences prefs){
         LinkedHashMap<String,Container> map=new LinkedHashMap<>();
-        Hashtable<String,Script> scripts= Book_Scripted.getScripts();
+        Hashtable<String,Script> scripts=Book_Scripted.getScripts();
         boolean exist=prefs.contains(Constants.source_order);
         if(exist){
             for(Container container:Container.fromJSON(prefs.getString(Constants.source_order, ""))){
@@ -172,6 +172,11 @@ public class Catalogs extends Fragment implements MenuProvider {
         @Override
         public boolean equals(@Nullable @org.jetbrains.annotations.Nullable Object obj) {
             return obj instanceof Container cont && Objects.equals(this.domain,cont.domain) && Objects.equals(this.source,cont.source);
+        }
+
+        @Override
+        public int hashCode() {
+            return script.getPath().hashCode()^icon_url.hashCode()^source.hashCode()^(domain.hashCode()>>2)^(enable.hashCode());
         }
 
         public LinkedList<Cookie> setCookies(String cookies){
@@ -268,7 +273,7 @@ public class Catalogs extends Fragment implements MenuProvider {
         private DiffCallback<Container> notify=new DiffCallback<>();
         public CatalogsAdapter(List<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
         public void update(List<Container> list){
-            notify.init(new ArrayList<>(this.list),this.list=list,false).notifyUpdate(this,true);
+            notify.init(new ArrayList<>(this.list),this.list=list,true).notifyUpdate(this,true);
         }
         public List<Container> getItems(){
             return list;

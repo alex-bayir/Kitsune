@@ -16,7 +16,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
-import org.acra.ACRA;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.HttpStatusException;
@@ -34,10 +33,6 @@ public class Logs {
     public static String getDir(){return dir;}
     public static void init(Context context){
         dir=context.getExternalFilesDir("logs").getAbsolutePath();
-        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
-            saveLog(throwable);
-            System.exit(2);
-        });
     }
     public static long saveLog(Throwable throwable){return saveLog(throwable,true);}
     public static long saveLog(Throwable throwable, boolean checkNetworkErrors){
@@ -56,6 +51,22 @@ public class Logs {
             PrintWriter w=new PrintWriter(path);
             throwable.printStackTrace(w);
             throwable.printStackTrace();
+            w.close();
+            return time;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+    public static long saveLog(long time,String stack_trace,boolean checkNetworkErrors){
+        if(stack_trace==null){return 0;}
+        Log log=new Log(stack_trace,time);
+        if(checkNetworkErrors && ("SocketTimeoutException".equals(log.getType()) || "SSLException".equals(log.getType()) || "HttpStatusException".equals(log.getType()))){
+            return time;
+        }
+        try{
+            PrintWriter w=new PrintWriter(dir+File.separator+time);
+            w.print(stack_trace);
             w.close();
             return time;
         } catch (IOException e) {
@@ -83,7 +94,7 @@ public class Logs {
         context.startActivity(Intent.createChooser(
                 new Intent(Intent.ACTION_SENDTO,new Uri.Builder().scheme("mailto").build())
                         .putExtra(Intent.EXTRA_EMAIL,new String[]{"kitsune.logs@gmail.com"})
-                        .putExtra(Intent.EXTRA_SUBJECT,"Kitsune logs "+subject)
+                        .putExtra(Intent.EXTRA_SUBJECT,subject)
                         .putExtra(Intent.EXTRA_TEXT,log)
                         .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 ,context.getString(R.string.send_log)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
@@ -136,10 +147,12 @@ public class Logs {
         public final Throwable throwable;
         public final String stackTrace;
         public final long date;
+        public final String type;
         public Log(Throwable throwable){
             this.throwable=throwable;
             this.date=System.currentTimeMillis();
             stackTrace=null;
+            type=throwable.getClass().getSimpleName();
         }
         private static String readFile(File f){
             byte[] bytes=new byte[(int)f.length()];
@@ -163,6 +176,8 @@ public class Logs {
             throwable=null;
             this.stackTrace=stackTrace;
             this.date=date;
+            String tmp=stackTrace.substring(0,stackTrace.indexOf(":"));
+            type=tmp.substring(tmp.lastIndexOf(".")+1);
         }
         public SpannableString getSpannedString(){
             return getSpannedString(stackTrace);
@@ -180,12 +195,7 @@ public class Logs {
             return str;
         }
         public String getType(){
-            try{
-                String tmp=stackTrace.substring(0,stackTrace.indexOf(":"));
-                return tmp.substring(tmp.lastIndexOf(".")+1);
-            }catch (Throwable throwable){
-                return null;
-            }
+            return type;
         }
         public static final SimpleDateFormat simpleDateFormat=new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ",Locale.US);
         public static String date(long date){return Utils.date(date,simpleDateFormat);}

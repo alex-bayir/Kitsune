@@ -9,6 +9,8 @@ import okhttp3.RequestBody;
 import org.alex.kitsune.R;
 import com.alex.json.java.JSON;
 import java.io.*;
+import java.net.SocketTimeoutException;
+import javax.net.ssl.SSLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
@@ -233,19 +235,19 @@ public class Lua extends Script{
         public static String encode(String decoded){
             return decoded==null? null:URLEncoder.encode(decoded);
         }
-        public static String load(String url, LuaTable headers) throws HttpStatusException {
+        public static String load(String url, LuaTable headers) throws IOException {
             return load_as_String(url,headers,null);
         }
-        public static String load_as_String(String url, LuaTable headers, LuaTable body) throws HttpStatusException {
+        public static String load_as_String(String url, LuaTable headers, LuaTable body) throws IOException {
             return load_as_String(url, Coercion.coerce(headers,Map.class), Coercion.coerce(body,Map.class));
         }
-        public static String load_as_String(String url, LuaTable headers, String body,String type) throws HttpStatusException {
+        public static String load_as_String(String url, LuaTable headers, String body,String type) throws IOException {
             return load_as_String(url, extendHeaders(Coercion.coerce(headers,Map.class)), RequestBody.create(body, MediaType.parse(type)));
         }
-        public static String load_as_String(String url, Map<String,String> headers, Map<String,String> body) throws HttpStatusException {
+        public static String load_as_String(String url, Map<String,String> headers, Map<String,String> body) throws IOException {
             return load_as_String(url,extendHeaders(headers),convertBody(body));
         }
-        public static String load_as_String(String url, Headers headers, RequestBody body) throws HttpStatusException {
+        public static String load_as_String(String url, Headers headers, RequestBody body) throws IOException {
             String answer;
             try {
                 if(body==null){
@@ -256,13 +258,13 @@ public class Lua extends Script{
             } catch (IOException e) {
                 answer=e.getMessage();
                 e.printStackTrace();
-                if(e instanceof HttpStatusException hse){
-                    throw hse;
+                if(e instanceof HttpStatusException || e instanceof SocketTimeoutException || e instanceof SSLException){
+                    throw e;
                 }
             }
             return answer;
         }
-        public static Document load_as_Document(String url, LuaTable headers, LuaTable body) throws HttpStatusException {
+        public static Document load_as_Document(String url, LuaTable headers, LuaTable body) throws IOException {
             return Jsoup.parse(load_as_String(url,headers,body),url);
         }
         public static URLBuilder url_builder(String host){

@@ -20,6 +20,7 @@ import org.acra.data.StringFormat;
 import org.acra.sender.ReportSender;
 import org.acra.sender.ReportSenderException;
 import org.acra.util.InstanceCreator;
+import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
@@ -27,9 +28,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import static org.acra.util.IOUtils.writeStringToFile;
 
 
@@ -51,6 +49,7 @@ public class EmailIntentSender implements ReportSender {
 
     @Override
     public void send(@NotNull Context context, @NotNull CrashReportData error) throws ReportSenderException {
+        Logs.saveLog(System.currentTimeMillis(),error.getString(ReportField.STACK_TRACE),true);
         String subject = buildSubject(error);
         String report;
         try {

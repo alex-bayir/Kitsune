@@ -33,6 +33,7 @@ import fr.castorflex.android.circularprogressbar.CircularProgressDrawable;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Book_Scripted;
+import org.alex.kitsune.logs.Logs;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.services.BookService;
 import org.alex.kitsune.R;
@@ -168,6 +169,9 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
                     });
                 }catch (Throwable e){
                     e.printStackTrace();
+                    if(Logs.checkType(e, SocketTimeoutException.class)){
+                        enableLoadMore=true;
+                    }
                     NetworkUtils.getMainHandler().post(()-> {
                         out_error_info(e,nothingFound,page==0);
                         progressBar.progressiveStop();
@@ -182,11 +186,11 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
     }
     public static void out_error_info(Throwable throwable, TextView out_error, boolean show){
         if(out_error!=null){
-            if(throwable instanceof SocketTimeoutException){
+            if(Logs.checkType(throwable, SocketTimeoutException.class)) {
                 out_error.setText(R.string.time_out);
-            }else if(throwable instanceof HttpStatusException e) {
-                out_error.setText(e.message());
-            }else if(throwable instanceof SSLException){
+            }else if(Logs.checkType(throwable, HttpStatusException.class)) {
+                out_error.setText(((HttpStatusException)throwable).message());
+            }else if(Logs.checkType(throwable, SSLException.class)){
                 out_error.setText(throwable.getClass().getSimpleName());
             }else{
                 out_error.setText(R.string.nothing_found);
