@@ -76,4 +76,11 @@
         <item>ja</item>
         <item>zh</item>
     </string-array>
+
+    <string-array name="animations">
+        <item>Slide</item>
+        <item>Explode</item>
+        <item>Hold</item>
+        <item>Fade</item>
+    </string-array>
 </resources>

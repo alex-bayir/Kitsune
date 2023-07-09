@@ -174,7 +174,7 @@ public abstract class Book {
 
     @NotNull
     @Override
-    public final String toString(){return this.toJSON().toString();}
+    public final String toString(){return this.toJSON().json(1);}
 
     public static Book fromJSON(String json){
         return json!=null && json.length()>0 ? fromJSON(new StringReader(json)):null;
@@ -199,7 +199,7 @@ public abstract class Book {
         Book book=null;
         if(file.exists()){
             try{
-                book= Book.fromJSON(new FileReader(file));
+                book=Book.fromJSON(new FileReader(file));
                 if(book !=null){
                     book.set("dir",file.getParent());}
             }catch(IOException e){
@@ -212,7 +212,7 @@ public abstract class Book {
     public final void save(){
         try{
             new File(getDir()).mkdirs();
-            toJSON(false).json(new File(getInfoPath()),0);
+            toJSON(false).json(new File(getInfoPath()),1);
         }catch(IOException e){
             e.printStackTrace();
         }

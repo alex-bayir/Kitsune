@@ -52,6 +52,9 @@ public class Catalogs extends Fragment implements MenuProvider {
     FragmentActivity activity;
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
+        requireActivity().removeMenuProvider(this);
+        requireActivity().addMenuProvider(this);
+        if(rv!=null){activity=requireActivity(); return rv;}
         rv=new RecyclerView(requireContext());
         rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         rv.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -60,9 +63,6 @@ public class Catalogs extends Fragment implements MenuProvider {
         rv.setAdapter(adapter);
         helper=new ItemTouchHelper(new ReorderCallback());
         helper.attachToRecyclerView(rv);
-        activity=requireActivity();
-        activity.removeMenuProvider(this);
-        activity.addMenuProvider(this);
         return rv;
     }
 

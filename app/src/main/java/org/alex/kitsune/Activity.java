@@ -24,12 +24,15 @@ import androidx.core.content.ContextCompat;
 import androidx.preference.PreferenceManager;
 import com.google.android.material.transition.platform.Hold;
 import org.alex.kitsune.utils.Utils;
-
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.Locale;
 
 public abstract class Activity extends AppCompatActivity {
     private static final boolean[] animations=new boolean[4];
     private static boolean enable_animations=true;
+    private static Set<String> defAnimations=null;
     private SharedPreferences prefs;
     public final SharedPreferences getSharedPreferences(){
         return prefs;
@@ -42,16 +45,19 @@ public abstract class Activity extends AppCompatActivity {
     }
     private void init(){
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
-        isEnableAnimations();
+        if(defAnimations==null){
+            defAnimations=Arrays.stream(getResources().getStringArray(R.array.animations)).collect(Collectors.toSet());
+        }
         if(isEnableAnimations()){
             setAnimations(getAnimationGravityOut(),getAnimationGravityIn());
         }
     }
     private boolean isEnableAnimations(){
-        animations[0]=prefs.getBoolean("animations_slide",true);
-        animations[1]=prefs.getBoolean("animations_explode",true);
-        animations[2]=prefs.getBoolean("animations_hold",true);
-        animations[3]=prefs.getBoolean("animations_fade",true);
+        Set<String> set=prefs.getStringSet("animations",defAnimations);
+        animations[0]=set.contains("Slide");
+        animations[1]=set.contains("Explode");
+        animations[2]=set.contains("Hold");
+        animations[3]=set.contains("Fade");
         return enable_animations=animations[0]||animations[1]||animations[2]||animations[3];
     }
     public static boolean isAnimationsEnable(){return enable_animations;}
@@ -61,6 +67,14 @@ public abstract class Activity extends AppCompatActivity {
         init();
         setTheme(Utils.Theme.getTheme(this));
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(isEnableAnimations()){
+            setAnimations(getAnimationGravityOut(),getAnimationGravityIn());
+        }
     }
 
     @Override
@@ -241,5 +255,26 @@ public abstract class Activity extends AppCompatActivity {
         }else{
             ActivityCompat.requestPermissions(activity,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},permission_request_code);
         }
+    }
+
+    public static Transition cloneTransition(Transition transition){
+        Transition clone=
+                transition instanceof Slide slide ? new Slide(slide.getSlideEdge())
+                :
+                transition instanceof Explode ? new Explode()
+                :
+                transition instanceof Hold ? new Hold()
+                :
+                transition instanceof Fade ? new Fade()
+                :
+                null;
+        if(clone!=null){
+            clone.setDuration(transition.getDuration());
+            clone.setStartDelay(transition.getStartDelay());
+            clone.setInterpolator(transition.getInterpolator());
+            clone.setPropagation(transition.getPropagation());
+            clone.setPathMotion(transition.getPathMotion());
+        }
+        return clone;
     }
 }

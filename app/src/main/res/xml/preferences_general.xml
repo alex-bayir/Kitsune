@@ -29,29 +29,13 @@
         />
     </PreferenceCategory>
     <PreferenceCategory android:title="@string/common_parameters">
-        <SwitchPreferenceCompat
-                android:key="animations_slide"
-                android:title="Slide"
+        <MultiSelectListPreference
+                android:key="animations"
+                android:title="Animations"
                 android:summary="@string/animations"
-                android:defaultValue="true"
-        />
-        <SwitchPreferenceCompat
-                android:key="animations_explode"
-                android:title="Explode"
-                android:summary="@string/animations"
-                android:defaultValue="true"
-        />
-        <SwitchPreferenceCompat
-                android:key="animations_hold"
-                android:title="Hold"
-                android:summary="@string/animations"
-                android:defaultValue="true"
-        />
-        <SwitchPreferenceCompat
-                android:key="animations_fade"
-                android:title="Fade"
-                android:summary="@string/animations"
-                android:defaultValue="true"
+                android:entries="@array/animations"
+                android:entryValues="@array/animations"
+                android:defaultValue="@array/animations"
         />
         <SwitchPreferenceCompat
                 android:key="update_on_start"

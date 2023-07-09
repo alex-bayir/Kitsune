@@ -120,19 +120,23 @@ public interface JSON {
             String line=spaces>0?"\n"+new String(new char[depth*spaces]).replace("\0", "\t"):"";
             String tab=spaces>0?"\n"+new String(new char[(depth+1)*spaces]).replace("\0", "\t"):"";
             boolean delimiter=false;
-            writer.write('{');
-            for(Map.Entry<String,java.lang.Object> entry:entrySet()){
-                if(delimiter){writer.write(',');}
-                writer.write(tab);
-                writer.write('"');
-                writer.write(entry.getKey());
-                writer.write('"');
-                writer.write(':');
-                JSON.json(writer,entry.getValue(),spaces,depth+1);
-                delimiter=true;
+            if(size()==0){
+                writer.write("{}");
+            }else{
+                writer.write('{');
+                for(Map.Entry<String,java.lang.Object> entry:entrySet()){
+                    if(delimiter){writer.write(',');}
+                    writer.write(tab);
+                    writer.write('"');
+                    writer.write(entry.getKey());
+                    writer.write('"');
+                    writer.write(':');
+                    JSON.json(writer,entry.getValue(),spaces,depth+1);
+                    delimiter=true;
+                }
+                writer.write(line);
+                writer.write('}');
             }
-            writer.write(line);
-            writer.write('}');
             return writer;
         }
 
@@ -268,17 +272,21 @@ public interface JSON {
         }
         public Writer json(Writer writer,int spaces,int depth) throws IOException {
             String line=spaces>0?"\n"+new String(new char[depth*spaces]).replace("\0", "\t"):"";
-            String tab=spaces<=0?"":"\n"+new String(new char[(depth+1)*spaces]).replace("\0", "\t");
+            String tab=spaces>0?"\n"+new String(new char[(depth+1)*spaces]).replace("\0", "\t"):"";
             boolean delimiter=false;
-            writer.write('[');
-            for(java.lang.Object value:this){
-                if(delimiter){writer.write(',');}
-                writer.write(tab);
-                JSON.json(writer,value,spaces,depth+1);
-                delimiter=true;
+            if(size()==0){
+                writer.write("[]");
+            }else{
+                writer.write('[');
+                for(java.lang.Object value:this){
+                    if(delimiter){writer.write(',');}
+                    writer.write(tab);
+                    JSON.json(writer,value,spaces,depth+1);
+                    delimiter=true;
+                }
+                writer.write(line);
+                writer.write(']');
             }
-            writer.write(line);
-            writer.write(']');
             return writer;
         }
 

@@ -177,7 +177,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             return fromJSON(JSON.Object.create(json));
         }
         public static <T extends Map<String, Set<Integer>>> T saveGenresStatistics(String path,T map){
-            try{Utils.File.writeFile(new File(path),toJSON(map).toString(),false); return map;}catch (FileNotFoundException e){e.printStackTrace(); return map;}
+            try{Utils.File.writeFile(new File(path),toJSON(map).json(1),false); return map;}catch (FileNotFoundException e){e.printStackTrace(); return map;}
         }
         public static  TreeMap<String, Set<Integer>> loadGenresStatistics(String path, boolean all, boolean save){
             return save ? saveGenresStatistics(path,loadGenresStatistics(path, all)):loadGenresStatistics(path, all);

@@ -7,6 +7,7 @@ sealed class JSON {
     abstract fun isObject():Boolean
     abstract fun isArray():Boolean
     abstract fun json(writer: Writer, spaces: Int):Writer
+    abstract fun json(writer: Writer, spaces: Int, depth: Int):Writer
     abstract fun json(spaces: Int):String
     abstract fun json(json: File, spaces: Int):File
     companion object{
@@ -20,22 +21,22 @@ sealed class JSON {
                 .replace("\"", "\\\"")
         }
 
-        private fun json(writer: Writer, value: Any?, spaces: Int){
+        private fun json(writer: Writer, value: Any?, spaces: Int, depth: Int){
             when(value){
-                is JSON ->value.json(writer, spaces)
+                is JSON ->value.json(writer, spaces, depth)
                 is Number->writer.write(value.toString())
                 is Boolean->writer.write(value.toString())
-                is Map<*,*>-> Object(filter(value,String::class.java)).json(writer, spaces)
-                is Collection<*>-> Array(value).json(writer, spaces)
-                is kotlin.Array<*>-> Array(value).json(writer, spaces)
-                is IntArray-> Array(value.toList()).json(writer, spaces)
-                is LongArray-> Array(value.toList()).json(writer, spaces)
-                is FloatArray-> Array(value.toList()).json(writer, spaces)
-                is DoubleArray-> Array(value.toList()).json(writer, spaces)
-                is BooleanArray-> Array(value.toList()).json(writer, spaces)
-                is ShortArray-> Array(value.toList()).json(writer, spaces)
-                is CharArray-> Array(value.toList()).json(writer, spaces)
-                is ByteArray-> Array(value.toList()).json(writer, spaces)
+                is Map<*,*>-> Object(filter(value,String::class.java)).json(writer, spaces, depth)
+                is Collection<*>-> Array(value).json(writer, spaces, depth)
+                is kotlin.Array<*>-> Array(value).json(writer, spaces, depth)
+                is IntArray-> Array(value.toList()).json(writer, spaces, depth)
+                is LongArray-> Array(value.toList()).json(writer, spaces, depth)
+                is FloatArray-> Array(value.toList()).json(writer, spaces, depth)
+                is DoubleArray-> Array(value.toList()).json(writer, spaces, depth)
+                is BooleanArray-> Array(value.toList()).json(writer, spaces, depth)
+                is ShortArray-> Array(value.toList()).json(writer, spaces, depth)
+                is CharArray-> Array(value.toList()).json(writer, spaces, depth)
+                is ByteArray-> Array(value.toList()).json(writer, spaces, depth)
                 is Any->{
                     writer.write('\"'.code)
                     writer.write(escape(value.toString()))
@@ -91,6 +92,8 @@ sealed class JSON {
                                 else ->{o = Object()
                                 }
                             }
+                        }else{
+                            buffer.append(c);
                         }
                     }
 
@@ -101,6 +104,8 @@ sealed class JSON {
                                 is Array<*> ->{(o as Array<Any>).add(json(reader, Array<Any>()))}
                                 else ->{o = Array<Any>(); rv=true}
                             }
+                        }else{
+                            buffer.append(c);
                         }
                     }
 
@@ -330,25 +335,31 @@ sealed class JSON {
         }
 
         @Throws(IOException::class)
-        override fun json(writer: Writer, spaces: Int): Writer {
-            val line = if (spaces > 0) "\n" + String(CharArray(spaces-1)).replace("\u0000", "\t") else ""
-            val tab = if (spaces > 0) "\n" + String(CharArray(spaces)).replace("\u0000", "\t") else ""
+        override fun json(writer: Writer, spaces: Int)=json(writer, spaces,0)
+        @Throws(IOException::class)
+        override fun json(writer: Writer, spaces: Int, depth: Int): Writer {
+            val line = if (spaces>0) "\n"+"\t".repeat(depth*spaces) else ""
+            val tab = if (spaces>0) "\n"+"\t".repeat((depth+1)*spaces) else ""
             var delimiter = false
-            writer.write('{'.code)
-            for ((key, value) in entries) {
-                if (delimiter) {
-                    writer.write(','.code)
+            if(size==0){
+                writer.write("{}")
+            }else{
+                writer.write('{'.code)
+                for ((key, value) in entries) {
+                    if (delimiter) {
+                        writer.write(','.code)
+                    }
+                    writer.write(tab)
+                    writer.write('"'.code)
+                    writer.write(key)
+                    writer.write('"'.code)
+                    writer.write(':'.code)
+                    json(writer,value,spaces,depth+1)
+                    delimiter = true
                 }
-                writer.write(tab)
-                writer.write('"'.code)
-                writer.write(key)
-                writer.write('"'.code)
-                writer.write(':'.code)
-                json(writer,value,if (spaces > 0) spaces + 1 else 0)
-                delimiter = true
+                writer.write(line)
+                writer.write('}'.code)
             }
-            writer.write(line)
-            writer.write('}'.code)
             return writer
         }
 
@@ -518,21 +529,27 @@ sealed class JSON {
         }
 
         @Throws(IOException::class)
-        override fun json(writer: Writer, spaces: Int): Writer {
-            val line = if (spaces > 0) "\n" + "\t".repeat(spaces-1) else ""
-            val tab = if (spaces <= 0) "" else "\n" + "\t".repeat(spaces)
+        override fun json(writer: Writer, spaces: Int)=json(writer,spaces,0)
+        @Throws(IOException::class)
+        override fun json(writer: Writer, spaces: Int, depth: Int): Writer {
+            val line = if (spaces>0) "\n"+"\t".repeat(depth*spaces) else ""
+            val tab = if (spaces>0) "\n"+"\t".repeat((depth+1)*spaces) else ""
             var delimiter = false
-            writer.write('['.code)
-            for (value in this) {
-                if (delimiter) {
-                    writer.write(','.code)
+            if(size==0){
+                writer.write("[]")
+            }else{
+                writer.write('['.code)
+                for (value in this) {
+                    if (delimiter) {
+                        writer.write(','.code)
+                    }
+                    writer.write(tab)
+                    json(writer,value,spaces, depth+1)
+                    delimiter = true
                 }
-                writer.write(tab)
-                json(writer,value,if (spaces > 0) spaces + 1 else 0)
-                delimiter = true
+                writer.write(line)
+                writer.write(']'.code)
             }
-            writer.write(line)
-            writer.write(']'.code)
             return writer
         }
 

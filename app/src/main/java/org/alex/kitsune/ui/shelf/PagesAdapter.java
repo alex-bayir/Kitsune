@@ -3,6 +3,7 @@ package org.alex.kitsune.ui.shelf;
 import android.app.Activity;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import static org.alex.kitsune.Activity.cloneTransition;
 
 public class PagesAdapter {
     Activity activity;
@@ -31,10 +32,10 @@ public class PagesAdapter {
         current=position;
         Fragment fragment=get(position);
         if(org.alex.kitsune.Activity.isAnimationsEnable()){
-            fragment.setEnterTransition(activity.getWindow().getEnterTransition());
-            fragment.setExitTransition(activity.getWindow().getExitTransition());
-            fragment.setReturnTransition(activity.getWindow().getReturnTransition());
-            fragment.setReenterTransition(activity.getWindow().getReenterTransition());
+            fragment.setEnterTransition(cloneTransition(activity.getWindow().getEnterTransition()));
+            fragment.setExitTransition(cloneTransition(activity.getWindow().getExitTransition()));
+            fragment.setReturnTransition(cloneTransition(activity.getWindow().getReturnTransition()));
+            fragment.setReenterTransition(cloneTransition(activity.getWindow().getReenterTransition()));
             fragmentManager.beginTransaction().replace(id,fragment).commit();
         }else{
             fragmentManager.beginTransaction().setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out).replace(id,fragment).commit();
