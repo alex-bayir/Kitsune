@@ -3,7 +3,7 @@
 		<img src="https://user-images.githubusercontent.com/103780136/192371190-ccd56058-4a5b-4052-8fd8-a3b5f66e5291.png">
 		<br/>
 		<img src="https://img.shields.io/badge/install_size-4.0 MB-brightgreen">
-        <img src="https://img.shields.io/badge/version-1.8.1-blueviolet">
+        <img src="https://img.shields.io/badge/version-1.8.2-blueviolet">
         <img src="https://img.shields.io/badge/android-7.0+-yellow">
         <br/>
         <img src="https://img.shields.io/badge/manga_sources-11-brightgreen"/> <img src="https://img.shields.io/badge/randobe_sources-1-brightgreen"/>
