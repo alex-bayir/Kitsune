@@ -71,7 +71,7 @@ public class HistoryActivity extends Activity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(Constants.action_Update.equals(intent.getAction())){
-                    adapter.add(0,BookService.get(intent.getIntExtra(Constants.hash,-1)));
+                    adapter.add(0,BookService.get(intent.getIntExtra(Constants.hash,-1)),Constants.history.equals(intent.getStringExtra(Constants.option)));
                 }
             }
         },new IntentFilter(Constants.action_Update));
