@@ -36,7 +36,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     };
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> clickListener){this(books,mode,clickListener,null);}
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> holder, Callback<Book> button){
-        if(books!=null){this.data.addAll(books.stream().map(BookData::new).collect(Collectors.toList())); calculateFullSize();}
+        if(books!=null){this.data.addAll(books.stream().map(BookData::new).collect(Collectors.toList()));}
         this.mode=mode;
         this.holder=(v, position) -> holder.call(data.get(position).book);
         this.button=button!=null ? (v, position) -> button.call(data.get(position).book) : null;

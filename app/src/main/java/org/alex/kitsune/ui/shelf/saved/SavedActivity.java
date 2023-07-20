@@ -78,6 +78,7 @@ public class SavedActivity extends Activity {
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(BookService.getSorted(BookService.Type.Saved), BookAdapter.Mode.GRID, book -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END));
         adapter.initRV(rv,3);
+        adapter.calculateFullSize();
         backdrop.setImageDrawable(createBackDrop(adapter));
         backdrop.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
         toolbar.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
