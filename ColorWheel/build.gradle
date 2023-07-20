@@ -2,12 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.alex.colorwheel'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 33
-        compileSdkPreview = "UpsideDownCake"
+        targetSdkVersion 34
     }
 
     buildTypes.configureEach {

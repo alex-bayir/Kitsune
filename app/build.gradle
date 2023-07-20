@@ -10,7 +10,6 @@ android {
         vectorDrawables.useSupportLibrary = true
         buildConfigField "long", "TIMESTAMP", System.currentTimeMillis() + "L"
         buildConfigField "String", "card", "\"5536 9100 1093 7573\""
-        compileSdkPreview = "UpsideDownCake"
     }
     buildTypes.configureEach {
         resValue "string", "version_number", "Version ${defaultConfig.versionName}"

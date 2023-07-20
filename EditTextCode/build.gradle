@@ -2,12 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.alex.edittextcode'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         minSdk 16
-        targetSdk 33
-        compileSdkPreview = "UpsideDownCake"
+        targetSdk 34
     }
 
     buildTypes.configureEach {
