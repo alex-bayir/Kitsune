@@ -78,7 +78,6 @@ public class SavedActivity extends Activity {
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(BookService.getSorted(BookService.Type.Saved), BookAdapter.Mode.GRID, book -> startActivity(new Intent(this, PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),Gravity.START,Gravity.END));
         adapter.initRV(rv,3);
-        adapter.recalculateFullSize();
         backdrop.setImageDrawable(createBackDrop(adapter));
         backdrop.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
         toolbar.setOnClickListener(v1 -> sharePhotoCollage((PhotoCollageDrawable) backdrop.getDrawable()));
@@ -86,22 +85,17 @@ public class SavedActivity extends Activity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(Constants.action_Update.equals(intent.getAction())){
-                    Book book=BookService.get(intent.getIntExtra(Constants.hash,-1));
                     if(Constants.load.equals(intent.getStringExtra(Constants.option)) || Constants.delete.equals(intent.getStringExtra(Constants.option))){
-                        if(book.countSaved()>0){
-                            switch (currentSort) {
-                                case (R.id.latest) -> adapter.add(0, book);
-                                case (R.id.images_size) -> adapter.addBySize(book);
-                                case (R.id.alphabetical) -> adapter.add(book, Book.AlphabeticalComparator);
-                                case (R.id.alphabetical_alt) -> adapter.add(book, Book.AlphabeticalComparatorAlt);
-                            }
-                            adapter.update(book);
-                        }else{
-                            adapter.remove(book);
-                        }
+                        Comparator<Book> comparator=switch (currentSort) {
+                            default -> Book.SavingTimeComparator;
+                            case (R.id.images_size) -> Book.ImagesSizesComparator;
+                            case (R.id.alphabetical) -> Book.AlphabeticalComparator;
+                            case (R.id.alphabetical_alt) -> Book.AlphabeticalComparatorAlt;
+                        };
+                        adapter.replace(BookService.getSorted(BookService.Type.Saved),comparator,true);
                         backdrop.setImageDrawable(createBackDrop(adapter));
                     }else{
-                        adapter.update(book);
+                        adapter.update(BookService.get(intent.getIntExtra(Constants.hash,-1)));
                     }
                 }
             }

@@ -71,11 +71,7 @@ public class HistoryActivity extends Activity {
             @Override
             public void onReceive(Context context, Intent intent) {
                 if(Constants.action_Update.equals(intent.getAction())){
-                    if(Constants.history.equals(intent.getStringExtra(Constants.option))){
-                        adapter.add(0,BookService.get(intent.getIntExtra(Constants.hash,-1)),true);
-                    }else{
-                        adapter.update(BookService.get(intent.getIntExtra(Constants.hash,-1)));
-                    }
+                    adapter.replace(BookService.getSorted(BookService.Type.History));
                 }
             }
         },new IntentFilter(Constants.action_Update));
@@ -85,7 +81,7 @@ public class HistoryActivity extends Activity {
         if(tmp!=null){
             tmp.clearHistory();
             BookService.allocate(tmp,true);
-            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,tmp.hashCode()));
+            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,tmp.hashCode()).putExtra(Constants.option,Constants.history));
         }
     }
 

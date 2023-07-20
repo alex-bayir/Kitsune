@@ -20,10 +20,7 @@ import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.ProgressDrawable;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.utils.Utils;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Random;
+import java.util.*;
 
 
 public class BookHolder extends RecyclerView.ViewHolder{
@@ -66,23 +63,22 @@ public class BookHolder extends RecyclerView.ViewHolder{
         this(parent,onItem,onItemButton);
         setFullContent(fullContent,horizontal);
     }
-
-    public void bind(Book book, boolean showSource, boolean showCheckedNew, long fullSize){
-        setCover(book);
-        setTitle(book.getName());
-        setSubtitle(book.getNameAlt());
-        setGenres(book.getGenres());
-        setSize(book.getImagesSize(),fullSize);
-        setDescriptionHint(book.getDescription());
-        setRating(book.getRating());
-        setNumSaved(book.countSaved());
-        setNumNew(showCheckedNew ? book.getCheckedNew() : book.getNotCheckedNew());
-        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? book.getSource() : book.getStatus()), !button.hasOnClickListeners() || (book.getNumChapterHistory()>=0));
-        setVisibleMarkNew(book.getNotCheckedNew()>0);
-    }
-    public void bind(Book book, boolean showSource, boolean showUpdated, long fullSize, boolean full_content, int orientation){
+    public void bind(BookData data, boolean showSource, boolean showUpdated, long fullSize, boolean full_content, int orientation){
         setFullContent(full_content,orientation==RecyclerView.HORIZONTAL);
-        bind(book,showSource,showUpdated,fullSize);
+        bind(data,showSource,showUpdated,fullSize);
+    }
+    public void bind(BookData data, boolean showSource, boolean showCheckedNew, long fullSize){
+        setCover(data.book);
+        setTitle(data.title);
+        setSubtitle(data.subtitle);
+        setGenres(data.genres);
+        setSize(data.size,fullSize);
+        setDescriptionHint(data.description);
+        setRating(data.rating);
+        setNumSaved(data.saved);
+        setNumNew(showCheckedNew?data.checked_new:data.not_checked_new);
+        setButtonText(button.hasOnClickListeners() ? itemView.getContext().getString(R.string.CONTINUE) : (showSource ? data.source : data.status), !button.hasOnClickListeners() || (data.book.getNumChapterHistory()>=0));
+        setVisibleMarkNew(data.not_checked_new>0);
     }
 
     public final void setFullContent(boolean full,boolean horizontal){
@@ -170,69 +166,5 @@ public class BookHolder extends RecyclerView.ViewHolder{
                     .show();
             return true;
         });
-    }
-
-    public static class Data{
-        public final Book book;
-        public final String title;
-        public final String subtitle;
-        public final String genres;
-        public final double rating;
-        public final String status;
-        public final String source;
-        public final String description;
-        public final long size;
-        public final int saved;
-        public final int checked_new,not_checked_new;
-        private final int hashcode;
-        public Data(Book book){
-            this.book=book;
-            title=book.getName();
-            subtitle=book.getNameAlt();
-            genres=book.getGenres();
-            rating=book.getRating();
-            status=book.getStatus();
-            source=book.getSource();
-            description=book.getDescription();
-            size=book.getImagesSize();
-            saved=book.countSaved();
-            checked_new=book.getCheckedNew();
-            not_checked_new=book.getNotCheckedNew();
-            long tmp=hashcode(title)<<2^hashcode(subtitle)>>2^hashcode(genres)^(long)rating<<4^hashcode(status)^hashcode(source)^hashcode(description)^size^(long)saved<<2^(long)checked_new<<4^(long)not_checked_new<<6;
-            hashcode=(int)(tmp>>32)^(int)tmp;
-        }
-        private static long hashcode(Object obj){
-            return obj==null?0:obj.hashCode();
-        }
-        public Data update(){return new Data(book);}
-        @Override
-        public boolean equals(@org.jetbrains.annotations.Nullable Object obj) {
-            return obj instanceof Data data && equals(data);
-        }
-        public boolean equals(Data data){
-            return this.hashCode()==data.hashCode();
-        }
-        @Override
-        public int hashCode(){
-            return book.hashCode();
-        }
-        public int hash(){
-            return hashcode;
-        }
-        public static boolean areSame(Data o,Data n){
-            return (o==null && n==null) || (o!=null && n!=null && o.hashcode==n.hashcode);
-        }
-
-        public static boolean areSameBooks(List<?> l1,List<?> l2){
-            if(l1.size()!=l2.size()){return false;}
-            Iterator<?> i1=l1.iterator();
-            Iterator<?> i2=l2.iterator();
-            while (i1.hasNext() && i2.hasNext()){
-                if(!Objects.equals(i1.next(),i2.next())){
-                    return false;
-                }
-            }
-            return true;
-        }
     }
 }

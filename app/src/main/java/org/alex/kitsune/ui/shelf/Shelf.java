@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
 import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
+import org.alex.kitsune.book.views.BookData;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.book.Book;
@@ -49,7 +50,6 @@ public class Shelf extends Fragment implements MenuProvider {
     RecyclerView root;
     Adapter adapter;
     MainActivity mainActivity;
-    private final LinkedList<Runnable> tasks=new LinkedList<>();
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         requireActivity().removeMenuProvider(this);
@@ -129,9 +129,6 @@ public class Shelf extends Fragment implements MenuProvider {
     @Override
     public void onResume() {
         super.onResume();
-        while(!tasks.isEmpty()){
-            tasks.removeFirst().run();
-        }
         if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated() && p<0){
             check_for_updates();
         }
@@ -197,7 +194,7 @@ public class Shelf extends Fragment implements MenuProvider {
         private DiffCallback<Object> notify=new DiffCallback<>(){
             @Override
             public boolean areContentsTheSame(int old_pos, int new_pos) {
-                return isCheckContentsTheSame() && o.get(old_pos) instanceof BookHolder.Data oldD && n.get(new_pos) instanceof BookHolder.Data newD && BookHolder.Data.areSame(oldD,newD);
+                return isCheckContentsTheSame() && o.get(old_pos) instanceof BookData oldD && n.get(new_pos) instanceof BookData newD && BookData.areSame(oldD,newD);
             }
         };
         public Adapter(Context context,List<Wrapper> wrappers){
@@ -244,7 +241,7 @@ public class Shelf extends Fragment implements MenuProvider {
             objects=wrappers!=null?convert(wrappers):new ArrayList<>();
             calculateSpans();
             if(old!=null){
-                notify.init(old,objects,BookHolder.Data.areSameBooks(old,objects)).notifyUpdate(this);
+                notify.init(old,objects, BookData.areSameBooks(old,objects)).notifyUpdate(this);
             }
         }
 
@@ -264,11 +261,11 @@ public class Shelf extends Fragment implements MenuProvider {
         public List<Object> convert(List<Wrapper> wrappers){
             return wrappers.stream().flatMap(
                     w-> Math.min(w.list.size(),w.max)==0 ?
-                            Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max).map(BookHolder.Data::new))
+                            Stream.empty() : Stream.concat(Stream.of(w),w.list.stream().limit(w.max).map(BookData::new))
             ).collect(Collectors.toList());
         }
         private void update(Book book){
-            BookHolder.Data data=new BookHolder.Data(book);
+            BookData data=new BookData(book);
             for(int i=0;i<objects.size();i++){
                 if(data.equals(objects.get(i))){
                     objects.set(i,data);
@@ -289,7 +286,7 @@ public class Shelf extends Fragment implements MenuProvider {
         @Override
         public int getItemViewType(int position) {
             Object obj=objects.get(position);
-            boolean full=obj instanceof BookHolder.Data && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
+            boolean full=obj instanceof BookData && objects.get(position-1) instanceof Wrapper wrap && wrap.mixed;
             return obj instanceof Wrapper ? 0 : (full?1:2);
         }
 
@@ -309,13 +306,13 @@ public class Shelf extends Fragment implements MenuProvider {
             Object obj=objects.get(position);
             if(holder instanceof TitleHolder th && obj instanceof Wrapper wrap){
                 th.bind(wrap);
-            }else if(holder instanceof BookHolder bh && obj instanceof BookHolder.Data data){
+            }else if(holder instanceof BookHolder bh && obj instanceof BookData data){
                 Wrapper wrap=getWrapper(position);
                 bh.setOnClickListeners(
                         wrap.item!=null? (v, p) -> wrap.item.call(data.book):null,
                         wrap.button!=null? (v, p)-> wrap.button.call(data.book):null
                 );
-                bh.bind(data.book,false,true,0);
+                bh.bind(data,false,true,0);
             }
         }
 

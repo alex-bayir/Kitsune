@@ -55,10 +55,7 @@ public class NewFragment extends Fragment implements MenuProvider {
                         adapter.add(book);
                         mainActivity.setNew(adapter.getItemCount());
                     }else if(Constants.action_Update.equals(intent.getAction())){
-                        String tmp=intent.getStringExtra(Constants.option);
-                        switch(tmp!=null ? tmp : ""){
-                            case Constants.load, Constants.delete -> adapter.update(book);
-                        }
+                        adapter.update(book);
                     }
                 }
             }

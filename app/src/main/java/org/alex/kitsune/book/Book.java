@@ -381,8 +381,8 @@ public abstract class Book {
     }
     public final long getCategoryTime(){return get("category time",get("lastTimeFavorite",0L));}
     private long ImagesSize=-1;
-    public long recalculateImagesSize(){return ImagesSize=Utils.File.getSize(new File(getPagesPath()));}
-    public long getImagesSize(){return ImagesSize<0 ? recalculateImagesSize() : ImagesSize;}
+    public long calculateImagesSize(){return ImagesSize=Utils.File.getSize(new File(getPagesPath()));}
+    public long getImagesSize(){return ImagesSize<0 ? calculateImagesSize() : ImagesSize;}
 
     public static CharSequence getSourceDescription(String source){
         return Book_Scripted.getSourceDescription(source);
