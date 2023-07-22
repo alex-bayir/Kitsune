@@ -70,7 +70,7 @@ public class HistoryActivity extends Activity {
         registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                if(Constants.action_Update.equals(intent.getAction())){
+                if(Constants.action_Update.equals(intent.getAction()) && !intent.getBooleanExtra("ignore",false)){
                     adapter.replace(BookService.getSorted(BookService.Type.History));
                 }
             }
@@ -81,7 +81,7 @@ public class HistoryActivity extends Activity {
         if(tmp!=null){
             tmp.clearHistory();
             BookService.allocate(tmp,true);
-            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,tmp.hashCode()).putExtra(Constants.option,Constants.history));
+            sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash,tmp.hashCode()).putExtra(Constants.option,Constants.history).putExtra("ignore",true));
         }
     }
 
