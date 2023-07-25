@@ -176,8 +176,9 @@ public class Logs {
             throwable=null;
             this.stackTrace=stackTrace;
             this.date=date;
-            String tmp=stackTrace.substring(0,stackTrace.indexOf(":"));
-            type=tmp.substring(tmp.lastIndexOf(".")+1);
+            String line=stackTrace.substring(0,stackTrace.indexOf("\n"));
+            line=Utils.group(line,"^[\\w+\\.]+\\.(\\w+):?",".");
+            type=line.length()==0?"Unknown":line;
         }
         public SpannableString getSpannedString(){
             return getSpannedString(stackTrace);
