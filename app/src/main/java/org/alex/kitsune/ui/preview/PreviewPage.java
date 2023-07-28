@@ -188,6 +188,7 @@ public class PreviewPage extends PreviewHolder {
         read.setEnabled(book.getChapters().size()>0);
         favorite.setOnClickListener(v -> createDialog(v.getContext(), book).show());
         similar.replace(BookService.replaceIfExists(book.getSimilar(), BookService.getAll()));
+        similar.notifyAllChanged();
         final String source=book.getSource(),url_web= book.getUrl_WEB();
         web_dialog.setCallback(web->{
             web.setWebViewClient(new WebViewClient(){

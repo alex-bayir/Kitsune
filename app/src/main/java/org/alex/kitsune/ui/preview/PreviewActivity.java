@@ -76,8 +76,7 @@ public class PreviewActivity extends Activity {
         if(updated){
             progressBar.progressiveStop();
             sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()));
-            book.loadSimilar(obj -> {
-                BookService.setCacheDirIfNull((List<Book>) obj); adapter.bindPages();},errorCallback);
+            book.loadSimilar(obj -> {BookService.setCacheDirIfNull((List<Book>) obj); adapter.bindPages();},errorCallback);
             invalidateOptionsMenu();
         }
         adapter.bindPages();
