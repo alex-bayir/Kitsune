@@ -79,7 +79,6 @@ public class PreviewActivity extends Activity {
             book.loadSimilar(obj -> {BookService.setCacheDirIfNull((List<Book>) obj); adapter.bindPages();},errorCallback);
             invalidateOptionsMenu();
         }
-        adapter.bindPages();
         clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
     };
     public void updateContent(){
@@ -124,9 +123,13 @@ public class PreviewActivity extends Activity {
         pager.setAdapter(adapter);
         progressBar.progressiveStart();
         updateContent();
-        if(NetworkUtils.isNetworkAvailable(this)){
-            book.update(updateCallback, errorCallback);
-        }else{errorCallback.call(null);}
+        if(!book.isUpdated()){
+            if(NetworkUtils.isNetworkAvailable(this)){
+                book.update(updateCallback, errorCallback);
+            }else{
+                errorCallback.call(null);
+            }
+        }
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(adapter.getTitle(position))).attach();
         pager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
