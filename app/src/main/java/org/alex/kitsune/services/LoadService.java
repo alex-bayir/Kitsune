@@ -101,7 +101,7 @@ public class LoadService extends Service {
                             publicProgress(bundle);
                             int pages = 0;
                             for (Page page : chapter.getPages()) {
-                                while (!task.book.loadPage(chapter,page, f->{},task.isCanceled(),null,null)) {
+                                while (!task.book.load(chapter,page, f->{},task.isCanceled(),null,null)) {
                                     if (task.isCanceled()) {
                                         task.clearCancel();
                                         sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, task.book.hashCode()).putExtra(Constants.option, Constants.load));

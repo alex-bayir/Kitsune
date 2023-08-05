@@ -17,6 +17,9 @@ public class Page {
         this(new JSON.Object().put("num",num));
         this.text=text;
     }
+    public String getData(){
+        return text!=null ? text : getUrl();
+    }
     public float getNum(){return info.get("num",-1f);}
     public String getUrl(){return info.getString("url");}
     public String getText(){return text;}

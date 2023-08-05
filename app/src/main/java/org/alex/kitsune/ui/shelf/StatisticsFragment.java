@@ -31,7 +31,6 @@ import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
 import java.util.regex.Pattern;
@@ -177,7 +176,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
             return fromJSON(JSON.Object.create(json));
         }
         public static <T extends Map<String, Set<Integer>>> T saveGenresStatistics(String path,T map){
-            try{Utils.File.writeFile(new File(path),toJSON(map).json(1),false); return map;}catch (FileNotFoundException e){e.printStackTrace(); return map;}
+            Utils.File.write(new File(path),toJSON(map).json(1),false); return map;
         }
         public static  TreeMap<String, Set<Integer>> loadGenresStatistics(String path, boolean all, boolean save){
             return save ? saveGenresStatistics(path,loadGenresStatistics(path, all)):loadGenresStatistics(path, all);
@@ -187,7 +186,7 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
         }
         public static TreeMap<String, Set<Integer>> loadGenresStatistics(String path, Set<String> genres, Set<Book> books, boolean all){
             try{
-                return applyByGenres(fromJSON(Utils.File.readFile(new File(path)),all),genres, books,all);
+                return applyByGenres(fromJSON(Utils.File.read(new File(path)),all),genres, books,all);
             }catch (IOException e){
                 e.printStackTrace();
                 return byGenres(genres, books,all);

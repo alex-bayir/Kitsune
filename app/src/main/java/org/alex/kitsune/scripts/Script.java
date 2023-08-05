@@ -11,7 +11,7 @@ public abstract class Script {
     private final String path;
     public Script(InputStream in,String name,String path,String language){
         this.name=name;
-        this.text=Utils.File.readStream(in);
+        this.text=Utils.File.read(in);
         this.path=path;
         this.language=language;
     }

@@ -4,7 +4,6 @@ import android.Manifest;
 import android.app.ActivityManager;
 import android.content.*;
 import android.content.pm.*;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.Cursor;
 import android.graphics.*;
@@ -17,12 +16,9 @@ import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.*;
-import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
-import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -154,25 +150,26 @@ public class Utils {
 
     }
     public static class File {
-        public static String readFile(java.io.File file) throws FileNotFoundException {
-            return readStream(new FileInputStream(file));
+        public static String read(java.io.File file) throws FileNotFoundException {
+            return read(new FileInputStream(file));
         }
-        public static String readStream(InputStream in){
+        public static String read(InputStream in){
             Scanner scanner=new Scanner(in, "UTF-8").useDelimiter("\\A");
             String text=scanner.next();
             scanner.close();
             return text;
         }
-        public static void writeFile(java.io.File file,String text,boolean append) throws FileNotFoundException {
-            file.getParentFile().mkdirs();
-            FileOutputStream stream=new FileOutputStream(file,append);
-            try{
-                stream.write(text.getBytes(StandardCharsets.UTF_8));
-            }catch (IOException e){
-                e.printStackTrace();
-            } finally {
-                try{stream.close();}catch(IOException e){e.printStackTrace();}
-            }
+        public static boolean write(java.io.File file,String text,boolean append){
+            file.getParentFile().mkdirs(); try{return write(text,file,append);}catch(IOException e){e.printStackTrace(); return false;}
+        }
+        public static boolean write(FileOutputStream stream,String text){
+            try{write(text,stream); return true;}catch(IOException e){e.printStackTrace(); return false;}
+        }
+        public static boolean write(String text,java.io.File file,boolean append) throws IOException{
+            file.getParentFile().mkdirs(); return write(new FileOutputStream(file,append),text);
+        }
+        public static void write(String text,FileOutputStream stream) throws IOException{
+            stream.write(text.getBytes(StandardCharsets.UTF_8)); stream.close();
         }
         public static String getFileName(Uri uri, ContentResolver contentResolver) {
             String result = null;

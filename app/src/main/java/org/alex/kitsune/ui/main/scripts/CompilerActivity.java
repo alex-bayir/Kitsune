@@ -56,7 +56,7 @@ public class CompilerActivity extends Activity {
             try{
                 Script script=Script.getInstance(file);
                 editor.setLanguage(script.getLanguageInterface());
-                editor.setTextContent(Utils.File.readFile(file));
+                editor.setTextContent(Utils.File.read(file));
             }catch(Throwable e){e.printStackTrace();}
         }
         editor.setUndoStack(new UndoStack());
@@ -82,7 +82,7 @@ public class CompilerActivity extends Activity {
                 public void run() {
 
                     try {
-                        Utils.File.writeFile(file,editor.getText().toString(),false);
+                        Utils.File.write(editor.getText().toString(),file,false);
                         Script script=Script.getInstance(file);
                         Book_Scripted.getScripts().put(script.getName(),script);
                         script.setSTDOUT(new PrintStream(out));

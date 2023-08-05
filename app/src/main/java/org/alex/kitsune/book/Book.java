@@ -139,10 +139,13 @@ public abstract class Book {
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
     }
     public Drawable getPage(Chapter chapter,int page){return Drawable.createFromPath(getPagePath(chapter,page));}
-    public boolean loadPage(Chapter chapter,Page page, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak){
-        return loadPage(chapter,page,null,done,cancel_flag,process,onBreak);
-    };
-    public abstract boolean loadPage(Chapter chapter,Page page,String data, Callback<File> done, Boolean cancel_flag,Callback2<Long,Long> process,Callback<Throwable> onBreak);
+    public boolean load(Chapter chapter,Page page,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
+        return load(getPage(chapter,page),page.getData(),done,cancel_flag,process,onBreak);
+    }
+    public boolean load(Chapter chapter,Page page,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
+        return load(getPage(chapter,page),data,done,cancel_flag,process,onBreak);
+    }
+    protected abstract boolean load(File save,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak);
     public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
     public static void loadThumbnail(String path,String url,String domain,Callback<Drawable> callback){

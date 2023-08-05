@@ -96,7 +96,7 @@ public class Updater {
                                 String text_script=NetworkUtils.getString(url);
                                 Script script= Book_Scripted.getScript(Utils.group(url,".*/(.*).lua"));
                                 if(text_script!=null){
-                                    Utils.File.writeFile(new File(script!=null?script.getPath():dir+Utils.group(url,".*/(.*)")),text_script,false);
+                                    Utils.File.write(new File(script!=null?script.getPath():dir+Utils.group(url,".*/(.*)")),text_script,false);
                                     update.set(true);
                                 }
                             }

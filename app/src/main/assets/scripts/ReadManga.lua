@@ -93,7 +93,7 @@ function getPages(url,chapter) -- table <Page>
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]=Page.new(i+1,ja:getString(0)..ja:getString(2))
+        pages[i]=Page.new(i+1,(ja:getString(0)..ja:getString(2)):match("([^?]+)"))
     end
     return pages
 end

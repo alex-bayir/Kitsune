@@ -220,30 +220,27 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     private void retry(){
         text_faces.setText(faces[Math.abs(random.nextInt(faces.length))]);
         if(file.length()==0){file.delete();}
-        draw(input.getText().toString());
+        draw(input.getText().toString(),showTranslated);
     }
 
-    public void onBind(int position,Chapter chapter,boolean showTranslate){
+    public void onBind(int position,Chapter chapter,boolean translation){
         if(this.position!=position || this.chapter!=chapter){
             this.position=position;
             this.chapter=chapter;
-            this.showTranslated=showTranslate;
+            this.showTranslated=translation;
             if(this.chapter!=null){
                 file=book.getPage(this.chapter,page=this.chapter.getPage(position));
-                draw(page.getUrl(),showTranslate);
+                draw(page.getUrl(),translation);
             }else{
                 image.setImageDrawable(null);}
-        }else if(this.showTranslated!=showTranslate){
-            this.showTranslated=showTranslate;
-            if(showTranslate){
+        }else if(this.showTranslated!=translation){
+            this.showTranslated=translation;
+            if(translation){
                 image.show();
             }else{
                 image.hide();
             }
         }
-    }
-    public void draw(String url){
-        draw(url,showTranslated);
     }
     public void draw(String url,boolean showTranslate){
         if(file.exists()){
@@ -260,7 +257,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             }
             if(drawable==null){
                 try{
-                    text.setText(Utils.File.readFile(file));
+                    text.setText(Utils.File.read(file));
                     text.setVisibility(View.VISIBLE);
                     image.setVisibility(View.GONE);
                 }catch (Exception ignored){}
@@ -274,7 +271,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             retry_layout.setVisibility(View.GONE);
             progress.setText(R.string.loading);
             new Thread(()->{
-                book.loadPage(chapter,page,url, f->{
+                book.load(chapter,page,url,f->{
                     NetworkUtils.getMainHandler().post(()->{
                         load_info.setVisibility(View.GONE);
                         retry_layout.setVisibility(View.GONE);

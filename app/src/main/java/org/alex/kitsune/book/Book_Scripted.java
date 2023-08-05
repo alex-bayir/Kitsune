@@ -1,6 +1,7 @@
 package org.alex.kitsune.book;
 
 import android.text.Html;
+import android.webkit.URLUtil;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.Callback2;
@@ -112,34 +113,22 @@ public class Book_Scripted extends Book {
     private Set<Book> getSimilar(List<Map<String,?>> similar){
         return similar.stream().filter(Objects::nonNull).map(Book_Scripted::determinate).filter(Objects::nonNull).collect(Collectors.toSet());
     }
-
     @Override
-    public boolean loadPage(Chapter chapter, Page page, String data, Callback<File> done, Boolean cancel_flag, Callback2<Long, Long> process, Callback<Throwable> onBreak) {
-        if(page==null){return false;}
-        File save=getPage(chapter, page);
-        if(page.getUrl()!=null){
-            if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),data==null?page.getUrl():data,getDomain(),save,cancel_flag,process,onBreak,false)){
-                done.call(save);
-                return true;
-            }
-        }else if(page.getText()!=null){
-            try{
-                Utils.File.writeFile(save,data==null?page.getText():data,false);
-                done.call(save);
-                return true;
-            }catch (IOException e){
-                if(onBreak!=null){onBreak.call(e);}
-            }
+    protected boolean load(File save,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
+        if(save==null || data==null){
+            return false;
         }else{
-            try{
-                int index=chapter.getPages().indexOf(page);
-                getPages(chapter);
-                return loadPage(chapter,chapter.getPage(index),data,done,cancel_flag,process,onBreak);
-            }catch (IOException e){
-                e.printStackTrace();
+            if(URLUtil.isValidUrl(data)){
+                if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),data,getDomain(),save,cancel_flag,process,onBreak,false)){
+                    done.call(save);
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                return Utils.File.write(save,data,false);
             }
         }
-        return false;
     }
 
     public static FilterSortAdapter createAdvancedSearchAdapter(String source){return createAdvancedSearchAdapter(getScript(source));}
