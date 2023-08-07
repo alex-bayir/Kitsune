@@ -1,7 +1,6 @@
 package org.alex.kitsune.book;
 
 import android.text.Html;
-import android.webkit.URLUtil;
 import com.alex.json.java.JSON;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.Callback2;
@@ -118,7 +117,7 @@ public class Book_Scripted extends Book {
         if(save==null || data==null){
             return false;
         }else{
-            if(URLUtil.isValidUrl(data)){
+            if(Utils.isUrl(data)){
                 if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),data,getDomain(),save,cancel_flag,process,onBreak,false)){
                     done.call(save);
                     return true;

@@ -16,6 +16,7 @@ import android.provider.OpenableColumns;
 import android.provider.Settings;
 import android.util.TypedValue;
 import android.view.*;
+import android.webkit.URLUtil;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -406,8 +407,8 @@ public class Utils {
         return date(date,new SimpleDateFormat(format,java.util.Locale.getDefault(Locale.Category.FORMAT)));
     }
 
-    public static boolean isUrl(String string){
-        return string!=null && (string.startsWith("https://") || string.startsWith("http://"));
+    public static boolean isUrl(String data){
+        return URLUtil.isValidUrl(data.replace('\\','/'));
     }
     /**
      * Unescape unicodes from html formats: uxxxx,\xxxx,\\uxxxx  (x-hex digit).
