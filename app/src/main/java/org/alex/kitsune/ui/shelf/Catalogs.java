@@ -92,7 +92,6 @@ public class Catalogs extends Fragment implements MenuProvider {
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
         menu.findItem(R.id.action_find_book).setVisible(true);
-        menu.findItem(R.id.check_for_updates).setVisible(false);
         menu.findItem(R.id.action_add_source).setVisible(true);
         menu.findItem(R.id.full).setVisible(false);
         menu.findItem(R.id.action_update_sctips).setVisible(true).setEnabled(!updatingScrips);

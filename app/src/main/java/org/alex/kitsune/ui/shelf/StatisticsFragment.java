@@ -119,7 +119,6 @@ public class StatisticsFragment extends Fragment implements MenuProvider {
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
         menu.findItem(R.id.action_find_book).setVisible(false);
         menu.findItem(R.id.full).setVisible(true);
-        menu.findItem(R.id.check_for_updates).setVisible(false);
         menu.findItem(R.id.action_add_source).setVisible(false);
         menu.findItem(R.id.action_update_sctips).setVisible(false);
     }

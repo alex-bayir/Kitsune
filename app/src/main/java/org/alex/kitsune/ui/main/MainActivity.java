@@ -10,7 +10,9 @@ import android.graphics.Typeface;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.*;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -19,7 +21,10 @@ import androidx.appcompat.widget.SearchView;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.MenuProvider;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.google.android.material.navigation.NavigationView;
+import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
+import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.Activity;
 import androidx.appcompat.widget.Toolbar;
 import com.google.android.material.snackbar.Snackbar;
@@ -43,7 +48,7 @@ import java.io.FileOutputStream;
 import java.net.URLDecoder;
 
 
-public class MainActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider {
+public class MainActivity extends Activity implements NavigationView.OnNavigationItemSelectedListener, MenuProvider, SwipeRefreshLayout.OnRefreshListener {
     private static final int PERMISSION_REQUEST_CODE=1;
     private static final int CALL_FILE_STORE=2;
     private static final int PERMISSION_READ_REQUEST_CODE=3;
@@ -52,6 +57,8 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
     NavigationView navigation;
     DrawerLayout drawer;
     PagesAdapter adapter;
+    SmoothProgressBar progress;
+    SwipeRefreshLayout swipe_refresh;
     public static boolean shouldUpdate=false;
 
     final SearchView.OnQueryTextListener listener=new SearchView.OnQueryTextListener() {
@@ -106,6 +113,15 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
         navigation=findViewById(R.id.nav_view);
         navigation.setCheckedItem(R.id.nav_shelf);
         navigation.setNavigationItemSelectedListener(this);
+        progress=findViewById(R.id.progress);
+        progress.setIndeterminateDrawable(new SmoothProgressDrawable.Builder(progress.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).interpolator(new AccelerateDecelerateInterpolator()).callbacks(new SmoothProgressDrawable.Callbacks() {
+            @Override public void onStop(){progress.setVisibility(View.GONE);}
+            @Override public void onStart(){progress.setVisibility(View.VISIBLE);}
+        }).build());
+        swipe_refresh=findViewById(R.id.swipe_refresh_layout);
+        swipe_refresh.setColorSchemeColors(0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff);
+        swipe_refresh.setOnRefreshListener(this);
+        swipe_refresh.setProgressBackgroundColorSchemeColor(isDark()?0xff282828:0xffffffff);
         findViewById(R.id.progress).setVisibility(View.GONE);
         onNavigationItemSelected(navigation.getMenu().findItem(R.id.nav_shelf));
         getHeader(navigation).setOnClickListener(view -> callFilesStore(MainActivity.this,CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE));
@@ -172,6 +188,12 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
         if(shouldUpdate){
             shouldUpdate=false;
             restart(new Intent(this,MainActivity.class));
+        }
+        if(swipe_refresh!=null){
+            swipe_refresh.setEnabled(!BookService.isAllUpdated());
+            if(getSharedPreferences().getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated() && BookService.isNotCalledUpdate()){
+                onRefresh();
+            }
         }
         removeMenuProvider(this);
         addMenuProvider(this);
@@ -260,5 +282,17 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
             }
             default -> super.onKeyUp(keyCode,event);
         };
+    }
+
+    @Override
+    public void onRefresh() {
+        swipe_refresh.setRefreshing(true);
+        //progress.progressiveStart();
+        new Handler().post(()->BookService.check_for_updates(this, n->{
+            setNew(n);
+            swipe_refresh.setRefreshing(false);
+            //progress.progressiveStop();
+            swipe_refresh.setEnabled(!BookService.isAllUpdated());
+        }));
     }
 }

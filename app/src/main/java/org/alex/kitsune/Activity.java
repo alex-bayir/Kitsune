@@ -103,6 +103,9 @@ public abstract class Activity extends AppCompatActivity {
         return super.onKeyUp(keyCode, event);
     }
 
+    public boolean isDark(){
+        return Utils.Theme.isThemeDark(this);
+    }
     public void setColorBars(){
         setColorBars(0,Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
     }

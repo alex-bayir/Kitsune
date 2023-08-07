@@ -45,8 +45,6 @@ public class Shelf extends Fragment implements MenuProvider {
     public static final String History=Constants.history,Saved=Constants.saved;
     LinkedHashMap<String, SettingsShelf.Container> shelf_sequence=new LinkedHashMap<>();
     SharedPreferences prefs;
-    public SmoothProgressBar progress;
-    private int p=-1;
     RecyclerView root;
     Adapter adapter;
     MainActivity mainActivity;
@@ -55,12 +53,6 @@ public class Shelf extends Fragment implements MenuProvider {
         requireActivity().removeMenuProvider(this);
         requireActivity().addMenuProvider(this);
         if(root==null){root=(RecyclerView) inflater.inflate(R.layout.content_shelf,container,false); mainActivity=(MainActivity)getActivity();}else{return root;}
-        progress=mainActivity.findViewById(R.id.progress);
-        progress.setIndeterminateDrawable(new SmoothProgressDrawable.Builder(progress.getContext()).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).interpolator(new AccelerateDecelerateInterpolator()).callbacks(new SmoothProgressDrawable.Callbacks() {
-            @Override public void onStop(){progress.setVisibility(View.GONE);}
-            @Override public void onStart(){progress.setVisibility(View.VISIBLE);}
-        }).build());
-        progress.progressiveStop();
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new Adapter(getContext(),createWrappers(true)).initRV(root);
         IntentFilter filter=new IntentFilter(Constants.action_Update);
@@ -68,7 +60,11 @@ public class Shelf extends Fragment implements MenuProvider {
         requireContext().registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                adapter.update(createWrappers(true));
+                if(intent.getBooleanExtra("only info",false)){
+                    adapter.update(BookService.get(intent.getIntExtra(Constants.hash,-1)));
+                }else{
+                    adapter.update(createWrappers(true));
+                }
             }
         },filter);
         return root;
@@ -79,63 +75,20 @@ public class Shelf extends Fragment implements MenuProvider {
 
     @Override
     public boolean onMenuItemSelected(@NonNull @NotNull MenuItem menuItem) {
-        switch(menuItem.getItemId()){
-            case (R.id.check_for_updates): check_for_updates(); return true;
-        }
         return false;
     }
 
     @Override
     public void onPrepareMenu(@NonNull @NotNull Menu menu) {
         menu.findItem(R.id.action_find_book).setVisible(true);
-        menu.findItem(R.id.check_for_updates).setVisible(!BookService.isAllUpdated()).setEnabled(!BookService.isUpdating);
         menu.findItem(R.id.action_add_source).setVisible(false);
         menu.findItem(R.id.full).setVisible(false);
         menu.findItem(R.id.action_update_sctips).setVisible(false);
     }
 
-
-    public void check_for_updates(){
-        if(NetworkUtils.isNetworkAvailable(progress.getContext())){
-            p=0;
-            //progress.setSmoothProgressDrawableColor(0);
-            progress.progressiveStart();
-            final int size=BookService.getMap(BookService.Type.All).values().size();
-            //ProgressDrawable pr=new ProgressDrawable().setMax(size);
-            if(getActivity()!=null){getActivity().invalidateOptionsMenu();}
-            BookService.isUpdating=true;
-            for(Book book : BookService.getMap(BookService.Type.All).values()){
-                if(!book.isUpdated()){
-                    book.update((updated)->{
-                        if(updated){
-                            BookService.setCacheDirIfNull(book.getSimilar());
-                            adapter.update(book);
-                            if(book.getNotCheckedNew()>0){progress.getContext().sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash, book.hashCode()));}
-                            if(++p==size){progress.progressiveStop(); BookService.isUpdating=false; mainActivity.setNew(BookService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
-                            //pr.setProgress(p).setOnView(progress);
-                        }
-                    },throwable->{
-                        if(++p==size){progress.progressiveStop(); BookService.isUpdating=false; mainActivity.setNew(BookService.getWithNew().size()); mainActivity.invalidateOptionsMenu();}
-                        //pr.setProgress(p).setOnView(progress);
-                    });
-                }else{++p;}
-            }
-        }else{
-            progress.progressiveStop();
-            Toast.makeText(progress.getContext(), R.string.no_internet,Toast.LENGTH_LONG).show();
-        }
-    }
-
     @Override
     public void onResume() {
         super.onResume();
-        if(prefs.getBoolean(Constants.update_on_start,true) && !BookService.isAllUpdated() && p<0){
-            check_for_updates();
-        }
-        if(getActivity()!=null){
-            getActivity().invalidateOptionsMenu();
-            progress.setVisibility(BookService.isUpdating?View.VISIBLE:View.GONE);
-        }
         if(adapter!=null){
             adapter.setEnableUpdate(true);
         }

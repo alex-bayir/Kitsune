@@ -1,11 +1,15 @@
 package org.alex.kitsune.services;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.widget.Toast;
 import androidx.preference.PreferenceManager;
 import org.alex.kitsune.BuildConfig;
+import org.alex.kitsune.R;
 import org.alex.kitsune.book.Book;
 import org.alex.kitsune.book.Book_Scripted;
+import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.ui.main.Constants;
 import org.alex.kitsune.ui.shelf.Catalogs;
 import org.alex.kitsune.utils.NetworkUtils;
@@ -13,6 +17,7 @@ import org.alex.kitsune.utils.Utils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class BookService {
     public enum Type{
@@ -212,5 +217,30 @@ public class BookService {
     }
     public static void clearCache(String cacheDir){
         Utils.File.delete(new File(cacheDir));
+    }
+
+    private static int p=-1;
+    public static boolean isNotCalledUpdate(){return p<0;}
+    public static void check_for_updates(Context context, Callback<Integer> onFinish){
+        if(NetworkUtils.isNetworkAvailable(context)){
+            p=0;
+            List<Book> books=BookService.getMap(BookService.Type.All).values().stream().filter(book -> !book.isUpdated()).collect(Collectors.toList());
+            final int size=books.size();
+            BookService.isUpdating=true;
+            for(Book book : books){
+                book.update((updated)->{
+                    if(updated){
+                        BookService.setCacheDirIfNull(book.getSimilar());
+                        context.sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra("only info",true));
+                        if(book.getNotCheckedNew()>0){context.sendBroadcast(new Intent(Constants.action_Update_New).putExtra(Constants.hash, book.hashCode()));}
+                        if(++p==size){BookService.isUpdating=false; onFinish.call(BookService.getWithNew().size());}
+                    }
+                },throwable->{
+                    if(++p==size){BookService.isUpdating=false; onFinish.call(BookService.getWithNew().size());}
+                });
+            }
+        }else{
+            Toast.makeText(context, R.string.no_internet,Toast.LENGTH_LONG).show();
+        }
     }
 }
