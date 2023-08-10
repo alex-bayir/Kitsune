@@ -154,7 +154,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
             new SimpleTooltip.Builder(root.getContext())
                     .anchorView(root)
                     .contentView(R.layout.tooltip)
-                    .text(description)
+                    .text(description.strip())
                     .gravity(Gravity.BOTTOM)
                     .showArrow(false)
                     .animated(false)
