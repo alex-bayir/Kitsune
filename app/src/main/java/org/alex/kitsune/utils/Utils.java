@@ -408,7 +408,7 @@ public class Utils {
     }
 
     public static boolean isUrl(String data){
-        return URLUtil.isValidUrl(data.replace('\\','/'));
+        return data!=null && URLUtil.isValidUrl(data.replace('\\','/'));
     }
     /**
      * Unescape unicodes from html formats: uxxxx,\xxxx,\\uxxxx  (x-hex digit).
