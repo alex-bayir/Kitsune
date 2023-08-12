@@ -131,7 +131,7 @@ function getPages(url,chapter) -- table <Page>
     local scripts=network:load_as_Document(network:url_builder(url.."/v"..chapter["vol"].."/c"..chapter["num"]):add("page",1):add("bid",chapter["bid"]):add("ui",chapter["ui"]):build()):select("script")
     local json=JSONObject:create(scripts:toString():match("window.__info = (.-);"))
     local array=JSONArray:create(scripts:toString():match("window.__pg = (.-);"))
-    local domain=json:getObject("servers"):getString("main").."/"..json:getObject("img"):getString("url")
+    local domain=json:getObject("servers"):getString(json:getObject("img"):getString("server")).."/"..json:getObject("img"):getString("url")
     local pages={}
     for i=0,array:size()-1,1 do
         local jo=array:getObject(i)
