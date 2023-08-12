@@ -56,6 +56,7 @@ public class Chapter{
     public float getNum(){return info.get("num",-1f);}
     public String getName(){return info.get("name","");}
     public long getDate(){return info.get("date",0L);}
+    public boolean isClose(){return info.get("close",false);}
     public List<Page> getPages(){return info.get("pages") instanceof List<?> pages ? filter(pages, Page.class):null;}
     public List<Page> setPages(List<Page> pages){
         info.put("pages",pages); return pages;

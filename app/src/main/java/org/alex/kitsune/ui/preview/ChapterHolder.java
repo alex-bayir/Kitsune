@@ -26,7 +26,7 @@ import static org.alex.kitsune.Activity.animation;
 
 public class ChapterHolder extends RecyclerView.ViewHolder {
     private final TextView title, subtitle,date,download;
-    private final ImageView play,markNew;
+    private final ImageView play,markNew,close;
     protected Book book;
 
     public ChapterHolder(ViewGroup parent, int layout, HolderListener listener, Book book, HolderMenuItemClickListener menuListener){
@@ -40,6 +40,7 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         download=itemView.findViewById(R.id.download_text);
         play=itemView.findViewById(R.id.chapter_play);
         markNew=itemView.findViewById(R.id.mark_new);
+        close=itemView.findViewById(R.id.chapter_close);
         this.book=book;
     }
     public void bind(Chapter chapter, boolean selected){
@@ -61,6 +62,7 @@ public class ChapterHolder extends RecyclerView.ViewHolder {
         download.setVisibility(book.checkChapter(chapter) ? View.VISIBLE : View.GONE);
         play.setVisibility((book.getHistory()!=null && chapter.equals(book.getHistory().getChapter())) ? View.VISIBLE : View.INVISIBLE);
         markNew.setVisibility(book.isNew(chapter)? View.VISIBLE : View.INVISIBLE);
+        close.setVisibility(chapter.isClose() && !book.checkChapter(chapter) ? View.VISIBLE : View.GONE);
         itemView.setActivated(selected);
     }
     public static java.text.SimpleDateFormat format=new java.text.SimpleDateFormat("dd.MM.yyyy",java.util.Locale.getDefault());
