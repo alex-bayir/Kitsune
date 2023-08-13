@@ -40,13 +40,7 @@ public class HistoryActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle(R.string.History);
         rv=findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(this));

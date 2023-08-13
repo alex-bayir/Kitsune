@@ -68,13 +68,7 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_advanced_search);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         progressBar=findViewById(R.id.progress);
         progressBar.setIndeterminateDrawable(new CircularProgressDrawable.Builder(this).colors(new int[]{0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff}).style(CircularProgressDrawable.STYLE_ROUNDED).strokeWidth(8f).sweepInterpolator(new AccelerateDecelerateInterpolator()).build());
         progressBar.setVisibility(View.INVISIBLE);

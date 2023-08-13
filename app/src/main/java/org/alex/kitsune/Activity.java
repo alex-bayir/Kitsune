@@ -17,6 +17,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
@@ -66,6 +67,7 @@ public abstract class Activity extends AppCompatActivity {
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         init();
         setTheme(Utils.Theme.getTheme(this));
+        setColorBars(0,isDark() ? 0xFF000000 : 0xFFFFFFFF);
         super.onCreate(savedInstanceState);
     }
 
@@ -107,7 +109,7 @@ public abstract class Activity extends AppCompatActivity {
         return Utils.Theme.isThemeDark(this);
     }
     public void setColorBars(){
-        setColorBars(0,Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
+        setColorBars(0,isDark() ? 0 : getWindow().getStatusBarColor());
     }
     public void setColorBars(int statusBar,int navigationBar){
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
@@ -228,7 +230,18 @@ public abstract class Activity extends AppCompatActivity {
     }
 
 
-
+    public ActionBar initActionBar(Toolbar toolbar){
+        setSupportActionBar(toolbar);
+        return initActionBar(getSupportActionBar());
+    }
+    public ActionBar initActionBar(ActionBar actionbar){
+        if(actionbar!=null){
+            actionbar.setDisplayHomeAsUpEnabled(true);
+            actionbar.setDisplayShowHomeEnabled(true);
+            actionbar.setDisplayShowTitleEnabled(false);
+        }
+        return actionbar;
+    }
 
 
 

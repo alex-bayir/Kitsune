@@ -39,12 +39,7 @@ public class RecommendationsActivity extends Activity {
         adapter=new Adapter(stringIds);
         pager.setAdapter(adapter);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if(getSupportActionBar()!=null) {
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle(R.string.recommendations);
         new TabLayoutMediator(findViewById(R.id.tabs), pager, true, true, (tab, position) -> tab.setText(stringIds[position])).attach();
         registerReceiver(new BroadcastReceiver() {

@@ -40,13 +40,7 @@ public class ScriptsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scripts);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         setColorBars(0,0);
         setActivityFullScreen();
         AppBarLayout barLayout=findViewById(R.id.app_bar);

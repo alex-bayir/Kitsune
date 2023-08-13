@@ -91,11 +91,7 @@ public class PreviewActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preview);
         toolbar=findViewById(R.id.toolbar);
-
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        getSupportActionBar().setDisplayShowTitleEnabled(false);
+        initActionBar(toolbar);
 
         prefs=PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -109,7 +105,6 @@ public class PreviewActivity extends Activity {
         bottomBar.setOnMenuItemClickListener(PreviewActivity.this::onOptionsItemSelected);
         onPrepareBottomBarMenu(bottomBar.getMenu());
         bottomBar.setBackgroundColor(ContextCompat.getColor(this,R.color.black_overlay));
-        setColorBars(getWindow().getStatusBarColor(),Utils.Theme.isThemeDark(this) ? 0 : getWindow().getStatusBarColor());
 
         book=BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
         hash=book!=null ? book.hashCode() : -1;

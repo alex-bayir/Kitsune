@@ -96,8 +96,6 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
 
         toolbar=findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getWindow().setStatusBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
-        getWindow().setNavigationBarColor(ContextCompat.getColor(this,R.color.transparent_dark));
 
         adapter=new PagesAdapter(this,getSupportFragmentManager(),R.id.pager);
         headerImagePath=getExternalFilesDir(null).getAbsolutePath()+File.separator+"header";

@@ -39,13 +39,7 @@ public class FavoritesActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_favorite);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle(R.string.Favorites);
         viewPager=findViewById(R.id.view_pager);
 

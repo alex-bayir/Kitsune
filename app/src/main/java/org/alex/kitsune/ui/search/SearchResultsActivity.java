@@ -36,13 +36,7 @@ public class SearchResultsActivity extends Activity {
         String source=getIntent().getStringExtra("source");
         List<Book> books=getIntent().getExtras().getBinder("books") instanceof Binder<?> binder? (List<Book>) binder.getData():null;
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle(source);
         rv=findViewById(R.id.rv_list);
         adapter=new BookAdapter(books, BookAdapter.Mode.LIST, book -> {

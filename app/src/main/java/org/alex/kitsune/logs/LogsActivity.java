@@ -37,13 +37,7 @@ public class LogsActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_logs);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle("Logs");
         if(Logs.getDir()==null){Logs.init(this);}
         adapter=new LogsAdapter(Logs.getLogs(Logs.getLogs()));

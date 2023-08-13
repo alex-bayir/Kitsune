@@ -47,13 +47,7 @@ public class SearchActivity extends Activity implements SearchView.OnQueryTextLi
         catalogs=Catalogs.getCatalogs(PreferenceManager.getDefaultSharedPreferences(this));
         String query=getIntent().getStringExtra("query");
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar=getSupportActionBar();
-        if(actionBar!=null){
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-            actionBar.setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolbar);
         toolbar.setTitle(query);
         rv=findViewById(R.id.rv_list);
         rv.setLayoutManager(new LinearLayoutManager(this,RecyclerView.VERTICAL,false));

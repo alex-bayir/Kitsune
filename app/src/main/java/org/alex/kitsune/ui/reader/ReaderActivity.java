@@ -175,12 +175,7 @@ public class ReaderActivity extends Activity implements View.OnSystemUiVisibilit
         statusBar=findViewById(R.id.statusBar);
         statusBar.setIsActive(true);
         toolBar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolBar);
-        if(getSupportActionBar()!=null){
-            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            getSupportActionBar().setDisplayShowHomeEnabled(true);
-            getSupportActionBar().setDisplayShowTitleEnabled(false);
-        }
+        initActionBar(toolBar);
         bottomBar=findViewById(R.id.bottomBar);
         seekBar=findViewById(R.id.progress);
         seekBar.setOnSeekBarChangeListener(this);
