@@ -36,7 +36,7 @@ function update(url)
         ["name"]=utils:text(e:selectFirst("span.eng-name"),e:selectFirst("span.name"):text()),
         ["name_alt"]=utils:text(e:selectFirst("span.name")),
         ["author"]=author,
-        ["genres"]=utils:text(e:select("div.subject-meta"):select("span.badge"),""):gsub(" ,",","),
+        ["genres"]=utils:text(e:select("div.subject-meta"):select("a[href*=/genre/]"),""):gsub(" ,",","),
         ["rating"]=num(e:selectFirst("span.rating-block"):attr("data-score")),
         ["status"]=status:find("завершено") and "2" or (status:find("выпуск продолжается") and "1" or "0"),
         ["description"]=utils:text(e:selectFirst("div.manga-description")),
