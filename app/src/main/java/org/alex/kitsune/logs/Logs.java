@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.RecyclerView;
+import org.alex.kitsune.BuildConfig;
 import org.alex.kitsune.R;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.HttpStatusException;
@@ -26,6 +27,8 @@ import java.net.SocketTimeoutException;
 import org.alex.kitsune.utils.Utils;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class Logs {
@@ -144,16 +147,9 @@ public class Logs {
     }
 
     public static class Log{
-        public final Throwable throwable;
         public final String stackTrace;
         public final long date;
         public final String type;
-        public Log(Throwable throwable){
-            this.throwable=throwable;
-            this.date=System.currentTimeMillis();
-            stackTrace=null;
-            type=throwable.getClass().getSimpleName();
-        }
         private static String readFile(File f){
             byte[] bytes=new byte[(int)f.length()];
             try{
@@ -173,27 +169,27 @@ public class Logs {
             this(readFile(file),time);
         }
         public Log(String stackTrace,long date){
-            throwable=null;
             this.stackTrace=stackTrace;
             this.date=date;
-            String line=stackTrace.substring(0,stackTrace.indexOf("\n"));
-            line=Utils.group(line,"^[\\w+\\.]+\\.(\\w+):?",".");
-            type=line.length()==0?"Unknown":line;
+            this.type=getType(stackTrace);
         }
         public SpannableString getSpannedString(){
             return getSpannedString(stackTrace);
         }
         public static SpannableString getSpannedString(String stackTrace){
             SpannableString str=new SpannableString(stackTrace);
-            int start,end=0;
-            String package_s=Logs.class.getPackage().getName();
-            while ((start=stackTrace.indexOf(package_s,end))>=0){
-                start=stackTrace.indexOf("(",start)+1;
-                end=stackTrace.indexOf(")",start);
+            Matcher matcher=Pattern.compile(BuildConfig.APPLICATION_ID+".*\\(([\\w:\\s.]+)\\)").matcher(str);
+            while(matcher.find()){
+                int start=matcher.start(1),end=matcher.end(1);
+                System.out.println(str.subSequence(start,end));
                 str.setSpan(new UnderlineSpan(),start,end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
                 str.setSpan(new ForegroundColorSpan(0xFF0022FF),start,end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
             return str;
+        }
+        public static String getType(String stackTrace){
+            String line=Utils.group(stackTrace,"^[\\S]+\\.(\\w+):?[^\\n]+",null);
+            return line.length()==0?"Unknown":line;
         }
         public String getType(){
             return type;
