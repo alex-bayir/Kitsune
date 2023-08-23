@@ -183,7 +183,7 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
             if(Logs.checkType(throwable, SocketTimeoutException.class)) {
                 out_error.setText(R.string.time_out);
             }else if(Logs.checkType(throwable, HttpStatusException.class)) {
-                out_error.setText(((HttpStatusException)throwable).message());
+                out_error.setText((throwable.getCause() instanceof HttpStatusException cause ? cause:throwable).getMessage());
             }else if(Logs.checkType(throwable, SSLException.class)){
                 out_error.setText(throwable.getClass().getSimpleName());
             }else{
