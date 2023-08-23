@@ -244,26 +244,34 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     }
     public void draw(String url,boolean showTranslate){
         if(file.exists()){
-            Drawable drawable=loadDrawable(file);
-            image.setImageDrawable(drawable,file);
-            if(drawable instanceof Animatable animatable){
-                animatable.start();
-            }
-            setScaleType(mode.S, mode.R==ReaderMode.VerticalWeb);
-            if(showTranslate){
-                image.show();
+            if(file.length()==0){
+                image.setImageDrawable(null);
+                load_info.setVisibility(View.GONE);
+                text_info.setText(String.format(Locale.getDefault(),"%s","Length of data is zero"));
+                input.setText(url);
+                retry_layout.setVisibility(View.VISIBLE);
             }else{
-                image.hide();
-            }
-            if(drawable==null){
-                try{
-                    text.setText(Utils.File.read(file));
-                    text.setVisibility(View.VISIBLE);
-                    image.setVisibility(View.GONE);
-                }catch (Exception ignored){}
-            }else{
-                text.setVisibility(View.GONE);
-                image.setVisibility(View.VISIBLE);
+                Drawable drawable=loadDrawable(file);
+                image.setImageDrawable(drawable,file);
+                if(drawable instanceof Animatable animatable){
+                    animatable.start();
+                }
+                setScaleType(mode.S, mode.R==ReaderMode.VerticalWeb);
+                if(showTranslate){
+                    image.show();
+                }else{
+                    image.hide();
+                }
+                if(drawable==null){
+                    try{
+                        text.setText(Utils.File.read(file));
+                        text.setVisibility(View.VISIBLE);
+                        image.setVisibility(View.GONE);
+                    }catch (Exception ignored){}
+                }else{
+                    text.setVisibility(View.GONE);
+                    image.setVisibility(View.VISIBLE);
+                }
             }
         }else{
             image.setImageDrawable(null);
