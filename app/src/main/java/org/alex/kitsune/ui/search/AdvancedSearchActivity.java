@@ -12,13 +12,15 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatDialogFragment;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.appcompat.widget.SearchView;
@@ -282,12 +284,15 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
 
     public static class FilterDialogFragment extends AppCompatDialogFragment implements View.OnClickListener{
         Button reset,apply;
+        EditText search;
         RecyclerView rv;
         final FilterSortAdapter adapter;
         private final Callback<?> callBack;
+        private final Callback<String> search_callback;
         public FilterDialogFragment(FilterSortAdapter adapter, Callback<?> callBack){
             this.adapter=adapter;
             this.callBack=callBack;
+            this.search_callback=adapter!=null?adapter.getSearchCallback():null;
         }
         @NotNull
         @Override
@@ -302,6 +307,7 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
         @Override
         public void onViewCreated(@NotNull View view, Bundle bundle) {
             super.onViewCreated(view, bundle);
+            search=view.findViewById(R.id.search);
             reset=view.findViewById(R.id.reset);
             reset.setOnClickListener(this);
             apply=view.findViewById(R.id.apply);
@@ -311,6 +317,15 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
             rv.setAdapter(adapter);
             rv.addItemDecoration(new HeaderDividerItemDecoration(view.getContext()));
             rv.setItemAnimator(null);
+            if(search_callback!=null){
+                search.addTextChangedListener(new TextWatcher() {
+                    @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+                    @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
+                    @Override public void afterTextChanged(Editable s) {
+                        search_callback.call(s.toString());
+                    }
+                });
+            }
         }
 
         public void onClick(View view) {

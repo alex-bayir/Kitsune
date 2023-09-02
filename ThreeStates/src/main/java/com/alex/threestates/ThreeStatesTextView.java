@@ -33,7 +33,7 @@ public class ThreeStatesTextView extends MaterialTextView {
     public State getState(){return this.state;}
     public void setState(int state){
         switch (state){
-            case -1: setState(State.Off); break;
+            case -1,2: setState(State.Off); break;
             case 1: setState(State.On); break;
             default: setState(State.Default); break;
         }

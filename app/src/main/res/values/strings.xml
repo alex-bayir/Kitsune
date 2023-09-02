@@ -142,6 +142,7 @@
     <string name="sort_popular">Popular</string>
     <string name="sort_latest">Latest</string>
     <string name="sort_updated">Updated</string>
+    <string name="search_tags" translatable="false">Search tags...</string>
 
 
     <!-- Catalogs -->

@@ -5,76 +5,75 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckedTextView;
+import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.R;
+import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.ClickSpan;
 import org.alex.kitsune.commons.DiffCallback;
 import org.alex.kitsune.commons.HolderClickListener;
 import com.alex.threestates.ThreeStatesTextView;
 import org.alex.kitsune.scripts.Script;
-import org.alex.kitsune.book.search.Options.StringPair;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 
 public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdapter.PairHolder> {
 
     private final Script script;
     private final Options[] options;
-    private final ArrayList<StringPair> pairs=new ArrayList<>(200);
-    private DiffCallback<StringPair> notify=new DiffCallback<>();
+    private final ArrayList<Options.Pair<?>> pairs=new ArrayList<>(200);
+    private final DiffCallback<Options.Pair<?>> notify=new DiffCallback<>();
+    private String search=null;
+
     public FilterSortAdapter(Script script,List<Options> options){
-        this(script,options!=null ? options.toArray(new Options[0]) : new Options[0]);
+        this(script,options!=null ? options.stream().filter(Objects::nonNull).toArray(Options[]::new) : new Options[0]);
     }
     public FilterSortAdapter(Script script,Options... options){
+        for(Options option : options){if(option==null){throw new IllegalArgumentException("Options cannot be null");}}
         this.options=options;
         this.script=script;
-        update_pairs();
+        update_pairs(search);
         reset(false);
     }
 
-    public void update_pairs(){
-        List<Options.StringPair> old=new ArrayList<>(pairs);
-        pairs.clear();
-        for(Options option: options){
-            if(option!=null){
-                pairs.add(option.title);
-                if(option.title.getChecked()==0){
-                    pairs.addAll(Arrays.asList(option.values));
+    public Callback<String> getSearchCallback(){return this::update_pairs;}
+    private static final Pattern check_is_simple_words=Pattern.compile("^[\\w\\s]+$");
+    public void update_pairs(String search){
+        try{
+            if(search!=null && search.length()>0 && check_is_simple_words.matcher(search).find()){search="(?i)"+search;}
+            Pattern pattern=search!=null && search.length()>0 ? Pattern.compile(search):null;
+            this.search=search;
+            List<Options.Pair<?>> old=new ArrayList<>(pairs);
+            pairs.clear();
+            for(Options option:options){
+                if(pattern==null){
+                    pairs.add(option.title);
+                    if(!option.title.isCollapsed()){pairs.addAll(Arrays.asList(option.values));}
+                }else{
+                    List<Options.Pair<?>> p=Arrays.stream(option.values).filter(pair->pair.contains(pattern)).collect(Collectors.toList());
+                    if(p.size()>0 || option.title.contains(pattern)){pairs.add(option.title); pairs.addAll(p);}
                 }
             }
-        }
-        notify.init(old,pairs,false).notifyUpdate(this);
+            notify.init(old,pairs,false).notifyUpdate(this);
+        }catch (PatternSyntaxException ignore){}
     }
     public Options[] getOptions(){return options;}
     private Options getOptions(int index){
-        int s=0; for(Options options:this.options){if(options!=null && index<(s+=options.values.length+1)){return options;}} return null;
+        int s=0; for(Options options:this.options){if(index<(s+=options.values.length+1)){return options;}} return null;
     }
     public Script getScript(){return script;}
-    private int onSelected(StringPair checked){
-        StringPair last=null;
-        for(StringPair pair:pairs){
-            if(pair.getGroup()==checked.getGroup() && pair!=checked && pair.getChecked()==1){(last=pair).setChecked(0);}
-        }
-        return pairs.indexOf(last);
-    }
+
     public void reset(){reset(true);}
     private void reset(boolean notify){
         for(Options op:options){
-            if(op!=null){
-                if(op.title.getType()==4){op.title.setValue(null);}
-                op.title.setChecked(0);
-                switch (op.values.length>0 ? op.values[0].getType() :-1){
-                    case 1: onSelected(op.values[0].change()); break;
-                    case 2:
-                    case 3: for(StringPair pair:op.values){pair.setChecked(0);} break;
-                    case 5: for(StringPair pair:op.values){pair.setKey(null); pair.setValue(null);}
-                }
-            }
+            op.reset();
         }
         if(notify){notifyItemRangeChanged(0,getItemCount());}
     }
@@ -86,31 +85,45 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     @Override
     public FilterSortAdapter.PairHolder onCreateViewHolder(@NonNull @NotNull ViewGroup parent, int viewType) {
         LayoutInflater from=LayoutInflater.from(parent.getContext());
-        switch (viewType){
-            case -1: return new CheckedHolder(from.inflate(R.layout.header_group,parent,false),(v, position) -> {
-                pairs.get(position).change();
-                update_pairs();
+        return switch (viewType) {
+            case -1 -> new CheckedHolder(from.inflate(R.layout.header_group, parent, false), (v, position) -> {
+                if (pairs.get(position) instanceof Options.Header h) {
+                    h.inverseCollapse();
+                    update_pairs(search);
+                }
             });
-            case +0: return new CheckedHolder(from.inflate(R.layout.header_group_checked_sort,parent,false),(v, position) -> {
+            case +0 -> new CheckedHolder(from.inflate(R.layout.header_group_checked_sort, parent, false), (v, position) -> {
+                        if (pairs.get(position) instanceof Options.HeaderSorted h) {
+                            if (v.getId() == android.R.id.checkbox) {
+                                h.change();
+                                notifyItemChanged(position);
+                            } else {
+                                h.inverseCollapse();
+                                update_pairs(search);
+                            }
+                        }
+                    });
+            case +1 -> new CheckedHolder(from.inflate(R.layout.item_checked_radio, parent, false), (v, position) -> {
+                notifyItemChanged(pairs.indexOf(pairs.get(position).change()));
+                notifyItemChanged(position);
+            });
+            case +2 -> new CheckedHolder(from.inflate(R.layout.item_checked_box, parent, false), (v, position) -> {
                 pairs.get(position).change();
                 notifyItemChanged(position);
             });
-            case +1: return new CheckedHolder(from.inflate(R.layout.item_checked_radio, parent, false), (v, position) -> {
-                notifyItemChanged(onSelected(pairs.get(position).change()));
-                notifyItemChanged(position);
-            });
-            case +2: return new CheckedHolder(from.inflate(R.layout.item_checked_box, parent, false), (v, position) -> {
+            case +3 -> new CheckedHolder(from.inflate(R.layout.item_checked_box_3, parent, false), (v, position) -> {
                 pairs.get(position).change();
                 notifyItemChanged(position);
             });
-            case +3: return new CheckedHolder(from.inflate(R.layout.item_checked_box_3, parent, false), (v, position) -> {
-                pairs.get(position).change();
-                notifyItemChanged(position);
+            case +4 -> new InputHolder(from.inflate(R.layout.item_input, parent, false));
+            case +5 -> new RangeInputHolder(from.inflate(R.layout.item_input_range, parent, false), (v, position) -> {
+                if (pairs.get(position) instanceof Options.StringPairRange h) {
+                    h.inverseCollapse();
+                    notifyItemChanged(position);
+                }
             });
-            case +4: return new InputHolder(from.inflate(R.layout.item_input, parent, false));
-            case +5: return new RangeInputHolder(from.inflate(R.layout.item_input_range,parent,false));
-            default: throw new AssertionError("No such type of holder");
-        }
+            default -> throw new AssertionError("No such type of holder");
+        };
     }
 
     @Override
@@ -124,29 +137,36 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
         public PairHolder(@NonNull @NotNull View itemView) {
             super(itemView);
         }
-        public abstract void bind(StringPair pair);
+        public abstract void bind(Options.Pair<?> pair);
     }
 
     public static final class CheckedHolder extends PairHolder{
+        TextView title;
         public CheckedHolder(@NonNull @NotNull View itemView,final HolderClickListener listener) {
-            super(itemView); if(listener!=null){itemView.setOnClickListener(v->listener.onItemClick(v,getAbsoluteAdapterPosition()));}
+            super(itemView);
+            title=itemView.findViewById(android.R.id.title);
+            if(listener!=null){
+                itemView.setOnClickListener(v->listener.onItemClick(v,getAbsoluteAdapterPosition()));
+                View view=itemView.findViewById(android.R.id.checkbox);
+                if(view!=null){view.setOnClickListener(v->listener.onItemClick(v,getAbsoluteAdapterPosition()));}
+            }
         }
-        public void bind(StringPair pair){
-            setCheckedText(pair.getKey(),pair.getChecked());
+        public void bind(Options.Pair<?> pair){
+            setCheckedText(pair.getTitle(),pair.getState());
         }
         public void setCheckedText(String text,int state){
-            ((TextView)itemView).setText(text);
-            if(itemView instanceof ThreeStatesTextView){
-                ((ThreeStatesTextView)itemView).setState(state);
+            title.setText(text);
+            if(title instanceof ThreeStatesTextView){
+                ((ThreeStatesTextView)title).setState((state+1)%3-1);
             }else{
-                ((CheckedTextView)itemView).setChecked(state==1);
+                ((CheckedTextView)title).setChecked(state==1);
             }
         }
     }
     public static final class InputHolder extends PairHolder{
         TextView title;
         TextView input;
-        StringPair pair;
+        Options.StringPairEditable pair;
         public InputHolder(@NonNull @NotNull View itemView) {
             super(itemView);
             title=itemView.findViewById(android.R.id.title);
@@ -159,46 +179,48 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
                 }
             });
         }
-        public void bind(StringPair pair){
-            this.pair=pair;
-            title.setText(pair.getKey());
-            input.setText(pair.getValue());
+        public void bind(Options.Pair<?> pair){
+            if(pair instanceof Options.StringPairEditable p){
+                this.pair=p;
+                title.setText(this.pair.getTitle());
+                input.setText(this.pair.getValue());
+            }
         }
     }
     public static final class RangeInputHolder extends PairHolder{
-        TextView start;
-        TextView end;
-        StringPair pair;
-        public RangeInputHolder(@NonNull @NotNull View itemView) {
+        TextView title;
+        EditText start, end;
+        Options.StringPairRange pair;
+        View container;
+        public RangeInputHolder(@NonNull @NotNull View itemView,final HolderClickListener title_listener) {
             super(itemView);
+            title=itemView.findViewById(android.R.id.title);
+            container=itemView.findViewById(R.id.container);
             start=itemView.findViewById(R.id.start);
             end=itemView.findViewById(R.id.end);
             start.addTextChangedListener(new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
-                @Override public void afterTextChanged(Editable s) {
-                    pair.setKey(s.length()==0? null : s.toString());
-                }
+                @Override public void afterTextChanged(Editable s){pair.setLower(s.length()==0? null : s.toString());}
             });
             end.addTextChangedListener(new TextWatcher() {
                 @Override public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
                 @Override public void onTextChanged(CharSequence s, int start, int before, int count) {}
                 @Override public void afterTextChanged(Editable s) {
-                    pair.setValue(s.length()==0? null : s.toString());
+                    pair.setUpper(s.length()==0? null : s.toString());
                 }
             });
+            if(title_listener!=null){
+                title.setOnClickListener(v->title_listener.onItemClick(v,getAbsoluteAdapterPosition()));
+            }
         }
-        public void bind(StringPair pair){
-            this.pair=pair;
-            start.setText(pair.getKey());
-            end.setText(pair.getValue());
-        }
-    }
-
-    public void changeOption(String name){
-        for(StringPair pair:pairs){
-            if(Objects.equals(name,pair.getKey())){
-                pair.change();
+        public void bind(Options.Pair<?> pair){
+            if(pair instanceof Options.StringPairRange p){
+                this.pair=p;
+                title.setText(this.pair.getTitle());
+                start.setText(this.pair.getLower());
+                end.setText(this.pair.getUpper());
+                container.setVisibility(this.pair.isCollapsed()?View.GONE:View.VISIBLE);
             }
         }
     }
@@ -207,11 +229,11 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
     public void deselectOption(String name){setOption(name,-1);}
     private void setOption(String name, int value){
         if(name!=null){
-            for(StringPair pair:pairs){
-                if(Objects.equals(name,pair.getKey())){
-                    pair.setChecked(value);
-                }
-            }
+            pairs.stream()
+                    .filter(pair -> pair instanceof Options.StringPair && Objects.equals(pair.getKey(),name))
+                    .map(pair->(Options.StringPair)pair)
+                    .forEachOrdered(pair->pair.setState(value));
+
         }
     }
     public Spannable getClickableSpans(CharSequence text, ClickSpan.SpanClickListener listener){
@@ -224,11 +246,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
         if(adapter!=null){adapter.getTitles(words);}
     }
     public Set<String> getTitles(Set<String> words){
-        for(StringPair pair:pairs){
-            if(pair.getKey()!=null && (1<=pair.getType() &&  pair.getType()<=3)){
-                words.add(pair.getKey());
-            }
-        }
+        pairs.stream().filter(pair->pair instanceof Options.StringPair && pair.getKey()!=null).forEachOrdered(pair->words.add(pair.getKey()));
         return words;
     }
 
