@@ -47,6 +47,7 @@ function update(url)
             ["name"]=jo:getString("en_name"),
             ["name_alt"]=jo:getString("rus_name"),
             ["genres"]=jo:getArray("genres"):join(", ",{"name"}),
+            ["tags"]=jo:getArray("categories"):join(", ",{"name"}),
             ["rating"]=jo:getDouble("avg_rating")/2,
             ["status"]=jo:getObject("status"):getString("name"),
             ["description"]=jo:getString("description"),

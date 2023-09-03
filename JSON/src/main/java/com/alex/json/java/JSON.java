@@ -476,7 +476,7 @@ public interface JSON {
                 default -> null;
             };
         }
-        throw new IllegalArgumentException("No ending tag found");
+        throw new JSONException("No ending tag found");
     }
     static java.lang.Object parse_primitive(String buf){
         return switch (buf){
@@ -602,4 +602,5 @@ public interface JSON {
         }
         return result;
     }
+    class JSONException extends IOException{public JSONException(String message){super(message);}}
 }

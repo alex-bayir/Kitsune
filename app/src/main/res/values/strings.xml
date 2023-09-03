@@ -54,6 +54,7 @@
     <string name="read" translatable="false">Read</string>
     <string name="CONTINUE" translatable="false">CONTINUE</string>
     <string name="genres">Genres</string>
+    <string name="tags">Tags</string>
     <string name="estimated_time">Estimated reading time</string>
     <string name="average_reading_time_per_day">Average reading time per day</string>
     <string name="calculating" translatable="false">Calculating…</string>
@@ -187,6 +188,8 @@
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
         Version 1.8.2:\n
+        \t-Added tag search.\n
+        \t-Added tags to the information page.\n
         \t-Added animations (can be disabled).\n
         \t-Added incognito mode.\n
         \t-The reader interface has been slightly improved. \n

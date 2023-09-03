@@ -297,7 +297,9 @@ public class AdvancedSearchActivity extends Activity implements Callback<String>
         @NotNull
         @Override
         public Dialog onCreateDialog(Bundle bundle) {
-            return new BottomSheetDialog(requireContext());
+            Dialog dialog=new BottomSheetDialog(requireContext());
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
+            return dialog;
         }
 
         @Override

@@ -2,11 +2,11 @@ apply plugin: 'com.android.library'
 
 android {
     namespace 'com.alex.ratingbar'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         minSdkVersion 17
-        targetSdkVersion 33
+        targetSdkVersion 34
     }
 
     buildTypes.configureEach {

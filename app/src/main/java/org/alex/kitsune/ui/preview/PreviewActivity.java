@@ -12,6 +12,7 @@ import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.Toast;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import org.alex.kitsune.Activity;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
@@ -41,7 +42,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 
-public class PreviewActivity extends Activity {
+public class PreviewActivity extends Activity implements SwipeRefreshLayout.OnRefreshListener {
     PreviewPagerAdapter adapter;
     SmoothProgressBar progressBar;
     ViewPager2 pager;
@@ -51,6 +52,7 @@ public class PreviewActivity extends Activity {
     Throwable throwable=null;
     long throwableTime=0;
     SharedPreferences prefs;
+    SwipeRefreshLayout swipe_refresh;
     private static int hash=-1;
     static final int PERMISSION_REQUEST_CODE=1;
     static final int CALL_FILE_STORE=2;
@@ -69,6 +71,7 @@ public class PreviewActivity extends Activity {
             adapter.bindPages(throwable);
         }
         invalidateOptionsMenu();
+        swipe_refresh.setRefreshing(false);
     };
     private final Callback<Boolean> updateCallback=(updated) -> {
         toolbar.setTitle(book.getName());
@@ -80,6 +83,7 @@ public class PreviewActivity extends Activity {
             invalidateOptionsMenu();
         }
         clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
+        swipe_refresh.setRefreshing(false);
     };
     public void updateContent(){
         updateCallback.call(book.isUpdated());
@@ -105,6 +109,10 @@ public class PreviewActivity extends Activity {
         bottomBar.setOnMenuItemClickListener(PreviewActivity.this::onOptionsItemSelected);
         onPrepareBottomBarMenu(bottomBar.getMenu());
         bottomBar.setBackgroundColor(ContextCompat.getColor(this,R.color.black_overlay));
+        swipe_refresh=findViewById(R.id.swipe_refresh_layout);
+        swipe_refresh.setColorSchemeColors(0xff0000ff,0xff00ffff,0xff00ff00,0xffffff00,0xffff0000,0xffff00ff);
+        swipe_refresh.setOnRefreshListener(this);
+        swipe_refresh.setProgressBackgroundColorSchemeColor(isDark()?0xff282828:0xffffffff);
 
         book=BookService.getOrPutNewWithDir(getIntent().getIntExtra(Constants.hash, hash),getIntent().getStringExtra(Constants.book));
         hash=book!=null ? book.hashCode() : -1;
@@ -118,9 +126,10 @@ public class PreviewActivity extends Activity {
         pager.setAdapter(adapter);
         progressBar.progressiveStart();
         updateContent();
+        swipe_refresh.setEnabled(true);
         if(!book.isUpdated()){
             if(NetworkUtils.isNetworkAvailable(this)){
-                book.update(updateCallback, errorCallback);
+                onRefresh();
             }else{
                 errorCallback.call(null);
             }
@@ -277,5 +286,11 @@ public class PreviewActivity extends Activity {
             changeNames.cancel();
         });
         return changeNames;
+    }
+
+    @Override
+    public void onRefresh() {
+        swipe_refresh.setRefreshing(true);
+        book.update(updateCallback, errorCallback);
     }
 }

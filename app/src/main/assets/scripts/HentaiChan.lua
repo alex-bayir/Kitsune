@@ -36,10 +36,10 @@ function update(url)
     return {
         ["url"]=url,
         ["url_web"]=url,
-        ["name"]=utils:text(e:selectFirst("a.title_top_a"),""):match("[a-zA-Z].*[a-zA-Z]"),
-        ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):match("[а-яА-Я].*[а-яА-Я]"),
+        ["name"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([a-zA-Z][^а-яА-Я]*[a-zA-Z])"),
+        ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
         ["author"]=author,
-        ["genres"]=utils:text(e:select("li.sidetag"),""):gsub("%s?%+%s%-%s",", "):sub(3),
+        ["genres"]=utils:attr(e:select("li.sidetag"):select("a[href*=/tags/-]"),"href","",", "):gsub("/tags/%-",""):gsub("_"," "),
         ["description"]=utils:text(e:selectFirst("div#description")),
         ["thumbnail"]=utils:attr(e:selectFirst("img#cover"),"src"),
         ["chapters"]=chapters
@@ -91,8 +91,8 @@ function query_url(url,page)
             list[n]={
                 ["url"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
                 ["url_web"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
-                ["name"]=utils:text(e:selectFirst("h2"),""):match("[a-zA-Z].*[a-zA-Z]"),
-                ["name_alt"]=utils:text(e:selectFirst("h2"),""):match("[а-яА-Я].*[а-яА-Я]"),
+                ["name"]=utils:text(e:selectFirst("h2"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([a-zA-Z][^а-яА-Я]*[a-zA-Z])"),
+                ["name_alt"]=utils:text(e:selectFirst("h2"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
                 ["author"]=author,
                 ["genres"]=utils:text(e:select("div.genre"),""):gsub("_"," "),
                 ["description"]=utils:text(e:select("div.tags")),

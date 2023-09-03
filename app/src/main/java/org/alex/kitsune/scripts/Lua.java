@@ -15,6 +15,7 @@ import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.book.Chapter;
@@ -307,8 +308,10 @@ public class Lua extends Script{
         public static String attr(Element element, String attr){return attr(element, attr,null);}
         public static String text(Element element, String defText){return element!=null ? element.text() : defText;}
         public static String text(Element element){return text(element,null);}
+        public static String attr(Elements elements, String attr,String defValue, String delimiter){return ((elements!=null && elements.size()>0) ? elements.stream().map(e->e.attr(attr)).filter(text->text.length()>0).collect(Collectors.joining(delimiter)) : defValue);}
         public static String attr(Elements elements, String attr, String defValue){return ((elements!=null && elements.size()>0) ? elements.attr(attr) : defValue);}
         public static String attr(Elements elements, String attr){return attr(elements, attr,null);}
+        public static String text(Elements elements, String defText, String delimiter){return ((elements!=null && elements.size()>0) ? elements.stream().map(Element::text).filter(text->text.length()>0).collect(Collectors.joining(delimiter)) : defText);}
         public static String text(Elements elements, String defText){return ((elements!=null && elements.size()>0) ? elements.text() : defText);}
         public static String text(Elements elements){return text(elements,null);}
         public static List<Chapter> uniqueChapters(List<Chapter> chapters,boolean translator_with_max_chapters,String translator){

@@ -192,7 +192,7 @@ sealed class JSON {
                     }
                 }
             }
-            throw IllegalArgumentException("No ending tag found")
+            throw JSONException("No ending tag found")
         }
         private fun parse_primitive(str:String):Any?{
             return when (str) {
@@ -591,4 +591,5 @@ sealed class JSON {
         }
     }
 
+    class JSONException(message: String?) : IOException(message)
 }

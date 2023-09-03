@@ -23,6 +23,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public abstract class Book {
@@ -111,6 +112,7 @@ public abstract class Book {
     public final String getAnyName(boolean alt){return alt ? getNameAlt()!=null ? getNameAlt() : getName() : getName()!=null ? getName() : getNameAlt();}
     public final Object getAuthor(){return get("author");}
     public final String getGenres(){return getString("genres");}
+    public final String getTags(){return getString("tags");}
     public final String getThumbnail(){return getString("thumbnail");}
     public final double getRating(){return get("rating",0.0);}
     public final String getDescription(){return getString("description");}
@@ -203,8 +205,7 @@ public abstract class Book {
         if(file.exists()){
             try{
                 book=Book.fromJSON(new FileReader(file));
-                if(book !=null){
-                    book.set("dir",file.getParent());}
+                if(book!=null){book.set("dir",file.getParent());}
             }catch(IOException e){
                 Logs.saveLog(e);
             }
@@ -394,9 +395,16 @@ public abstract class Book {
         return Book_Scripted.createAdvancedSearchAdapter(source);
     }
 
-    public CharSequence getGenres(ClickSpan.SpanClickListener listener){
+    private CharSequence get(Function<Void,String> function,ClickSpan.SpanClickListener listener){
         FilterSortAdapter adapter=Book.getFilterSortAdapter(getSource());
-        return adapter!=null && getGenres()!=null ? adapter.getClickableSpans(getGenres(), listener) : getGenres();
+        String text=function.apply(null);
+        return adapter!=null && text!=null ? adapter.getClickableSpans(text, listener) : text;
+    }
+    public CharSequence getGenres(ClickSpan.SpanClickListener listener){
+        return get(v->getGenres(),listener);
+    }
+    public CharSequence getTags(ClickSpan.SpanClickListener listener){
+        return get(v->getTags(),listener);
     }
 
     public static final Comparator<Book> HistoryComparator=Comparator.comparingLong(Book::getHistoryDate).reversed();

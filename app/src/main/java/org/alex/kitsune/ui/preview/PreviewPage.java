@@ -55,7 +55,7 @@ public class PreviewPage extends PreviewHolder {
     private final RatingBar ratingBar;
     private final Button read;
     private final AppCompatImageButton favorite, web;
-    private final ListItemView genres;
+    private final ListItemView genres,tags;
     private final ListItemView averageTime;
     private final ListItemView description;
     private BookAdapter similar;
@@ -96,6 +96,10 @@ public class PreviewPage extends PreviewHolder {
         genres.changeSubtitleSingleLine().setOnClickListener(v -> genres.changeSubtitleSingleLine());
         genres.getSubtitleView().setMovementMethod(LinkMovementMethod.getInstance());
         genres.setOnLongClickListener(v->{Utils.setClipboard(itemView.getContext(), genres.getSubtitle()); Toast.makeText(itemView.getContext(),R.string.text_copied,Toast.LENGTH_SHORT).show(); return true;});
+        tags=itemView.findViewById(R.id.tags);
+        tags.changeSubtitleSingleLine().setOnClickListener(v -> tags.changeSubtitleSingleLine());
+        tags.getSubtitleView().setMovementMethod(LinkMovementMethod.getInstance());
+        tags.setOnLongClickListener(v->{Utils.setClipboard(itemView.getContext(), tags.getSubtitle()); Toast.makeText(itemView.getContext(),R.string.text_copied,Toast.LENGTH_SHORT).show(); return true;});
         averageTime=itemView.findViewById(R.id.average_read_time);
         description=itemView.findViewById(R.id.description);
         description.setOnClickListener(v-> description.changeSubtitleSingleLine());
@@ -179,7 +183,10 @@ public class PreviewPage extends PreviewHolder {
         });
         info.setText(createText(info.getContext(), book,full));
         ratingBar.setRating(book.getRating(),true);
+        genres.setVisibility(book.getGenres()!=null && book.getGenres().length()>0 ? View.VISIBLE:View.GONE);
         genres.setSubtitle(book.getGenres((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))));
+        tags.setVisibility(book.getTags()!=null && book.getTags().length()>0 ? View.VISIBLE:View.GONE);
+        tags.setSubtitle(book.getTags((view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.option,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))));
 
         averageTime.setSubtitle(full ? calculateTime(itemView.getResources(), book.getChapters().size()) : averageTime.getResources().getString(R.string.calculating));
         description.setSubtitle(full ? (book.isUpdated() || book.getDescription()!=null ? book.getDescription(Html.FROM_HTML_MODE_COMPACT,description.getResources().getString(R.string.no_description)) : description.getResources().getString(R.string.error_has_occurred)) : description.getResources().getString(R.string.loading));

@@ -26,15 +26,14 @@ public class NewFragment extends Fragment implements MenuProvider {
     RecyclerView rv;
     BookAdapter adapter;
     SharedPreferences prefs;
-    View root;
     MainActivity mainActivity;
     @Override
     public View onCreateView(@NonNull @NotNull LayoutInflater inflater, @Nullable @org.jetbrains.annotations.Nullable ViewGroup container, @Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         requireActivity().removeMenuProvider(this);
         requireActivity().addMenuProvider(this);
-        if(root!=null){return root;}
-        root=inflater.inflate(R.layout.fragment_recyclerview_list,container,false);
-        rv=root.findViewById(R.id.rv_list);
+        if(rv!=null){return rv;}
+        rv=new RecyclerView(requireContext());
+        rv.setLayoutParams(new RecyclerView.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         prefs=PreferenceManager.getDefaultSharedPreferences(requireContext());
         adapter=new BookAdapter(null, BookAdapter.Mode.LIST,
                 book -> startActivity(new Intent(getContext(), PreviewActivity.class).putExtra(Constants.hash,book.hashCode()),animation(requireActivity(),Gravity.START,Gravity.END)),
@@ -73,7 +72,7 @@ public class NewFragment extends Fragment implements MenuProvider {
                 bind();
             }
         },new IntentFilter(Constants.action_Update_Shelf));
-        return root;
+        return rv;
     }
 
     public void bind(){

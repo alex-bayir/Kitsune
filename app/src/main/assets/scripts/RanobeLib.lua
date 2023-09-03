@@ -28,7 +28,6 @@ function update(url)
     local ui=json:getObject("user"); if(ui) then ui=ui:get("id",-1); if(ui==-1) then ui=nil end end
     local jo=json:getObject("manga")
     local container=doc:selectFirst("div.media-container")
-    local genres=container:select("a.media-tag-item") local str="" for i=0,genres:size()-1,1 do str=str..", "..genres:get(i):text() end genres=str:sub(3)
     local list=json:getObject("chapters"):getArray("list")
     local chapters=utils:to_list({})
     local branches=json:getObject("chapters"):getArray("branches")
@@ -51,7 +50,8 @@ function update(url)
         ["name"]=jo:getString("name"),
         ["name_alt"]=jo:getString("rus_name"),
         ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
-        ["genres"]=genres,
+        ["genres"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?genres]"),"",", "),
+        ["tags"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?tags]"),"",", "),
         ["status"]=container:select("a[href*=manga_status]"):attr("href"):match("manga_status.*=(%d)"),
         ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),

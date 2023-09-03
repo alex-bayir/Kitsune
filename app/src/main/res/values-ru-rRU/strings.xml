@@ -10,6 +10,7 @@
     <string name="action_open_in">Открыть в</string>
     <string name="unable_create_shortcut">Не получилось создать ярлык</string>
     <string name="genres">Жанры</string>
+    <string name="tags">Теги</string>
     <string name="estimated_time">Расчётное время чтения</string>
     <string name="description">Описание</string>
     <string name="error_has_occurred">Произошла ошибка</string>
@@ -85,6 +86,8 @@
     <string name="sourcenotdefined">Источник не определён для ссылки: \"%1$s\"</string>
     <string name="what_new_innovations">
         Версия 1.8.2:\n
+        \t-Добавлен поиск по тэгам.\n
+        \t-Добавлены тэги на страницу с информацией.\n
         \t-Добавлены анимации (можно отключить).\n
         \t-Добавлен режим инкогнито.\n
         \t-Немного улучшен интерфейс читалки.\n
