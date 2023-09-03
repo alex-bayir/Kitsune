@@ -15,6 +15,7 @@ import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.SearchView;
@@ -40,6 +41,7 @@ import org.alex.kitsune.ui.main.scripts.ScriptsActivity;
 import org.alex.kitsune.ui.search.RecommendationsActivity;
 import org.alex.kitsune.ui.search.SearchActivity;
 import org.alex.kitsune.ui.shelf.PagesAdapter;
+import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Updater;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
@@ -284,13 +286,18 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
 
     @Override
     public void onRefresh() {
-        swipe_refresh.setRefreshing(true);
-        //progress.progressiveStart();
-        new Handler().post(()->BookService.check_for_updates(this, n->{
-            setNew(n);
+        if(NetworkUtils.isNetworkAvailable(this)){
+            swipe_refresh.setRefreshing(true);
+            //progress.progressiveStart();
+            new Handler().post(()->BookService.check_for_updates(this, n->{
+                setNew(n);
+                swipe_refresh.setRefreshing(false);
+                //progress.progressiveStop();
+                swipe_refresh.setEnabled(!BookService.isAllUpdated());
+            }));
+        }else{
             swipe_refresh.setRefreshing(false);
-            //progress.progressiveStop();
-            swipe_refresh.setEnabled(!BookService.isAllUpdated());
-        }));
+            Toast.makeText(progress.getContext(), R.string.no_internet,Toast.LENGTH_LONG).show();
+        }
     }
 }

@@ -85,7 +85,7 @@ public class BookService {
     public static int putNew(Book book){if(book !=null){book.setDir(cacheDir);} return put(map, book);}
     public static Book getOrPutNewWithDir(int hash, String json){
         Book book=get(hash);
-        if(book==null && (book= Book.fromJSON(json))!=null){
+        if(book==null && (book=Book.fromJSON(json))!=null){
             book.moveTo(dir);
             put(map, book);
         }
@@ -102,7 +102,7 @@ public class BookService {
     public static Book getOrPutNewWithDir(Book book){return book !=null ? getOrPutNewWithDir(book.hashCode(), book) : null;}
 
     public static void put(Book book){
-        if(book !=null){
+        if(book!=null){
             map.put(book.hashCode(), book);
             allocate(book,true);
         }

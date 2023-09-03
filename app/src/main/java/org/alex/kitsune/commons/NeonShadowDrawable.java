@@ -5,6 +5,7 @@ import android.graphics.*;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.util.Pair;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -14,7 +15,11 @@ import androidx.core.graphics.ColorUtils;
 import androidx.recyclerview.widget.RecyclerView;
 import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
+import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -141,36 +146,33 @@ public class NeonShadowDrawable extends Drawable implements Animatable {
         return rect;
     }
     public static void setTo(ViewGroup parent,int max_views,Function<Integer,NeonShadowDrawable> creator){
-        NeonShadowDrawable[] array=new NeonShadowDrawable[max_views];
-        for(int i=0;i<array.length;i++){array[i]=creator.apply(i);}
-        setTo(parent,array);
+        setTo(parent,IntStream.range(0,max_views).mapToObj(i->new Pair<>(i,creator.apply(i))).filter(pair->pair.first!=null && pair.second!=null).collect(Collectors.toMap(pair->pair.first,pair->pair.second)));
     }
-    public static void setTo(ViewGroup parent,NeonShadowDrawable[] array){
-        LayerDrawable layers=new LayerDrawable(array);
+    private static void setTo(ViewGroup parent,Map<Integer,NeonShadowDrawable> map){
+        LayerDrawable layers=new LayerDrawable(map.values().toArray(new NeonShadowDrawable[0]));
         if(parent instanceof RecyclerView rv){
             rv.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
-                    for(int i=0;i<array.length;i++){
-                        if(array[i]!=null){
-                            if(i<parent.getChildCount()){
-                                array[i].setBounds(NeonShadowDrawable.getRectOf(parent,parent.getChildAt(i),array[i].getPaddings()));
-                            }else{
-                                array[i].setBounds(-1000,-1000,-1000,-1000);
-                            }
-                            array[i].invalidateSelf();
+                @Override public void onScrolled(@NonNull @NotNull RecyclerView recyclerView, int dx, int dy) {
+                    for(Map.Entry<Integer,NeonShadowDrawable> entry:map.entrySet()){
+                        if(entry.getKey()<parent.getChildCount()){
+                            entry.getValue().setBounds(NeonShadowDrawable.getRectOf(parent,parent.getChildAt(entry.getKey()),entry.getValue().getPaddings()));
+                        }else{
+                            entry.getValue().setBounds(-1000,-1000,-1000,-1000);
                         }
+                        entry.getValue().invalidateSelf();
                     }
                 }
             });
         }else{
             parent.addOnLayoutChangeListener((v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) -> {
-                for(int i=0;i<array.length;i++){
-                    if(array[i]!=null && i<parent.getChildCount()){
-                        Rect bounds=NeonShadowDrawable.getRectOf(parent,parent.getChildAt(i),array[i].getPaddings());
+                int i=0;
+                for(Map.Entry<Integer,NeonShadowDrawable> entry:map.entrySet()){
+                    if(entry.getKey()<parent.getChildCount()){
+                        Rect bounds=NeonShadowDrawable.getRectOf(parent,parent.getChildAt(entry.getKey()),entry.getValue().getPaddings());
                         layers.setLayerInset(i,bounds.left,bounds.top,right-left-bounds.right,bottom-top-bounds.bottom);
-                        array[i].invalidateSelf();
+                        entry.getValue().invalidateSelf();
                     }
+                    i++;
                 }
             });
         }

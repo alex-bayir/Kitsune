@@ -3,10 +3,8 @@ package org.alex.kitsune.ui.shelf;
 import android.content.*;
 import android.os.Bundle;
 import android.view.*;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.MenuProvider;
@@ -14,8 +12,6 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import fr.castorflex.android.smoothprogressbar.SmoothProgressBar;
-import fr.castorflex.android.smoothprogressbar.SmoothProgressDrawable;
 import org.alex.kitsune.book.views.BookData;
 import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.DiffCallback;
@@ -31,7 +27,6 @@ import org.alex.kitsune.ui.settings.SettingsShelf;
 import org.alex.kitsune.ui.shelf.favorite.FavoritesActivity;
 import org.alex.kitsune.ui.shelf.history.HistoryActivity;
 import org.alex.kitsune.ui.shelf.saved.SavedActivity;
-import org.alex.kitsune.utils.NetworkUtils;
 import org.jetbrains.annotations.NotNull;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -218,11 +213,13 @@ public class Shelf extends Fragment implements MenuProvider {
             ).collect(Collectors.toList());
         }
         private void update(Book book){
-            BookData data=new BookData(book);
-            for(int i=0;i<objects.size();i++){
-                if(data.equals(objects.get(i))){
-                    objects.set(i,data);
-                    notifyItemChanged(i);
+            if(book!=null){
+                BookData data=new BookData(book);
+                for(int i=0;i<objects.size();i++){
+                    if(data.equals(objects.get(i))){
+                        objects.set(i,data);
+                        notifyItemChanged(i);
+                    }
                 }
             }
         }
