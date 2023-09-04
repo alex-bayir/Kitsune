@@ -297,7 +297,7 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
             }));
         }else{
             swipe_refresh.setRefreshing(false);
-            Toast.makeText(progress.getContext(), R.string.no_internet,Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.no_internet,Toast.LENGTH_LONG).show();
         }
     }
 }

@@ -73,7 +73,7 @@ public class PreviewActivity extends Activity implements SwipeRefreshLayout.OnRe
         invalidateOptionsMenu();
         swipe_refresh.setRefreshing(false);
     };
-    private final Callback<Boolean> updateCallback=(updated) -> {
+    private final Callback<Boolean>updateCallback=(updated) -> {
         toolbar.setTitle(book.getName());
         toolbar.setSubtitle(book.getNameAlt());
         if(updated){
@@ -83,8 +83,8 @@ public class PreviewActivity extends Activity implements SwipeRefreshLayout.OnRe
             invalidateOptionsMenu();
         }
         clippingToolbarTexts(toolbar,v->{createDialog(this, book).show(); return true;});
-        swipe_refresh.setRefreshing(false);
     };
+    private final Callback<Boolean> updateCallback_withEndRefreshing=(updated) -> {updateCallback.call(updated);swipe_refresh.setRefreshing(false);};
     public void updateContent(){
         updateCallback.call(book.isUpdated());
     }
@@ -291,6 +291,11 @@ public class PreviewActivity extends Activity implements SwipeRefreshLayout.OnRe
     @Override
     public void onRefresh() {
         swipe_refresh.setRefreshing(true);
-        book.update(updateCallback, errorCallback);
+        if(NetworkUtils.isNetworkAvailable(this)){
+            book.update(updateCallback_withEndRefreshing,errorCallback,true);
+        }else{
+            swipe_refresh.setRefreshing(false);
+            Toast.makeText(this, R.string.no_internet,Toast.LENGTH_LONG).show();
+        }
     }
 }
