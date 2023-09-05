@@ -4,27 +4,28 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.View;
-import androidx.appcompat.widget.AppCompatImageView;
+import android.widget.ImageView;
+import com.github.chrisbanes.photoview.PhotoView;
 
-public class AspectRatioImageView extends AppCompatImageView {
+public class AspectRatioPhotoView extends PhotoView {
     public static int Width=0;
     public static int Height=1;
     protected int ratioMode=Width;
     protected double AspectRatio=1.4;
 
-    public AspectRatioImageView(Context context){super(context);}
+    public AspectRatioPhotoView(Context context){super(context);}
 
-    public AspectRatioImageView(Context context, AttributeSet attributeSet){super(context, attributeSet);}
+    public AspectRatioPhotoView(Context context, AttributeSet attributeSet){super(context, attributeSet);}
 
-    public AspectRatioImageView(Context context, AttributeSet attributeSet, int i){super(context, attributeSet, i);}
+    public AspectRatioPhotoView(Context context, AttributeSet attributeSet, int i){super(context, attributeSet, i);}
 
-    public AspectRatioImageView(Context context, ScaleType scaleType, Drawable drawable, double aspectRatio){
+    public AspectRatioPhotoView(Context context, ImageView.ScaleType scaleType, Drawable drawable, double aspectRatio){
         this(context);
         AspectRatio=aspectRatio;
         setScaleType(scaleType);
         setImageDrawable(drawable);
     }
-    public AspectRatioImageView(Context context, ScaleType scaleType, Drawable drawable){
+    public AspectRatioPhotoView(Context context, ImageView.ScaleType scaleType, Drawable drawable){
         this(context,scaleType,drawable,drawable!=null ? drawable.getIntrinsicHeight()/(double)drawable.getIntrinsicWidth() : 1.4);
     }
     public void setAspectRatio(double ratio){
@@ -35,7 +36,7 @@ public class AspectRatioImageView extends AppCompatImageView {
     }
 
     public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int width=View.MeasureSpec.getSize(widthMeasureSpec);
+        int width= View.MeasureSpec.getSize(widthMeasureSpec);
         int height=View.MeasureSpec.getSize(heightMeasureSpec);
         //super.onMeasure(View.MeasureSpec.makeMeasureSpec(size, MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec((int) (size * AspectRatio), MeasureSpec.EXACTLY));
         if(ratioMode==Height){

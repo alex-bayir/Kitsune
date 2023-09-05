@@ -67,7 +67,7 @@ public class PreviewPage extends PreviewHolder {
         super(LayoutInflater.from(parent.getContext()).inflate(R.layout.fragment_preview_page,parent,false));
         backdrop=itemView.findViewById(R.id.backdrop);
         cover=itemView.findViewById(R.id.cover);
-        cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
+        cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioPhotoView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
         cover.setOnLongClickListener(v->{callFilesStore((Activity)v.getContext(),CALL_FILE_STORE,"image/*",PERMISSION_REQUEST_CODE); return true;});
         caution=cover.getDrawable();
         info=itemView.findViewById(R.id.info);

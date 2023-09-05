@@ -16,6 +16,7 @@ import io.github.douglasjunior.androidSimpleTooltip.SimpleTooltip;
 import org.alex.kitsune.R;
 import com.alex.ratingbar.RatingBar;
 import org.alex.kitsune.commons.AspectRatioImageView;
+import org.alex.kitsune.commons.AspectRatioPhotoView;
 import org.alex.kitsune.commons.HolderClickListener;
 import org.alex.kitsune.commons.ProgressDrawable;
 import org.alex.kitsune.book.Book;
@@ -57,7 +58,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
         line.setImageDrawable(progress_drawable);
         markNew=root.findViewById(R.id.mark_new);
         setOnClickListeners(onItem,onItemButton);
-        cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioImageView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
+        cover.setOnClickListener(v -> new AlertDialog.Builder(v.getContext()).setView(new AspectRatioPhotoView(v.getContext(),cover.getScaleType(),cover.getDrawable())).create().show());
     }
     public BookHolder(ViewGroup parent, HolderClickListener onItem, HolderClickListener onItemButton, boolean fullContent, boolean horizontal){
         this(parent,onItem,onItemButton);

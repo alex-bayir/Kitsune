@@ -182,10 +182,10 @@ public class Updater {
         context.startActivity(new Intent(Intent.ACTION_VIEW).setFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_GRANT_READ_URI_PERMISSION).setDataAndType(Utils.File.toUri(context,f),"application/vnd.android.package-archive"));
     }
     public static int getStatusIcon(){
-        return f.exists() ? R.drawable.ic_update : (getUrl()!=null ? R.drawable.ic_download_arrow : R.drawable.ic_search);
+        return f.exists() ? R.drawable.ic_update : (getUrl()!=null ? R.drawable.ic_download_arrow : -1);
     }
     public static Drawable getStatusIcon(Context context){
-        return AppCompatResources.getDrawable(context,getStatusIcon());
+        return getStatusIcon()==-1?null:AppCompatResources.getDrawable(context,getStatusIcon());
     }
 
     public static int compareVersions(String v1, String v2){
@@ -205,7 +205,7 @@ public class Updater {
                                 .padding(8f)
                                 .background(Utils.getAttrColor((Activity) parent.getContext(),android.R.attr.colorBackground))
                                 .setIgnoreAlphaShadow(true)
-                                .build()
+                                .build(true)
                 )
                 .setPadding(Utils.toDP(8))
                 .setGravity(gravity).setText(text)

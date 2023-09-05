@@ -67,7 +67,6 @@
                                 android:id="@+id/update"
                                 android:layout_width="48sp"
                                 android:layout_height="48sp"
-                                android:src="@drawable/ic_search"
                                 android:layout_alignParentEnd="true"/>
                         <com.google.android.material.textview.MaterialTextView
                                 android:id="@+id/progress"
@@ -122,7 +121,7 @@
                             android:textStyle="italic"
                             android:textSize="16sp"
                             android:text="@string/source_code"
-                            android:drawableStart="@drawable/ic_code_24dp"
+                            android:drawableStart="@drawable/ic_git"
                             android:drawablePadding="32sp"
                             android:background="?android:selectableItemBackground"
                             app:reflectionColor="?android:colorForeground"/>

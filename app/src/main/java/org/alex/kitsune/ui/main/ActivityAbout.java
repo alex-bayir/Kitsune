@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.ActionBar;
 import org.alex.kitsune.Activity;
 import android.os.Bundle;
 import androidx.appcompat.widget.Toolbar;
@@ -30,13 +29,6 @@ public class ActivityAbout extends Activity implements View.OnClickListener{
     Toolbar toolbar;
     TextView version,buildTime,progress,downloads;
     ImageView launcher,update;
-    Callback<JSON.Object> ucs= json -> {
-        update.setImageDrawable(Updater.getStatusIcon(this));
-        update.setEnabled(json!=null);
-        if(json==null){
-            update.setVisibility(View.GONE); Toast.makeText(this,R.string.no_updates_found,Toast.LENGTH_SHORT).show();
-        }
-    };
     Callback<JSON.Object> ucl=json -> Updater.loadUpdate(p->{
         if(progress.getVisibility()!=View.VISIBLE){progress.setVisibility(View.VISIBLE);}
         update.setEnabled(false);
@@ -79,7 +71,7 @@ public class ActivityAbout extends Activity implements View.OnClickListener{
         progress=findViewById(R.id.progress);
         progress.setVisibility(View.GONE);
         if(getIntent().getBooleanExtra("update",false)){
-            update.performClick();
+            onClick(update);
         }
         downloads=findViewById(R.id.downloads);
         NeonShadowDrawable.setTo(findViewById(R.id.content),6,i-> switch (i){
@@ -123,7 +115,7 @@ public class ActivityAbout extends Activity implements View.OnClickListener{
             case (R.id.update) -> {
                 if (NetworkUtils.isNetworkAvailable(this)) {
                     update.setEnabled(false);
-                    Updater.getUpdate(this, Updater.getUrl() == null ? ucs : ucl);
+                    Updater.getUpdate(this,ucl);
                 } else {
                     Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show();
                 }
