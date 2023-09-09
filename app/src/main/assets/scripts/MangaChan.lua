@@ -4,7 +4,7 @@
 --- DateTime: 09.01.2022 21:22
 ---
 
-version="1.4"
+version="1.5"
 domain="manga-chan.me"
 source="MangaChan"
 Type="Manga"
@@ -111,6 +111,10 @@ function getPages(url,chapter) -- table <Page>
         pages[i]=Page.new(i+1,array:getString(i))
     end
     return pages
+end
+
+function load(file,data,url,cancel,process)
+    return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
 function createAdvancedSearchOptions() -- table <Options>

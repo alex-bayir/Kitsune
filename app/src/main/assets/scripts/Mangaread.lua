@@ -4,7 +4,7 @@
 --- DateTime: 03.03.2023 23:56
 ---
 
-version="1.1"
+version="1.2"
 domain="www.mangaread.org"
 source="MangaRead"
 Type="Manga"
@@ -95,6 +95,10 @@ function getPages(url,chapter) -- table <Page>
         pages[i]=Page.new(i+1,elements:get(i):attr("data-src"):match("(http.*)"))
     end
     return pages
+end
+
+function load(file,data,url,cancel,process)
+    return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
 function createAdvancedSearchOptions() -- table <Options>

@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.*;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
@@ -30,7 +29,7 @@ public class FavoritesActivity extends Activity {
     CategoriesAdapter adapter;
     TabLayout tabs;
     ArrayList<String> categories;
-    private DiffCallback<String> notify=new DiffCallback<>();
+    private final DiffCallback<String> notify=new DiffCallback<>();
 
     @Override public int getAnimationGravityIn(){return Gravity.END;}
     @Override public int getAnimationGravityOut(){return Gravity.START;}
@@ -75,6 +74,7 @@ public class FavoritesActivity extends Activity {
             case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.CategoryTimeComparator);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
             case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt);}
+            case (R.id.rating) -> {item.setChecked(true);adapter.sort(Book.RatingComparator);}
             case (R.id.status), (R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId() == R.id.source);}
         }
         return super.onOptionsItemSelected(item);

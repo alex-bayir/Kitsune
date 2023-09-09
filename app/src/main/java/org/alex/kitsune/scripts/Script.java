@@ -44,12 +44,12 @@ public abstract class Script {
     public abstract void put(String name,Object object);
     public abstract <T> T get(String name,Class<T> return_type);
     public <T> T get(String name,Class<T> return_type,T defValue){T value=get(name, return_type); return value!=null ? value:defValue;}
-        public String getString(String name,String def){return get(name,String.class,def);}
-        public boolean getBoolean(String name,boolean def){return get(name,Boolean.class,def);}
-        public int getInt(String name,int def){return get(name,Integer.class,def);}
-        public float getFloat(String name,float def){return get(name,Float.class,def);}
-        public double getDouble(String name,double def){return get(name,Double.class,def);}
-        public long getLong(String name,long def){return get(name,Long.class,def);}
+    public String getString(String name,String def){return get(name,String.class,def);}
+    public boolean getBoolean(String name,boolean def){return get(name,Boolean.class,def);}
+    public int getInt(String name,int def){return get(name,Integer.class,def);}
+    public float getFloat(String name,float def){return get(name,Float.class,def);}
+    public double getDouble(String name,double def){return get(name,Double.class,def);}
+    public long getLong(String name,long def){return get(name,Long.class,def);}
     public abstract <T> T invokeMethod(Object object, String name, Class<T> return_type, Object... params);
     public <T> T invokeMethod(String name, Class<T> return_type, Object... params){return invokeMethod(null,name,return_type,params);}
     //public void invokeMethod(String name, Object object,Object... params){invokeMethod(name,object,Void.class,params);}

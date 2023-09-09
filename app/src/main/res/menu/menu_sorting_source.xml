@@ -12,6 +12,8 @@
                       android:title="@string/Alphabetical"/>
                 <item android:id="@+id/alphabetical_alt"
                       android:title="@string/Alphabetical_Alt"/>
+                <item android:id="@+id/rating"
+                      android:title="@string/rating"/>
             </group>
         </menu>
     </item>

@@ -4,7 +4,7 @@
 --- DateTime: 18.01.2023 21:22
 ---
 
-version="1.5"
+version="1.6"
 domain="v1.hentailib.org"
 source="HentaiLib"
 Type="Manga"
@@ -127,10 +127,13 @@ function query_url(url,page)
     return list
 end
 
+servers=nil
+
 function getPages(url,chapter) -- table <Page>
     local scripts=network:load_as_Document(network:url_builder(url.."/v"..chapter["vol"].."/c"..chapter["num"]):add("page",1):add("bid",chapter["bid"]):add("ui",chapter["ui"]):build()):select("script")
     local json=JSONObject:create(scripts:toString():match("window.__info = (.-);"))
     local array=JSONArray:create(scripts:toString():match("window.__pg = (.-);"))
+    servers=json:getObject("servers")
     local domain=json:getObject("servers"):getString(json:getObject("img"):getString("server")).."/"..json:getObject("img"):getString("url")
     local pages={}
     for i=0,array:size()-1,1 do
@@ -138,6 +141,36 @@ function getPages(url,chapter) -- table <Page>
         pages[i]=Page.new(jo:getInt("p"),domain..jo:getString("u"))
     end
     return pages
+end
+
+function load(file,data,url,cancel,process)
+    local error=network:load(network:getClient(),data,domain,file,cancel,process)
+    if(error and error:getMessage()=="Length of data is zero") then
+        for key,value in pairs(alt_urls(data)) do
+            if(network:load(network:getClient(),value,domain,file,cancel,process)==nil) then
+                return nil
+            end
+        end
+    end
+    return error
+end
+
+function alt_urls(url)
+    return servers and {
+        [1]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("secondary"))),
+        [2]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("main"))),
+        [3]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("compress"))),
+        [4]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("fourth")))
+    } or {}
+end
+
+function alt_urls(url)
+    return servers and {
+        [1]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("secondary"))),
+        [2]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("main"))),
+        [3]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("compress"))),
+        [4]=(string.gsub(url,"https?:[\\/][\\/][%w.-]+",servers:getString("fourth")))
+    } or {}
 end
 
 function createAdvancedSearchOptions() -- table <Options>

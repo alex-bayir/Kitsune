@@ -141,13 +141,16 @@ public abstract class Book {
         return (chapter!=null && page!=null) ? new File(getPagePath(chapter,page)) : null;
     }
     public Drawable getPage(Chapter chapter,int page){return Drawable.createFromPath(getPagePath(chapter,page));}
-    public boolean load(Chapter chapter,Page page,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
-        return load(getPage(chapter,page),page.getData(),done,cancel_flag,process,onBreak);
+    public boolean load(Chapter chapter,Page page, Boolean cancel_flag){
+        return load(chapter,page,page.getData(),cancel_flag,null)==null;
     }
-    public boolean load(Chapter chapter,Page page,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
-        return load(getPage(chapter,page),data,done,cancel_flag,process,onBreak);
+    public Throwable load(Chapter chapter,Page page,String data, Boolean cancel_flag, Callback2<Long,Long> process){
+        return load(chapter,page,data,Utils.isUrl(data),cancel_flag,process);
     }
-    protected abstract boolean load(File save,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak);
+    public Throwable load(Chapter chapter,Page page,String data,boolean url, Boolean cancel_flag, Callback2<Long,Long> process){
+        return load(getPage(chapter,page),data,url,cancel_flag,process);
+    }
+    protected abstract Throwable load(File save,String data,boolean url, Boolean cancel_flag, Callback2<Long,Long> process);
     public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
     public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
     public static void loadThumbnail(String path,String url,String domain,Callback<Drawable> callback){
@@ -414,7 +417,6 @@ public abstract class Book {
     public static final Comparator<Book> AlphabeticalComparator=Comparator.comparing(book -> book.getAnyName(false),String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Book> ImagesSizesComparator=Comparator.comparingLong(Book::getImagesSize).reversed();
     public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating).reversed();
-    public static Comparator<Book> SourceComparator(List<String> sources){return Comparator.comparingInt(o -> sources.indexOf(o.getSource()));}
 
     public final void set(String key,Object value){
         info.put(key,value);

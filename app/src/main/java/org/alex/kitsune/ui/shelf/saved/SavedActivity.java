@@ -11,7 +11,6 @@ import android.util.TypedValue;
 import android.view.*;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.appbar.AppBarLayout;
@@ -86,6 +85,7 @@ public class SavedActivity extends Activity {
                             case (R.id.images_size) -> Book.ImagesSizesComparator;
                             case (R.id.alphabetical) -> Book.AlphabeticalComparator;
                             case (R.id.alphabetical_alt) -> Book.AlphabeticalComparatorAlt;
+                            case (R.id.rating) -> Book.RatingComparator;
                         };
                         adapter.replace(BookService.getSorted(BookService.Type.Saved),comparator,true);
                         backdrop.setImageDrawable(createBackDrop(adapter));
@@ -115,11 +115,12 @@ public class SavedActivity extends Activity {
             case (R.id.alphabetical) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparator);}
             case (R.id.alphabetical_alt) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.AlphabeticalComparatorAlt);}
             case (R.id.images_size) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.ImagesSizesComparator);}
+            case (R.id.rating) -> {currentSort=item.getItemId(); item.setChecked(true); start(Book.RatingComparator);}
         }
         return super.onOptionsItemSelected(item);
     }
     private void start(Comparator<Book> comparator){
-        adapter.sort(comparator, comparator==Book.ImagesSizesComparator ? 1:3);
+        adapter.sort(comparator, comparator==Book.ImagesSizesComparator || comparator==Book.RatingComparator ? 1:3);
         new Thread(()->{
             Drawable drawable=createBackDrop(adapter);
             NetworkUtils.getMainHandler().post(()->backdrop.setImageDrawable(drawable));

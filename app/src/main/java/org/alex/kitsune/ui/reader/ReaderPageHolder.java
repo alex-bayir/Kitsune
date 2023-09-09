@@ -120,12 +120,11 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     public static String[] faces=new String[]{"(￣ヘ￣)", "ヾ(`ヘ´)ﾉﾞ", "Σ(ಠ_ಠ)", "ಥ_ಥ", "(˘･_･˘)", "(；￣Д￣)", "(･Д･。)", "o(╥﹏╥)", "(◞ ‸ ◟ㆀ)", "(ᗒᗣᗕ)՞", "(-ω-、)", "(⋟﹏⋞)", "(ノ﹏ヽ)", "(T⌓T)", "(◕︿◕✿)", "⊙︿⊙", "(ノ_<。)ヾ(´ ▽ ` )", "ヽ(￣ω￣(。。 )ゝ","(ﾉ_；)ヾ(´ ∀ ` )","\t(っ´ω`)ﾉ(╥ω╥)","ρ(- ω -、)ヾ(￣ω￣; )","ヽ(~_~(・_・ )ゝ","(ｏ・_・)ノ”(ノ_<、)", "(＃`Д´)","(`皿´＃)","( ` ω ´ )","ヽ( `д´*)ノ","٩(╬ʘ益ʘ╬)۶","\t(╬ Ò﹏Ó)","(ﾉಥ益ಥ)ﾉ","(凸ಠ益ಠ)凸","▓▒░(°◡°)░▒▓", "(ᓀ ᓀ)","(⊙_⊙)","(づ ◕‿◕ )づ","(*￣ii￣)","\t|ʘ‿ʘ)╯","(^=◕ᴥ◕=^)","ヾ(=`ω´=)ノ”","ʕಠᴥಠʔ","(∩ᄑ_ᄑ)⊃━☆ﾟ*･｡*･:≡( ε:)","(⌐■_■)","(◕‿◕✿)"};
     private static final Random random=new Random();
     int position;
-    final int colorProgress;
     private static final int[] colors=new int[]{0xFFFF0000,0xFFFFFF00,0xFF00FF00};
     private final Modes mode;
     private final Dialog dialog; TextView input;
     private boolean showTranslated=false;
-    private SharedPreferences prefs;
+    private final SharedPreferences prefs;
 
     @SuppressLint("ClickableViewAccessibility")
     ReaderPageHolder(ViewGroup parent, Modes mode, Book book, View.OnClickListener centerClick, View.OnClickListener leftClick, View.OnClickListener rightClick){
@@ -196,10 +195,9 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
         dialog=new AlertDialog.Builder(itemView.getContext()).setView(view).create();
         input=view.findViewById(R.id.input);
         view.findViewById(R.id.close).setOnClickListener(v->dialog.cancel());
-        view.findViewById(R.id.reset).setOnClickListener(v->input.setText(page!=null ? page.getUrl() : null));
+        view.findViewById(R.id.reset).setOnClickListener(v->input.setText(page!=null ? page.getData() : null));
         view.findViewById(R.id.retry).setOnClickListener(v->{retry(); dialog.dismiss();});
         progressBar=itemView.findViewById(R.id.progressBar);
-        colorProgress=progressBar.getColor();
         progress=itemView.findViewById(R.id.SHOW_PROGRESS);
         load_info=itemView.findViewById(R.id.load_info);
         text_faces=itemView.findViewById(R.id.text_faces);
@@ -220,7 +218,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
     private void retry(){
         text_faces.setText(faces[Math.abs(random.nextInt(faces.length))]);
         if(file.length()==0){file.delete();}
-        draw(input.getText().toString(),showTranslated);
+        draw(input.getText().toString(),true,showTranslated);
     }
 
     public void onBind(int position,Chapter chapter,boolean translation){
@@ -230,7 +228,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             this.showTranslated=translation;
             if(this.chapter!=null){
                 file=book.getPage(this.chapter,page=this.chapter.getPage(position));
-                draw(page.getUrl(),translation);
+                draw(page.getData(),translation);
             }else{
                 image.setImageDrawable(null);}
         }else if(this.showTranslated!=translation){
@@ -242,36 +240,31 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             }
         }
     }
-    public void draw(String url,boolean showTranslate){
+    public void draw(String url,boolean showTranslated){
+        draw(url,Utils.isUrl(url),showTranslated);
+    }
+    public void draw(String url,boolean isUrl,boolean showTranslate){
         if(file.exists()){
-            if(file.length()==0){
-                image.setImageDrawable(null);
-                load_info.setVisibility(View.GONE);
-                text_info.setText(String.format(Locale.getDefault(),"%s","Length of data is zero"));
-                input.setText(url);
-                retry_layout.setVisibility(View.VISIBLE);
+            Drawable drawable=loadDrawable(file);
+            image.setImageDrawable(drawable,file);
+            if(drawable instanceof Animatable animatable){
+                animatable.start();
+            }
+            setScaleType(mode.S, mode.R==ReaderMode.VerticalWeb);
+            if(showTranslate){
+                image.show();
             }else{
-                Drawable drawable=loadDrawable(file);
-                image.setImageDrawable(drawable,file);
-                if(drawable instanceof Animatable animatable){
-                    animatable.start();
-                }
-                setScaleType(mode.S, mode.R==ReaderMode.VerticalWeb);
-                if(showTranslate){
-                    image.show();
-                }else{
-                    image.hide();
-                }
-                if(drawable==null){
-                    try{
-                        text.setText(Utils.File.read(file));
-                        text.setVisibility(View.VISIBLE);
-                        image.setVisibility(View.GONE);
-                    }catch (Exception ignored){}
-                }else{
-                    text.setVisibility(View.GONE);
-                    image.setVisibility(View.VISIBLE);
-                }
+                image.hide();
+            }
+            if(drawable==null){
+                try{
+                    text.setText(Utils.File.read(file));
+                    text.setVisibility(View.VISIBLE);
+                    image.setVisibility(View.GONE);
+                }catch (Exception ignored){}
+            }else{
+                text.setVisibility(View.GONE);
+                image.setVisibility(View.VISIBLE);
             }
         }else{
             image.setImageDrawable(null);
@@ -279,15 +272,7 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
             retry_layout.setVisibility(View.GONE);
             progress.setText(R.string.loading);
             new Thread(()->{
-                book.load(chapter,page,url,f->{
-                    NetworkUtils.getMainHandler().post(()->{
-                        load_info.setVisibility(View.GONE);
-                        retry_layout.setVisibility(View.GONE);
-                        book.setLastTimeSave();
-                        itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.load));
-                        draw(url,showTranslate);
-                    });
-                },null,(read, length)->{
+                Throwable error=book.load(chapter,page,url,isUrl,null,(read, length)->{
                     float p = read / (float)length;
                     NetworkUtils.getMainHandler().post(()->{
                         if(0<p && p<=1){
@@ -296,18 +281,29 @@ public class ReaderPageHolder extends RecyclerView.ViewHolder {
                             progressBar.setLineMinLength(p);
                             progress.setText(String.format(Locale.getDefault(),"Loaded %.1f%%",p*100));
                         }else{
-                            progressBar.setColor(colorProgress);
+                            progressBar.setColor(0xffff0000);
                             progressBar.setLineMaxLength(1);
                             progressBar.setLineMinLength(0.01f);
                             progress.setText(R.string.loading);
                         }
                     });
-                },e-> NetworkUtils.getMainHandler().post(()->{
-                    load_info.setVisibility(View.GONE);
-                    text_info.setText(String.format(Locale.getDefault(),"%s",e!=null?Utils.getRootCause(e,2).getMessage():"Failed to load resource"));
-                    input.setText(url);
-                    retry_layout.setVisibility(View.VISIBLE);
-                }));
+                });
+                if(error==null){
+                    NetworkUtils.getMainHandler().post(()->{
+                        load_info.setVisibility(View.GONE);
+                        retry_layout.setVisibility(View.GONE);
+                        book.setLastTimeSave();
+                        itemView.getContext().sendBroadcast(new Intent(Constants.action_Update).putExtra(Constants.hash, book.hashCode()).putExtra(Constants.option,Constants.load));
+                        draw(url,isUrl,showTranslate);
+                    });
+                }else{
+                    NetworkUtils.getMainHandler().post(()->{
+                        load_info.setVisibility(View.GONE);
+                        text_info.setText(String.format(Locale.getDefault(),"%s",Utils.getRootCause(error,2).getMessage()));
+                        input.setText(url);
+                        retry_layout.setVisibility(View.VISIBLE);
+                    });
+                }
             }).start();
         }
     }

@@ -10,7 +10,6 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -108,6 +107,7 @@ public class HistoryActivity extends Activity {
             case (R.id.latest) -> {item.setChecked(true);adapter.sort(Book.HistoryComparator);}
             case (R.id.alphabetical) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparator);}
             case (R.id.alphabetical_alt) -> {item.setChecked(true);adapter.sort(Book.AlphabeticalComparatorAlt);}
+            case (R.id.rating) -> {item.setChecked(true);adapter.sort(Book.RatingComparator);}
             case (R.id.status),(R.id.source) -> {item.setChecked(true);adapter.setShowSource(item.getItemId()==R.id.source);}
         }
         return super.onOptionsItemSelected(item);

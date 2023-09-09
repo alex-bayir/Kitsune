@@ -35,6 +35,7 @@
     <string name="Alphabetical" translatable="false">Alphabetical</string>
     <string name="Alphabetical_Alt" translatable="false">Alphabetical (Alt)</string>
     <string name="size" translatable="false">Size</string>
+    <string name="rating" translatable="false">Rating</string>
     <string name="Source" translatable="false">Source</string>
     <string name="Status" translatable="false">Status</string>
     <string name="List" translatable="false">List</string>

@@ -232,7 +232,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public static List<Cookie> getCookies(String domain,List<Cookie> def){
         if(containers!=null){
             for(Container c:containers){
-                if(domain.equalsIgnoreCase(c.domain) || domain.contains(c.domain)){
+                if((domain.equalsIgnoreCase(c.domain) || domain.contains(c.domain)) && c.cookies_converted!=null){
                     return c.cookies_converted;
                 }
             }

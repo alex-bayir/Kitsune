@@ -4,7 +4,7 @@
 --- DateTime: 09.01.2022 19:08
 ---
 
-version="1.4"
+version="1.5"
 domain="readmanga.live"
 source="ReadManga"
 Type="Manga"
@@ -87,6 +87,10 @@ function query_url(url,page)
         }
     end
     return list
+end
+
+function load(file,data,url,cancel,process)
+    return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
 function getPages(url,chapter) -- table <Page>

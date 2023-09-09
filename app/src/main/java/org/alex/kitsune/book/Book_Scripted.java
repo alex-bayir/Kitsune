@@ -2,12 +2,10 @@ package org.alex.kitsune.book;
 
 import android.text.Html;
 import com.alex.json.java.JSON;
-import org.alex.kitsune.commons.Callback;
 import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.book.search.FilterSortAdapter;
 import org.alex.kitsune.ui.main.Constants;
-import org.alex.kitsune.utils.NetworkUtils;
 import org.alex.kitsune.utils.Utils;
 import java.io.File;
 import java.io.IOException;
@@ -113,21 +111,8 @@ public class Book_Scripted extends Book {
         return similar.stream().filter(Objects::nonNull).map(Book_Scripted::determinate).filter(Objects::nonNull).collect(Collectors.toSet());
     }
     @Override
-    protected boolean load(File save,String data,Callback<File> done, Boolean cancel_flag, Callback2<Long,Long> process, Callback<Throwable> onBreak){
-        if(save==null || data==null){
-            return false;
-        }else{
-            if(Utils.isUrl(data)){
-                if(NetworkUtils.load(NetworkUtils.getClient(script.getBoolean("descramble",false)),data,getDomain(),save,cancel_flag,process,onBreak,false)){
-                    done.call(save);
-                    return true;
-                }else{
-                    return false;
-                }
-            }else{
-                return Utils.File.write(save,data,false);
-            }
-        }
+    protected Throwable load(File save,String data,boolean url, Boolean cancel_flag, Callback2<Long,Long> process){
+        return save!=null && data!=null ? script.invokeMethod("load",Throwable.class,save,data,url,cancel_flag,process):null;
     }
 
     public static FilterSortAdapter createAdvancedSearchAdapter(String source){return createAdvancedSearchAdapter(getScript(source));}

@@ -4,7 +4,7 @@
 --- DateTime: 24.03.2023 16:53
 ---
 
-version="1.2"
+version="1.3"
 domain="ranobelib.me"
 source="RanobeLib"
 Type="Ranobe"
@@ -128,22 +128,26 @@ end
 
 function getPages(url,chapter) -- table <Page>
     local content=network:load_as_Document(network:url_builder(url.."/v"..chapter["vol"].."/c"..chapter["num"]):add("page",1):add("bid",chapter["bid"]):add("ui",chapter["ui"]):build()):selectFirst("div.reader-container")
-    local pages={}; local text;local n=0
+    local pages={}; local text; local n=0
     for i=0,content:childrenSize()-1,1 do
         local e=content:child(i)
         if(e:hasText()) then
             text=text and text.."\n\t\t"..e:wholeText() or e:wholeText()
         else
             if(text~=nil) then
-                pages[n]=Page.new(text,n); text=nil; n=n+1
+                pages[n]=Page.new(n,text); text=nil; n=n+1
             end
             pages[n]=Page.new(n,e:select("img"):attr("data-src")); n=n+1
         end
     end
     if(text~=nil) then
-        pages[n]=Page.new(text,n);
+        pages[n]=Page.new(n,text);
     end
     return pages
+end
+
+function load(file,data,url,cancel,process)
+    return not url and utils:write(file,data,false) or network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
 function createAdvancedSearchOptions() -- table <Options>

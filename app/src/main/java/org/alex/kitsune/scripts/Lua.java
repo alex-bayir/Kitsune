@@ -2,10 +2,7 @@ package org.alex.kitsune.scripts;
 
 import com.blacksquircle.ui.language.base.Language;
 import com.blacksquircle.ui.language.lua.LuaLanguage;
-import okhttp3.Cookie;
-import okhttp3.Headers;
-import okhttp3.MediaType;
-import okhttp3.RequestBody;
+import okhttp3.*;
 import org.alex.kitsune.R;
 import com.alex.json.java.JSON;
 import java.io.*;
@@ -13,9 +10,11 @@ import java.net.SocketTimeoutException;
 import javax.net.ssl.SSLException;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
+import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.commons.HttpStatusException;
 import org.alex.kitsune.commons.URLBuilder;
 import org.alex.kitsune.book.Chapter;
@@ -224,6 +223,17 @@ public class Lua extends Script{
         }
     }
     public static class Network{
+        public static Throwable load(OkHttpClient client,String url, String domain, File file, Boolean cancel_flag, Callback2<Long,Long> listener){
+            return load(client,url,domain,null,file,cancel_flag,listener);
+        }
+        public static Throwable load(OkHttpClient client,String url, LuaTable headers, File file, Boolean cancel_flag, Callback2<Long,Long> listener){
+            return load(client,url,null,headers,file,cancel_flag,listener);
+        }
+        public static Throwable load(OkHttpClient client,String url, String domain, LuaTable headers, File file, Boolean cancel_flag, Callback2<Long,Long> listener){
+            return NetworkUtils.load(client,new Request.Builder().url(url).headers(extendHeaders(domain,url,Coercion.coerce(headers,Map.class))).build(),file,cancel_flag,listener,false);
+        }
+        public static OkHttpClient getClient(){return getClient(false);}
+        public static OkHttpClient getClient(boolean descramble){return NetworkUtils.getClient(descramble);}
         public static String getCookie(String domain,String name){
             return getCookie(NetworkUtils.getCookies(domain),name);
         }
@@ -243,10 +253,10 @@ public class Lua extends Script{
             return load_as_String(url, Coercion.coerce(headers,Map.class), Coercion.coerce(body,Map.class));
         }
         public static String load_as_String(String url, LuaTable headers, String body,String type) throws IOException {
-            return load_as_String(url, extendHeaders(Coercion.coerce(headers,Map.class)), RequestBody.create(body, MediaType.parse(type)));
+            return load_as_String(url, extendHeaders(null,url,Coercion.coerce(headers,Map.class)), RequestBody.create(body, MediaType.parse(type)));
         }
         public static String load_as_String(String url, Map<String,String> headers, Map<String,String> body) throws IOException {
-            return load_as_String(url,extendHeaders(headers),convertBody(body));
+            return load_as_String(url,extendHeaders(null,url,headers),convertBody(body));
         }
         public static String load_as_String(String url, Headers headers, RequestBody body) throws IOException {
             String answer;
@@ -276,6 +286,18 @@ public class Lua extends Script{
         }
     }
     public static class Utils{
+        public static Throwable write(File file,String text,boolean append){
+            if(text==null){return null;}
+            file.getParentFile().mkdirs();
+            try{
+                FileOutputStream stream=new FileOutputStream(file,append);
+                stream.write(text.getBytes(StandardCharsets.UTF_8));
+                stream.close();
+                return null;
+            }catch (Throwable e){
+                return e;
+            }
+        }
         public static String unescape_unicodes(String escaped){
             return org.alex.kitsune.utils.Utils.unescape_unicodes(escaped);
         }
@@ -284,18 +306,6 @@ public class Lua extends Script{
         }
         public static List<?> to_list(LuaTable table){
             return Coercion.coerce(table,List.class);
-        }
-        public static LuaValue to_lua(Object obj){
-            return Coercion.coerce(obj);
-        }
-        public static LuaTable to_table(Map<?,?> map){
-            return Coercion.coerce(map);
-        }
-        public static LuaTable to_table(Collection<?> collection){
-            return Coercion.coerce(collection);
-        }
-        public static LuaTable to_table(Object[] arr){
-            return Coercion.coerce(arr);
         }
         public static long parseDate(String date,String format){
             try{

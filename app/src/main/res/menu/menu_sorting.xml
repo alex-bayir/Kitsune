@@ -14,6 +14,8 @@
                       android:title="@string/Alphabetical_Alt"/>
                 <item android:id="@+id/images_size"
                       android:title="@string/size"/>
+                <item android:id="@+id/rating"
+                      android:title="@string/rating"/>
             </group>
         </menu>
     </item>

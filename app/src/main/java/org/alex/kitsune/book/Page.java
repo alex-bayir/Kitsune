@@ -1,29 +1,21 @@
 package org.alex.kitsune.book;
 
 import com.alex.json.java.JSON;
+import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class Page {
     JSON.Object info;
-    String text;
     private Page(JSON.Object json){
         this.info=json;
     }
-    public Page(float num,String url){
-        this(new JSON.Object().put("num",num).put("url",url));
+    public Page(float num,String data){
+        this(new JSON.Object().put("num",num).put("data",data));
     }
-    public Page(String text,float num){
-        this(new JSON.Object().put("num",num));
-        this.text=text;
-    }
-    public String getData(){
-        return text!=null ? text : getUrl();
-    }
+    public void setData(String data){info.put("data",data);}
+    public String getData(){return info.get("data",info.getString("url"));}
     public float getNum(){return info.get("num",-1f);}
-    public String getUrl(){return info.getString("url");}
-    public String getText(){return text;}
-    public void setText(String text){this.text=text;}
     public JSON.Object toJSON(){return info;}
     public static Page fromJSON(JSON.Object json){
         return json==null ? null : new Page(json);
@@ -33,6 +25,7 @@ public class Page {
     public static List<Page> fromJSON(List<JSON.Object> json){
         return json==null ? null : json.stream().map(Page::fromJSON).collect(Collectors.toList());
     }
+    @NotNull
     @Override
     public String toString() {
         return toJSON().toString();

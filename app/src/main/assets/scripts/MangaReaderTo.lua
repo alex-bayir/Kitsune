@@ -4,15 +4,13 @@
 --- DateTime: 03.04.2023 17:33
 ---
 
-version="1.0"
+version="1.1"
 domain="mangareader.to"
 source="MangaReaderTo"
 Type="Manga"
 description="Один из источников манги на которые раньше всего заливают главы."
 host="https://"..domain
 auth_tokens={}
-
-descramble=true
 
 Genres={["Action"]="1",["Adventure"]="2",["Cars"]="3",["Comedy"]="4",["Dementia"]="5",["Demons"]="6",["Doujinshi"]="7",["Drama"]="8",["Ecchi"]="9",["Fantasy"]="10",["Game"]="11",["Gender Bender"]="12",["Harem"]="13",["Hentai"]="14",["Historical"]="15",["Horror"]="16",["Josei"]="17",["Kids"]="18",["Magic"]="19",["Martial Arts"]="20",["Mecha"]="21",["Military"]="22",["Music"]="23",["Mystery"]="24",["Parody"]="25",["Police"]="26",["Psychological"]="27",["Romance"]="28",["Samurai"]="29",["School"]="30",["Sci-Fi"]="31",["Seinen"]="32",["Shoujo"]="33",["Shoujo Ai"]="34",["Shounen"]="35",["Shounen Ai"]="36",["Slice of Life"]="37",["Space"]="38",["Sports"]="39",["Super Power"]="40",["Supernatural"]="41",["Thriller"]="42",["Vampire"]="43",["Yaoi"]="44",["Yuri"]="45"}
 Types={["All"]="",["Manga"]="1",["One-shot"]="2",["Doujinshi"]="3",["Light Novel"]="4",["Manhwa"]="5",["Manhua"]="6",["Comic"]="8"}
@@ -118,6 +116,10 @@ function getPages(url,chapter) -- table <Page>
         pages[i]=Page.new(i+1,e:attr("data-url"))
     end
     return pages
+end
+
+function load(file,data,url,cancel,process)
+    return network:load(network:getClient(true),data,domain,file,cancel,process)
 end
 
 function createAdvancedSearchOptions() -- table <Options>
