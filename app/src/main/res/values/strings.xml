@@ -188,7 +188,8 @@
     <string name="donate">Donate:\n%1$s\n\n</string>
     <string name="sourcenotdefined">Source is not defined for url: \"%1$s\"</string>
     <string name="what_new_innovations">
-        Version 1.8.2:\n
+        Version 1.8.2-1.8.3:\n
+        \t-Added domains mirrors with a choice.\n
         \t-Added tag search.\n
         \t-Added tags to the information page.\n
         \t-Added animations (can be disabled).\n
