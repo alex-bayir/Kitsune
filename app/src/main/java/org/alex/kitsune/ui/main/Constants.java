@@ -37,6 +37,7 @@ public class Constants {
     public static final String file="file";
     public static final String scripts ="scripts";
     public static final String domain="domain";
+    public static final String domains="domains";
     public static final String source="source";
     public static final String Type="Type";
     public static final String description="description";
@@ -44,6 +45,7 @@ public class Constants {
     public static final String methodQuery="query";
     public static final String methodQueryURL="query_url";
     public static final String methodGetPages="getPages";
+    public static final String methodSetDomain="set_domain";
     public static final String methodCreateAdvancedSearchOptions="createAdvancedSearchOptions";
     public static final String methodLoadSimilar="loadSimilar";
     public static final String version="version";

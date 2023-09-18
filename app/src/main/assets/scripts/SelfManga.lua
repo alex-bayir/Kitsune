@@ -5,7 +5,8 @@
 ---
 
 version="1.5"
-domain="selfmanga.live"
+domains={"selfmanga.live"}
+domain=domains[1]
 source="SelfManga"
 Type="Manga"
 description="На этом источнике размещается только русская авторская манга и журналы о манге."
@@ -17,7 +18,13 @@ filters={[1]="s_high_rate"}
 Genres={["Боевик"]="el_2155",["Боевые искусства"]="el_2143",["Гарем"]="el_2142",["Гендерная интрига"]="el_2156",["Героическое фэнтези"]="el_2146",["Детектив"]="el_2152",["Дзёсэй"]="el_2158",["Драма"]="el_2118",["Игра"]="el_2154",["История"]="el_2119",["Исэкай"]="el_9450",["Киберпанк"]="el_8032",["Кодомо"]="el_2137",["Комедия"]="el_2136",["Махо-сёдзё"]="el_2147",["Меха"]="el_2126",["Научная фантастика"]="el_2133",["Повседневность"]="el_2135",["Постапокалиптика"]="el_2151",["Приключения"]="el_2130",["Психология"]="el_2144",["Романтика"]="el_2121",["Самурайский боевик"]="el_2124",["Сверхъестественное"]="el_2159",["Сёдзё"]="el_2122",["Сёдзё-ай"]="el_2128",["Сёнэн"]="el_2134",["Сёнэн-ай"]="el_2139",["Спорт"]="el_2129",["Сэйнэн"]="el_2138",["Сянься"]="el_9561",["Трагедия"]="el_2153",["Триллер"]="el_2150",["Ужасы"]="el_2125",["Уся"]="el_9560",["Фэнтези"]="el_2131",["Школа"]="el_2127",["Этти"]="el_2149",["Юри"]="el_2123",["Яой"]="el_6001"}
 Tags={["Средневековье"]="5988",["Спортивное тело"]="5987",["Легендарное оружие"]="5951",["Зверолюди"]="5941",["Вестерн"]="5916",["Подземелья"]="5972",["Виртуальная реальность"]="5918",["Борьба за власть"]="5912",["Волшебные существа"]="5923",["Космос"]="5947",["Жестокий мир"]="5938",["Рыцари"]="5982",["Брат и сестра"]="5913",["Гоблины"]="5932",["Зомби"]="5943",["Боги"]="5910",["Волшебники"]="5922",["Офисные Работники"]="5969",["Нежить"]="5964",["Завоевание мира"]="5940",["Наёмники"]="5963",["Обмен телами"]="5966",["ГГ мужчина"]="5928",["Ангелы"]="5904",["Самураи"]="5983",["Антиутопия"]="5906",["Полиция"]="5974",["Насилие"]="5962",["Монстры"]="5959"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local e=network:load_as_Document(url):selectFirst("div.leftContent")
     local list=e:select("table.table-hover"):select("tr.item-row")
     local chapters={}; local last=list:size()-1
@@ -94,13 +101,17 @@ function getPages(url,chapter) -- table <Page>
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]=Page.new(i+1,(ja:getString(0)..ja:getString(2)):match("([^?]+)"))
+        pages[i]={["page"]=i+1,["data"]=(ja:getString(0)..ja:getString(2))}
     end
     return pages
 end
 
 function load(file,data,url,cancel,process)
-    return network:load(network:getClient(),data,domain,file,cancel,process)
+    local error=network:load(network:getClient(),data,domain,file,cancel,process)
+    if(error~=nil and network:load(network:getClient(),data:match("([^?]+)"),domain,file,cancel,process)==nil) then
+        return nil
+    end
+    return error
 end
 
 function createAdvancedSearchOptions() -- table <Options>

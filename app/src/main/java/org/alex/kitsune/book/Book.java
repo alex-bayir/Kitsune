@@ -46,6 +46,7 @@ public abstract class Book {
         this.info.put("bookmarks",bookMarks!=null ? bookMarks : new ArrayList<>());
         this.info.put("history",history);
         set("lastSize",get("lastSize",getChapters().size()));
+        this.info.putIfAbsent("Id",getUrl().hashCode());
     }
 
     public static Book newInstance(JSON.Object json){
@@ -103,7 +104,7 @@ public abstract class Book {
         }
     }
 
-
+    public final int getId(){return get("Id",getUrl().hashCode());}
     public final String getUrl(){return getString("url");}
     public String getUrl_WEB(){return getString("url_web");}
     public final String getName(){return getString("name");}
@@ -123,7 +124,7 @@ public abstract class Book {
     public final List<BookMark> getBookMarks(){return (List<BookMark>)get("bookmarks");}
     public final ListSet<Book> getSimilar(){return similar;}
     public final int getLastSize(){return get("lastSize",0);}
-    @Override public final int hashCode(){return getUrl().hashCode();}
+    @Override public final int hashCode(){return getId();}
     @Override public final boolean equals(@Nullable Object obj){return obj instanceof Book && hashCode()==obj.hashCode();}
 
     public final String setDir(String dir){set("dir",dir+(dir.endsWith(File.separator) ? "" :File.separator)+hashCode()); return getDir();}
@@ -280,7 +281,7 @@ public abstract class Book {
     }
 
     public final void updateChapters(List<Chapter> chapters){
-        boolean b=chapters.size()>getChapters().size();
+        boolean b=chapters.size()>=getChapters().size();
         for(Chapter saved: b?getChapters():chapters){
             for(Chapter source: b?chapters:getChapters()){
                 if(saved.equals(source) && source.countPages()==0){

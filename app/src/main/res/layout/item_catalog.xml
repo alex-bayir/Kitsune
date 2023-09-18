@@ -26,24 +26,35 @@
     >
         <TextView android:id="@+id/source"
                   android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:layout_weight="1"
+                  android:layout_height="0dp"
+                  android:layout_weight="4"
                   android:gravity="center_vertical"
                   android:paddingStart="8sp"
                   android:paddingEnd="8sp"
                   android:maxLines="1"
                   android:textSize="22sp"
                   style="?android:textAppearance"/>
-        <TextView android:id="@+id/type"
-                  android:layout_width="match_parent"
-                  android:layout_height="wrap_content"
-                  android:layout_weight="1"
-                  android:gravity="center_vertical"
-                  android:paddingStart="8sp"
-                  android:paddingEnd="8sp"
-                  android:maxLines="1"
-                  android:textSize="14sp"
-                  style="?android:textAppearance"/>
+        <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="3"
+                android:gravity="center_vertical">
+            <TextView android:id="@+id/type"
+                      android:layout_width="72dp"
+                      android:layout_height="match_parent"
+                      android:gravity="center_vertical"
+                      android:maxLines="1"
+                      android:paddingStart="8sp"
+                      android:paddingEnd="8sp"
+                      android:textSize="14sp"
+                      style="?android:textAppearance"/>
+            <androidx.appcompat.widget.AppCompatSpinner
+                    android:id="@+id/domain"
+                    android:background="@null"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+        </LinearLayout>
     </LinearLayout>
 
     <TextView android:id="@+id/description"

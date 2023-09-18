@@ -3,12 +3,16 @@ package org.alex.kitsune.book;
 import com.alex.json.java.JSON;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Page {
     JSON.Object info;
     private Page(JSON.Object json){
         this.info=json;
+    }
+    public Page(Map<String,?> map){
+        this(map.get("page") instanceof Number n?n.floatValue():0,(String)map.get("data"));
     }
     public Page(float num,String data){
         this(new JSON.Object().put("num",num).put("data",data));

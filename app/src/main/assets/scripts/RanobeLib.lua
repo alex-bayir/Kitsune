@@ -5,12 +5,14 @@
 ---
 
 version="1.3"
-domain="ranobelib.me"
+domains={"ranobelib.me"}
+domain=domains[1]
 source="RanobeLib"
 Type="Ranobe"
 description="Один из самых популярных источников ранобэ в СНГ."
 host="https://"..domain
 auth_tokens={"mangalib_session","XSRF-TOKEN"}
+icon=host.."/icons/icon-192x192.png"
 
 Sorts={["По рейтингу"]="rating_score", ["По количеству оценок"]="rate", ["По названию"]="name", ["По дате обновлениям"]="last_chapter_at",["По дате добавления"]="created_at",["По просмотрам"]="views",["По количеству глав"]="chap_count"}
 sorts={[1]="rate",[2]="created_at",[3]="last_chapter_at"}
@@ -22,7 +24,14 @@ Types={["Япония"]="10",["Корея"]="11",["Китай"]="12",["Англ�
 Status={["Онгоинг"]="1",["Завершён"]="2",["Анонс"]="3",["Приостановлен"]="4",["Выпуск прекращён"]="5"}
 Formats={["4-кома (Ёнкома)"]="1",["Сборник"]="2",["Додзинси"]="3",["В цвете"]="4",["Сингл"]="5",["Веб"]="6",["Вебтун"]="7"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+    icon=host.."/icons/icon-192x192.png"
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local doc=network:load_as_Document(url)
     local json=JSONObject:create(doc:select("script"):toString():match("window.__DATA__ = (%b{})"))
     local ui=json:getObject("user"); if(ui) then ui=ui:get("id",-1); if(ui==-1) then ui=nil end end
@@ -135,13 +144,13 @@ function getPages(url,chapter) -- table <Page>
             text=text and text.."\n\t\t"..e:wholeText() or e:wholeText()
         else
             if(text~=nil) then
-                pages[n]=Page.new(n,text); text=nil; n=n+1
+                pages[n]={["page"]=n,["data"]=text}; text=nil; n=n+1
             end
-            pages[n]=Page.new(n,e:select("img"):attr("data-src")); n=n+1
+            pages[n]={["page"]=n,["data"]=e:select("img"):attr("data-src")}; n=n+1
         end
     end
     if(text~=nil) then
-        pages[n]=Page.new(n,text);
+        pages[n]={["page"]=n,["data"]=text};
     end
     return pages
 end

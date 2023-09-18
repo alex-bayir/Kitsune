@@ -5,7 +5,8 @@
 ---
 
 version="1.5"
-domain="mintmanga.live"
+domains={"mintmanga.live","mintmanga.com"}
+domain=domains[1]
 source="MintManga"
 Type="Manga"
 description="Источник манги для взрослых. Присутствует яой. Пожалуйста отключите этот источник если вам меньше 18. Также рекомендуется его отключить,если в рекомендациях попадается яой манга."
@@ -17,7 +18,13 @@ filters={[1]="s_high_rate"}
 Genres={["Боевик"]="el_1346",["Боевые искусства"]="el_1334",["Гарем"]="el_1333",["Гендерная интрига"]="el_1347",["Героическое фэнтези"]="el_1337",["Детектив"]="el_1343",["Дзёсэй"]="el_1349",["Драма"]="el_1310",["Игра"]="el_5229",["История"]="el_1311",["Исэкай"]="el_6420",["Киберпанк"]="el_1351",["Комедия"]="el_1328",["Меха"]="el_1318",["Научная фантастика"]="el_1325",["Омегаверс"]="el_5676",["Повседневность"]="el_1327",["Постапокалиптика"]="el_1342",["Приключения"]="el_1322",["Психология"]="el_1335",["Романтика"]="el_1313",["Самурайский боевик"]="el_1316",["Сверхъестественное"]="el_1350",["Сёдзё"]="el_1314",["Сёдзё-ай"]="el_1320",["Сёнэн"]="el_1326",["Сёнэн-ай"]="el_1330",["Спорт"]="el_1321",["Сэйнэн"]="el_1329",["Сянься"]="el_6631",["Трагедия"]="el_1344",["Триллер"]="el_1341",["Ужасы"]="el_1317",["Уся"]="el_6632",["Фэнтези"]="el_1323",["Школа"]="el_1319",["Эротика"]="el_1340",["Этти"]="el_1354",["Юри"]="el_1315",["Яой"]="el_1336"}
 Tags={["Спортивное тело"]="6612",["Спасение мира"]="6611",["Офисные Работники"]="6594",["Традиционные игры"]="6616",["Ранги силы"]="6604",["ГГ женщина"]="6551",["Остров"]="6639",["Разумные расы"]="6603",["Культивация"]="6574",["Ангелы"]="6529",["Демоны"]="6560",["Злые духи"]="6567",["ГГ мужчина"]="6553",["ГГ имба"]="6552",["Волшебники"]="6547",["Игровые элементы"]="6569",["Система"]="6609",["Якудза"]="6624",["Брат и сестра"]="6538",["Империи"]="6570",["Месть"]="6582",["Медицина"]="6581",["Мафия"]="6580",["Насилие"]="6587",["Путешествие во времени"]="6602",["Амнезия"]="6528",["Средневековье"]="6613",["Гильдии"]="6555",["Магия"]="6579"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local e=network:load_as_Document(url):selectFirst("div.leftContent")
     local list=e:select("table.table-hover"):select("tr.item-row")
     local chapters={}; local last=list:size()-1
@@ -94,13 +101,17 @@ function getPages(url,chapter) -- table <Page>
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]=Page.new(i+1,(ja:getString(0)..ja:getString(2)):match("([^?]+)"))
+        pages[i]={["page"]=i+1,["data"]=ja:getString(0)..ja:getString(2)}
     end
     return pages
 end
 
 function load(file,data,url,cancel,process)
-    return network:load(network:getClient(),data,domain,file,cancel,process)
+    local error=network:load(network:getClient(),data,domain,file,cancel,process)
+    if(error~=nil and network:load(network:getClient(),data:match("([^?]+)"),domain,file,cancel,process)==nil) then
+        return nil
+    end
+    return error
 end
 
 function createAdvancedSearchOptions() -- table <Options>

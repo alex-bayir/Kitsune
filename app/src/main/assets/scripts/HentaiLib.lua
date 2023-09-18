@@ -5,7 +5,8 @@
 ---
 
 version="1.6"
-domain="v1.hentailib.org"
+domains={"hentailib.me","v1.hentailib.org"}
+domain=domains[1]
 source="HentaiLib"
 Type="Manga"
 description="Один из самых популярных источников манги в СНГ."
@@ -23,7 +24,14 @@ Types={["Манга"]="1",["OEL-манга"]="4",["Манхва"]="5",["Мань
 Status={["Онгоинг"]="1",["Завершён"]="2",["Анонс"]="3",["Приостановлен"]="4",["Выпуск прекращён"]="5"}
 Formats={["4-кома (Ёнкома)"]="1",["Сборник"]="2",["Додзинси"]="3",["В цвете"]="4",["Сингл"]="5",["Веб"]="6",["Вебтун"]="7"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+    icon=host.."/icons/icon-192x192.png"
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local doc=network:load_as_Document(url)
     local json=JSONObject:create(doc:select("script"):toString():match("window.__DATA__ = (%b{})"))
     local ui=json:getObject("user"); if(ui) then ui=ui:get("id",-1); if(ui==-1) then ui=nil end end
@@ -138,7 +146,7 @@ function getPages(url,chapter) -- table <Page>
     local pages={}
     for i=0,array:size()-1,1 do
         local jo=array:getObject(i)
-        pages[i]=Page.new(jo:getInt("p"),domain..jo:getString("u"))
+        pages[i]={["page"]=jo:getInt("p"),["data"]=domain..jo:getString("u")}
     end
     return pages
 end

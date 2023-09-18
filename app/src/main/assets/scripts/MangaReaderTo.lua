@@ -5,7 +5,8 @@
 ---
 
 version="1.1"
-domain="mangareader.to"
+domains={"mangareader.to"}
+domain=domains[1]
 source="MangaReaderTo"
 Type="Manga"
 description="Один из источников манги на которые раньше всего заливают главы."
@@ -20,7 +21,13 @@ Score={["All"]="",["(1) Appalling"]="1",["(2) Horrible"]="2",["(3) Very Bad"]="3
 Language={["All"]="",["English"]="en",["Japanese"]="ja",["Korean"]="ko",["Chinese"]="zh"}
 Sorts={["Default"]="default",["Latest Updated"]="latest-updated",["Score"]="score",["Name A-Z"]="name-az",["Release Date"]="release-date",["Most Viewed"]="most-viewed"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local doc=network:load_as_Document(url)
     local container=doc:select("div.container")
     local genres=container:select("div.genres"):select("a[href*=/genre/]") local str="" for i=0,genres:size()-1,1 do str=str..", "..genres:get(i):text() end genres=str:sub(3)
@@ -112,8 +119,7 @@ function getPages(url,chapter) -- table <Page>
     ):select("div.iv-card")
     local pages={}
     for i=0,elements:size()-1,1 do
-        local e=elements:get(i)
-        pages[i]=Page.new(i+1,e:attr("data-url"))
+        pages[i]={["page"]=i+1,["data"]=elements:get(i):attr("data-url")}
     end
     return pages
 end

@@ -90,7 +90,10 @@ public class Book_Scripted extends Book {
 
     @Override
     public List<Page> getPages(Chapter chapter) throws IOException {
-        return chapter.setPages((List<Page>)script.invokeMethod(Constants.methodGetPages,List.class,getUrl(),chapter.toJSON()));
+        return chapter.setPages(convert((List<Map<String,?>>)script.invokeMethod(Constants.methodGetPages,List.class,getUrl(),chapter.toJSON())));
+    }
+    private List<Page> convert(List<Map<String,?>> list){
+        return list!=null?list.stream().map(Page::new).collect(Collectors.toList()):null;
     }
     public static List<Book> query(String source, String name, int page, Object... params){return query(getScript(source),name,page,params);}
     public static List<Book> query(Script script, String name, int page, Object... params){

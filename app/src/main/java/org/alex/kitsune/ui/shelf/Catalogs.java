@@ -7,8 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.view.*;
-import android.widget.ImageView;
-import android.widget.TextView;
+import android.widget.*;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatCheckBox;
@@ -130,7 +129,7 @@ public class Catalogs extends Fragment implements MenuProvider {
             }
         }
         for(Map.Entry<String,Script> entry:scripts.entrySet()){
-            map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),true,null));
+            map.putIfAbsent(entry.getKey(), new Container(entry.getValue(),null,true,null));
         }
         return new ArrayList<>(exist?map.values():map.values().stream().sorted(Comparator.comparingInt(o -> default_order.indexOf(o.source))).collect(Collectors.toList()));
     }
@@ -154,39 +153,55 @@ public class Catalogs extends Fragment implements MenuProvider {
     public static class Container{
         public String source;
         public String domain;
+        public String[] domains;
         public Boolean enable;
         public Script script;
         public String cookies;
         public String icon_url;
         public LinkedList<Cookie> cookies_converted;
-        public Container(Script script,Boolean enable,String cookies){
+        public Container(Script script,String domain,Boolean enable,String cookies){
             this.script=script;
+            this.domains=script.get(Constants.domains,String[].class,new String[]{script.getString(Constants.domain,null)});
             this.source=script.getString(Constants.source,null);
-            this.domain=script.getString(Constants.domain,null);
+            this.domain=set_domain(select(domain,domains));
             this.enable=enable;
             setCookies(cookies);
-            this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
+            this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+this.domain);
         }
 
         @Override
         public boolean equals(@Nullable @org.jetbrains.annotations.Nullable Object obj) {
-            return obj instanceof Container cont && Objects.equals(this.domain,cont.domain) && Objects.equals(this.source,cont.source);
+            return obj instanceof Container cont && Objects.equals(this.source,cont.source);
         }
 
         @Override
         public int hashCode() {
             return script.getPath().hashCode()^icon_url.hashCode()^source.hashCode()^(domain.hashCode()>>2)^(enable.hashCode());
         }
+        private static String select(String domain, String[] domains){
+            for(int i=0;i<domains.length;i++){if(Objects.equals(domain,domains[i])){return domain;}} return domains[0];
+        }
+        public int get_selected_domain_index(){
+            for(int i=0;i<domains.length;i++){if(Objects.equals(domain,domains[i])){return i;}} return 0;
+        }
+        public void set_domain(int index){
+            domain=set_domain(domains[index>0 && index<domains.length ? index:0]);
+            icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
+        }
+        private String set_domain(String new_domain){
+            try{if(new_domain!=null){script.invokeMethod(Constants.methodSetDomain,new_domain);}}catch (Throwable e){}
+            return script.getString(Constants.domain,null);
+        }
 
         public LinkedList<Cookie> setCookies(String cookies){
             return cookies_converted=convert(domain, this.cookies=cookies);
         }
         public JSON.Object toJSON(){
-            return script==null ? null : new JSON.Object().put("source",source).put("enable",enable).put("script",script.getPath()).put("cookies",cookies);
+            return script==null ? null : new JSON.Object().put("source",source).put("enable",enable).put("domain",domain).put("script",script.getPath()).put("cookies",cookies);
         }
         public static Container fromJSON(JSON.Object json){
             try{
-                return new Container(Book_Scripted.getScript(json.getString("source"), json.getString("script").replace('\\',File.separatorChar)),json.get("enable", true),json.getString("cookies"));
+                return new Container(Book_Scripted.getScript(json.getString("source"), json.getString("script").replace('\\',File.separatorChar)),json.getString("domain"),json.get("enable", true),json.getString("cookies"));
             }catch (Throwable e){
                 Logs.saveLog(e);
                 return null;
@@ -304,6 +319,7 @@ public class Catalogs extends Fragment implements MenuProvider {
             TextView name,type,description;
             ImageView reorder,login;
             Container container;
+            Spinner spinner;
 
             public CatalogHolder(ViewGroup parent, HolderClickListener listener) {
                 super(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_catalog,parent,false));
@@ -315,6 +331,14 @@ public class Catalogs extends Fragment implements MenuProvider {
                 description=itemView.findViewById(R.id.description);
                 reorder=itemView.findViewById(R.id.reorder);
                 login=itemView.findViewById(R.id.login);
+                spinner=itemView.findViewById(R.id.domain);
+                spinner.setAdapter(new ListAdapter<>(spinner.getContext(),new String[0]));
+                spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                    @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                        container.set_domain(position); notifyItemChanged(getBindingAdapterPosition());
+                    }
+                    @Override public void onNothingSelected(AdapterView<?> parent) {}
+                });
                 reorder.setOnTouchListener((v, event) -> {
                     switch(event.getAction()){
                         case MotionEvent.ACTION_DOWN: helper.startDrag(CatalogsAdapter.CatalogHolder.this); break;
@@ -330,6 +354,9 @@ public class Catalogs extends Fragment implements MenuProvider {
                 checkBox.setChecked(catalog.enable);
                 description.setText(Book.getSourceDescription(catalog.source));
                 login.getDrawable().setTint(container.cookies!=null? Color.GREEN:Color.RED);
+                ((ListAdapter<String>) spinner.getAdapter()).update(catalog.domains);
+                spinner.setEnabled(catalog.domains.length>1);
+                spinner.setSelection(catalog.get_selected_domain_index());
             }
         }
     }
@@ -364,5 +391,46 @@ public class Catalogs extends Fragment implements MenuProvider {
 
         @Override
         public void onSwiped(@NonNull @NotNull RecyclerView.ViewHolder viewHolder, int direction) {}
+    }
+
+    private static class ListAdapter<T> extends BaseAdapter{
+        T[] data;
+        LayoutInflater inflater;
+        int layout;
+        int dropdown;
+        public ListAdapter(Context context, T[] data, int layout, int dropdown){
+            update(data);
+            inflater=LayoutInflater.from(context);
+            this.layout=layout;
+            this.dropdown=dropdown;
+        }
+        public ListAdapter(Context context,T[] data){
+            this(context, data, android.R.layout.simple_spinner_item,android.R.layout.simple_spinner_dropdown_item);
+        }
+
+        public void update(T[] data){
+            if(data==null){throw new IllegalArgumentException("list cannot be null");}
+            this.data=data;
+            notifyDataSetChanged();
+        }
+        @Override public int getCount(){return data.length;}
+        @Override public Object getItem(int position){return data[position];}
+        @Override public long getItemId(int position){return position;}
+
+        @Override
+        public View getView(int position, View convert, ViewGroup parent) {
+            View view=convert!=null? convert:inflater.inflate(layout,parent,false);
+            (view instanceof TextView text?text:(TextView)view.findViewById(android.R.id.title))
+                    .setText(Objects.toString(getItem(position),"null"));
+            return view;
+        }
+
+        @Override
+        public View getDropDownView(int position, View convert, ViewGroup parent) {
+            View view=convert!=null? convert:inflater.inflate(dropdown,parent,false);
+            (view instanceof TextView text?text:(TextView)view.findViewById(android.R.id.title))
+                    .setText(Objects.toString(getItem(position),"null"));
+            return view;
+        }
     }
 }

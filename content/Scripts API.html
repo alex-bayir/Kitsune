@@ -19,14 +19,17 @@
 <p>Первым делом вам необходимо определить глобальные переменные:</p>
 
 <p><strong>version</strong> &ndash; версия скрипта<br />
+    <strong>domains</strong> &ndash; список доменов (основной с зеркалами)<br />
     <strong>domain</strong> &ndash; провайдер (например mangalib.me)<br />
     <strong>source</strong> &ndash; имя провайдера (например MangaLib)<br />
     <strong>Type</strong> &ndash; тип (например Manga или Ranobe)<br />
     <strong>description</strong> &ndash; описание ресурса<br />
-    <strong>auth_tokens</strong> &ndash; токены для авторизации (например для мангалиба: auth_tokens={&quot;mangalib_session&quot;,&quot;XSRF-TOKEN&quot;})</p>
+    <strong>auth_tokens</strong> &ndash; токены для авторизации (например для мангалиба: auth_tokens={&quot;mangalib_session&quot;,&quot;XSRF-TOKEN&quot;})<br />
+    <strong>icon</strong> - ссылка на иконку источника (обычно удаётся её получить через статику гугла, но если не получается или вас не устраивает укажите ссылку)</p>
+<p>&nbsp;</p>
 
-<p><strong>icon</strong> - ссылка на иконку источника (обычно удаётся её получить через статику гугла, но если не получается или вас не устраивает укажите ссылку)</p>
-
+<p>Дальше можно реализовать функцию <strong>set_domain</strong>, чтобы можно было менять домен на его зеркало, если основной не работает.</p>
+<p><code>set_domain(new_domain)</code></p>
 <p>&nbsp;</p>
 
 <p>Дальше необходимо реализовать функцию <strong>query_url</strong>, чтобы осуществлять поиск манги по уже готовой ссылке и получать по ним основные сведения такие как <strong>ссылка на основную страницу данной книги</strong> (манги, ранобе и других типов) (для функции <strong>update</strong>), название, рейтинг, описание и т.д. Все эти данные запихиваете в ассоциативный массив и возвращаете список таких массивов (для Lua ассоциативный массив это таблица).</p>
@@ -48,9 +51,9 @@
 
 <p>&nbsp;</p>
 
-<p>Дальше необходимо реализовать функцию <strong>getPages</strong>, чтобы получать ссылки на страницы (изображения) (однако вместо ссылок можно передавать текст если в главе содержатся не только картинки) главы, вернуть нужно массив объектов Page.</p>
+<p>Дальше необходимо реализовать функцию <strong>getPages</strong>, чтобы получать ссылки на страницы (изображения) (однако вместо ссылок можно передавать текст если в главе содержатся не только картинки) главы, вернуть нужно массив объектов Page. Где каждая страница это ассоциативный массив с page и data, где page - номер страницы, а data это либо ссылка либо текст.</p>
 
-<p><code>List&lt;Page&gt; getPages(String url,Chapter chapter)</code></p>
+<p><code>List&lt;Map&lt;String,Object&gt;&gt; getPages(String url,Chapter chapter)</code></p>
 
 <p>&nbsp;</p>
 
@@ -145,10 +148,6 @@
 <p><code>Chapter.new(vol,num,name,date,additional,pages) - Chapter # int vol; String num; String name; long date; Map&lt;String,Object&gt; additional</code></p>
 
 <p><code>Chapter.new(vol,num,name,date,additional,pages) - Chapter # String vol; String num; String name; long date; Map&lt;String,Object&gt; additional</code></p>
-
-<p><strong><code>Page</code></strong></p>
-
-<p><code>Page.new(num,data) - Page # float num; String data (url or text)</code></p>
 
 <p><strong><code>Options</code></strong></p>
 

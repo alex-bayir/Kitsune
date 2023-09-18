@@ -5,7 +5,8 @@
 ---
 
 version="1.2"
-domain="www.mangaread.org"
+domains={"www.mangaread.org"}
+domain=domains[1]
 source="MangaRead"
 Type="Manga"
 description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
@@ -16,7 +17,13 @@ Genres={["Action"]="action",["Adventure"]="adventure",["Animated"]="animated",["
 Status={["Ongoing"]="on-going",["Completed"]="end",["Canceled"]="canceled",["On Hold"]="on-hold",["Upcoming"]="upcoming",}
 Adult={["All"]="",["None adult"]="0",["Only Adult"]="1"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local e=network:load_as_Document(url):selectFirst("div.site-content")
     local list=e:select("li.wp-manga-chapter")
     local chapters={}; local last=list:size()-1
@@ -92,7 +99,7 @@ function getPages(url,chapter) -- table <Page>
     local elements=network:load_as_Document(url.."chapter-"..chapter["id"]):select("img.wp-manga-chapter-img")
     local pages={}
     for i=0,elements:size()-1,1 do
-        pages[i]=Page.new(i+1,elements:get(i):attr("data-src"):match("(http.*)"))
+        pages[i]={["page"]=i+1,["data"]=elements:get(i):attr("data-src"):match("(http.*)")}
     end
     return pages
 end

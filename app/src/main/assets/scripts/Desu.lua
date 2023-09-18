@@ -5,18 +5,27 @@
 ---
 
 version="1.5"
-domain="desu.me"
+domains={"desu.me","desu.win"}
+domain=domains[1]
 source="Desu"
 Type="Manga"
 description="Один из лучших каталогов манги. Хорош тем, что на сайте быстро заливают новые главы."
 host="https://"..domain
 auth_tokens={"xf_user","xf_session"}
+icon=host.."/favicon.ico"
 
 Sorts={["По популярности"]="popular", ["По добавлению"]="id",["По алфавиту"]="name", ["По обновлениям"]="updated"}
 sorts={[1]="popular",[2]="id",[3]="updated"}
 Genres={["Безумие"]="dementia",["Боевые искусства"]="martial arts",["В цвете"]="color",["Вампиры"]="vampire",["Веб"]="web",["Гарем"]="harem",["Героическое фэнтези"]="heroic fantasy",["Демоны"]="demons",["Детектив"]="mystery",["Дзёсей"]="josei",["Драма"]="drama",["Ёнкома"]="yonkoma",["Игры"]="game",["Исекай"]="isekai",["Исторический"]="historical",["Комедия"]="comedy",["Космос"]="space",["ЛитRPG"]="litrpg",["Магия"]="magic",["Меха"]="mecha",["Мистика"]="mystic",["Музыка"]="music",["Научная фантастика"]="sci-fi",["Пародия"]="parody",["Повседневность"]="slice of life",["Постапокалиптика"]="post apocalyptic",["Приключения"]="adventure",["Психологическое"]="psychological",["Романтика"]="romance",["Самураи"]="samurai",["Сверхъестественное"]="supernatural",["Сёдзе"]="shoujo",["Сёдзе Ай"]="shoujo ai",["Сейнен"]="seinen",["Сёнен"]="shounen",["Сёнен Ай"]="shounen ai",["Смена пола"]="gender bender",["Спорт"]="sports",["Супер сила"]="super power",["Трагедия"]="tragedy",["Триллер"]="thriller",["Ужасы"]="horror",["Фантастика"]="fiction",["Фэнтези"]="fantasy",["Хентай"]="hentai",["Школа"]="school",["Экшен"]="action",["Этти"]="ecchi",["Юри"]="yuri",["Яой"]="yaoi"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+    icon=host.."/favicon.ico"
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local jo=JSONObject:create(network:load(url)):getObject("response")
     local list=jo:getObject("chapters"):getArray("list")
     local chapters={}; local last=list:size()-1;
@@ -83,7 +92,7 @@ function getPages(url,chapter) -- table <Page>
     local pages={}
     for i=0,array:size()-1,1 do
         local jo=array:getObject(i)
-        pages[i]=Page.new(jo:getInt("page"),jo:getString("img"))
+        pages[i]={["page"]=jo:getInt("page"),["data"]=jo:getString("img")}
     end
     return pages
 end

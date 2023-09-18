@@ -5,7 +5,8 @@
 ---
 
 version="1.5"
-domain="xxxxx.hentaichan.live"
+domains={"xxxxx.hentaichan.live","y.hentaichan.live"}
+domain=domains[1]
 source="HentaiChan"
 Type="Manga"
 description="Самый известный каталог хентая. Пожалуйста отключите этот источник если вам меньше 18."
@@ -18,7 +19,14 @@ Sorts={["Популярность"]="fav",["Дата"]="date",["Алфавит"]
 sorts={[1]="fav",[2]="date",[3]=nil}
 Order={["По убыванию"]="desc",["По возрастанию"]="asc"}
 
+function set_domain(new_domain)
+    domain=new_domain
+    host="https://"..domain
+    icon=host.."/favicon.png"
+end
+
 function update(url)
+    url=url:gsub("https?:[\\/][\\/][^\\/]+",host)
     local e=network:load_as_Document(url):body():selectFirst("div.main_fon")
     local list=network:load_as_Document((url:gsub("manga/","online/"))):select("select#related"):select("option")
     local chapters={}; local n=0
@@ -108,7 +116,7 @@ function getPages(url,chapter) -- table <Page>
     local array=JSONArray:create(network:load_as_Document(host.."/online/"..chapter["id"]..url:match("%d+(.*)%d*%.")..chapter["num"]..".html"):select("script"):toString():match("\"fullimg\":%s*(%[.-%])"):gsub("'","\""))
     local pages={}
     for i=0,array:size()-1,1 do
-        pages[i]=Page.new(i+1,array:getString(i))
+        pages[i]={["page"]=i+1,["data"]=array:getString(i)}
     end
     return pages
 end
