@@ -64,8 +64,11 @@
     <string name="error_has_occurred">An a error has occurred</string>
     <string name="no_description">No description</string>
     <string name="downloaded">Downloaded</string>
+    <string name="Announce">Announce</string>
     <string name="Ongoing">Ongoing</string>
-    <string name="Completed">Completed</string>
+    <string name="Paused">Paused</string>
+    <string name="Stopped">Stopped</string>
+    <string name="Finished">Finished</string>
     <string name="None" translatable="false">None</string>
     <string name="Chapter">Chapter</string>
     <string name="Volume">Vol</string>

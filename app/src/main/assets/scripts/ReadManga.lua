@@ -36,7 +36,6 @@ function update(url)
     for j=0,authors:size()-1,1 do
         local a=authors:get(j); author[a:text()]=a:attr("abs:href")
     end
-    local status=e:selectFirst("div.subject-meta"):selectFirst("p"):ownText()
     return {
         ["url"]=url,
         ["url_web"]=url,
@@ -46,7 +45,7 @@ function update(url)
         ["genres"]=utils:text(e:select("div.subject-meta"):select("a[href*=/genre/]"),"",", "),
         ["tags"]=utils:text(e:select("div.subject-meta"):select("a[href*=/tag/]"),"",", "),
         ["rating"]=num(e:selectFirst("span.rating-block"):attr("data-score")),
-        ["status"]=status:find("завершено") and "2" or (status:find("выпуск продолжается") and "1" or "0"),
+        ["status"]=status(utils:text(e:selectFirst("div.subject-meta"):selectFirst("span.text-info"))),
         ["description"]=utils:text(e:selectFirst("div.manga-description")),
         ["thumbnail"]=e:selectFirst("div.picture-fotorama"):selectFirst("img"):attr("src"),
         ["chapters"]=chapters,
@@ -137,4 +136,8 @@ function similar(elements)
         n=n+(img and 1 or 0)
     end
     return similar
+end
+
+function status(status)
+    return ({["запланирован"]="Announce",["выпуск продолжается"]="Ongoing",["приостановлен"]="Paused",["прекращён"]="Stopped",["завершено"]="Finished"})[status]
 end

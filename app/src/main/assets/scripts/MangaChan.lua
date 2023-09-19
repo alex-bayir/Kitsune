@@ -49,6 +49,7 @@ function update(url)
         ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
         ["author"]=author,
         ["genres"]=utils:attr(e:select("li.sidetag"):select("a[href*=/tags/-]"),"href","",", "):gsub("/tags/%-",""):gsub("_"," "),
+        ["status"]=status(utils:text(e:select("table.mangatitle"):select("tr"),""):match("Статус %(Томов%) %d*%s?%S+,? (%S+%s%S+)")),
         ["description"]=utils:text(e:selectFirst("div#description")),
         ["thumbnail"]=utils:attr(e:selectFirst("img#cover"),"src"),
         ["chapters"]=chapters
@@ -151,4 +152,8 @@ function loadSimilar(manga)
         n=n+(e and 1 or 0)
     end
     return similar
+end
+
+function status(status)
+    return ({["Нет глав"]="Announce",["выпуск продолжается "]="Ongoing",["выпуск завершен"]="Finished"})[status]
 end

@@ -15,8 +15,11 @@
     <string name="description">Описание</string>
     <string name="error_has_occurred">Произошла ошибка</string>
     <string name="downloaded">Загружена</string>
+    <string name="Announce">Анонс</string>
     <string name="Ongoing">Продолжается</string>
-    <string name="Completed">Завершён</string>
+    <string name="Paused">Приостановлен</string>
+    <string name="Stopped">Прекращён</string>
+    <string name="Finished">Завершён</string>
     <string name="remove">Удалить</string>
     <string name="save_all_chapters">Скачать все главы</string>
     <string name="save_selected_chapters">Скачать выбранные главы</string>

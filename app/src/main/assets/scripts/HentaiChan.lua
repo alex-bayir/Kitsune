@@ -5,7 +5,7 @@
 ---
 
 version="1.5"
-domains={"xxxxx.hentaichan.live","y.hentaichan.live"}
+domains={"xxxxx.hentaichan.live","xxxx.hentaichan.live","y.hentaichan.live"}
 domain=domains[1]
 source="HentaiChan"
 Type="Manga"
@@ -48,6 +48,7 @@ function update(url)
         ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
         ["author"]=author,
         ["genres"]=utils:attr(e:select("li.sidetag"):select("a[href*=/tags/-]"),"href","",", "):gsub("/tags/%-",""):gsub("_"," "),
+        ["status"]=(#chapters>1 and "Finished" or "Announce"),
         ["description"]=utils:text(e:selectFirst("div#description")),
         ["thumbnail"]=utils:attr(e:selectFirst("img#cover"),"src"),
         ["chapters"]=chapters

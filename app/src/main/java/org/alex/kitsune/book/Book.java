@@ -59,20 +59,16 @@ public abstract class Book {
     public abstract String getDomain();
     public abstract String getSource();
     public abstract String getType();
-    public final String getStatus(){return getStatus(getString("status"));}
+    public final String getStatus(){return getStatus(null);}
     public final String getStatus(Context context){return getStatus(getString("status"),context);}
     private static String getStatus(String status,Context context){
-        return switch (getStatus(status)) {
-            case "Ongoing" -> context.getString(R.string.Ongoing);
-            case "Released" -> context.getString(R.string.Completed);
-            default -> context.getString(R.string.None);
-        };
-    }
-    private static String getStatus(String status){
-        return switch (status != null ? status.toLowerCase() : "none") {
-            case "продолжается", "1", "онгоинг", "ongoing" -> "Ongoing";
-            case "cингл", "single", "закончен", "завершен", "completed", "2", "released" -> "Released";
-            default -> "None";
+        return switch (status!=null ? status : "None") {
+            case "Announce" -> context==null? "Announce" : context.getString(R.string.Announce);
+            case "Ongoing" ->  context==null? "Ongoing" : context.getString(R.string.Ongoing);
+            case "Paused" ->  context==null? "Paused" : context.getString(R.string.Paused);
+            case "Stopped" ->  context==null? "Stopped" : context.getString(R.string.Stopped);
+            case "Finished" ->  context==null? "Finished" : context.getString(R.string.Finished);
+            default ->  context==null? "None" : context.getString(R.string.None);
         };
     }
     public abstract boolean update() throws Exception;

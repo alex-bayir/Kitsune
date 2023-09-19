@@ -56,7 +56,7 @@ function update(url)
             ["genres"]=jo:getArray("genres"):join(", ",{"name"}),
             ["tags"]=jo:getArray("categories"):join(", ",{"name"}),
             ["rating"]=jo:getDouble("avg_rating")/2,
-            ["status"]=jo:getObject("status"):getString("name"),
+            ["status"]=status(jo:getObject("status"):getString("name")),
             ["description"]=jo:getString("description"),
             ["thumbnail"]=host..jo:getObject("img"):getString("high"),
             ["chapters"]=chapters
@@ -144,4 +144,8 @@ function loadSimilar(manga)
         }
     end
     return similar
+end
+
+function status(status)
+    return ({["Анонс"]="Announce",["Продолжается"]="Ongoing",["Нет переводчика"]="Paused",["Заморожен"]="Stopped",["Закончен"]="Finished"})[status]
 end

@@ -41,7 +41,7 @@ function update(url)
         ["name_alt"]=jo:getString("russian"),
         ["genres"]=jo:getArray("genres"):join(", ",{"russian"}),
         ["rating"]=jo:getDouble("score")/2,
-        ["status"]=jo:getString("status"),
+        ["status"]=status(jo:getString("status")),
         ["description"]=jo:getString("description"),
         ["thumbnail"]=jo:getObject("image"):getString("x225"),
         ["chapters"]=chapters
@@ -123,4 +123,8 @@ function loadSimilar(manga)
         n=n+(e and 1 or 0)
     end
     return similar
+end
+
+function status(status)
+    return ({["released"]="Ongoing",["ongoing"]="Ongoing",["continued"]="Ongoing",["Заморожен"]="Stopped",["completed"]="Finished"})[status]
 end

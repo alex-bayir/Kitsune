@@ -43,7 +43,7 @@ function update(url)
         ["author"]=author,
         ["genres"]=e:select("div.genres-content"):text(),
         ["rating"]=num(e:selectFirst("span.score"):text()),
-        ["status"]=e:select("div.post-status"):select("div.summary-content"),
+        ["status"]=status(e:select("div.post-status"):select("div.summary-content"):text():match("[%d%s]*([%w%s]+)")),
         ["description"]=e:select("div.description-summary"):select("p[style=text-align: left;]"):text(),
         ["thumbnail"]=e:selectFirst("img.img-responsive"):attr("data-src"),
         ["chapters"]=chapters,
@@ -134,4 +134,9 @@ function similar(elements)
         n=n+(img and 1 or 0)
     end
     return similar
+end
+
+function status(status)
+    print(status)
+    return ({["Upcoming"]="Announce",["OnGoing"]="Ongoing",["On Hold"]="Paused",["Canceled"]="Stopped",["Completed"]="Finished"})[status]
 end

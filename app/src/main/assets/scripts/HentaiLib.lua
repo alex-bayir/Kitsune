@@ -61,7 +61,7 @@ function update(url)
         ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
         ["genres"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?genres]"),"",", "),
         ["tags"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?tags]"),"",", "),
-        ["status"]=container:select("a[href*=manga_status]"):attr("href"):match("manga_status.*=(%d)"),
+        ["status"]=status(container:select("a[href*=manga_status]"):attr("href"):match("manga_status.*=(%d)")),
         ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
         ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
@@ -211,4 +211,8 @@ function similar(elements)
         n=n+(e and 1 or 0)
     end
     return similar
+end
+
+function status(status)
+    return ({["3"]="Announce",["1"]="Ongoing",["4"]="Paused",["5"]="Stopped",["2"]="Finished"})[status]
 end
