@@ -152,9 +152,9 @@ public abstract class Book {
         return load(getPage(chapter,page),data,url,cancel_flag,process);
     }
     protected abstract Throwable load(File save,String data,boolean url, Boolean cancel_flag, Callback2<Long,Long> process);
-    public final Drawable loadThumbnail(){return loadThumbnail(getCoverPath());}
-    public static Drawable loadThumbnail(String path){return Drawable.createFromPath(path);}
-    public static void loadThumbnail(String path,String url,String domain,Callback<Drawable> callback){
+    public final Drawable loadCover(){return loadCover(getCoverPath());}
+    public static Drawable loadCover(String path){return Drawable.createFromPath(path);}
+    public static void loadCover(String path, String url, String domain, Callback<Drawable> callback){
         new Thread(() -> {
             Drawable loaded=Drawable.createFromPath(path);
             if(loaded==null && NetworkUtils.load(url,domain,new File(path))){
@@ -164,7 +164,8 @@ public abstract class Book {
             NetworkUtils.getMainHandler().post(()->callback.call(drawable));
         }).start();
     }
-    public final void loadThumbnail(Callback<Drawable> callback){loadThumbnail(getCoverPath(),getThumbnail(),get("domain",null),callback);}
+    public final void loadCover(Callback<Drawable> callback){
+        loadCover(getCoverPath(),getThumbnail(),get("domain",null),callback);}
 
     private List<Chapter> filter(boolean full, List<Chapter> chapters){
         return full ? chapters : chapters.stream().filter(this::checkChapter).collect(Collectors.toList());

@@ -193,13 +193,13 @@ public class NetworkUtils {
         return load(client,url,domain,file,cancel_flag,listener,skip)==null;
     }
     public static Throwable load(OkHttpClient client,String url, String domain, File file, Boolean cancel_flag, Callback2<Long,Long> listener, boolean skip){
-        return load(client,new Request.Builder().url(url).headers(getHeadersDefault(domain,url)).get().build(),file,cancel_flag,listener,skip);
+        return load(client,url,getHeadersDefault(domain,url),file,cancel_flag,listener,skip);
     }
-    public static Throwable load(OkHttpClient client,Request request, File file, Boolean cancel_flag, Callback2<Long,Long> listener, boolean skip){
+    public static Throwable load(OkHttpClient client,String url, Headers headers, File file, Boolean cancel_flag, Callback2<Long,Long> listener, boolean skip){
         InputStream in=null;
         OutputStream out=null;
         try{
-            Response response=client.newCall(request).execute();
+            Response response=client.newCall(new Request.Builder().url(url).headers(headers).get().build()).execute();
             if(response.isSuccessful()){
                 long length=response.body().contentLength();
                 long downloaded=file.getParentFile().mkdirs() ? 0 : file.length();

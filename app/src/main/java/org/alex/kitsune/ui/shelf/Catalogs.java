@@ -153,7 +153,7 @@ public class Catalogs extends Fragment implements MenuProvider {
     public static class Container{
         public String source;
         public String domain;
-        public String[] domains;
+        public List<String> domains;
         public Boolean enable;
         public Script script;
         public String cookies;
@@ -161,9 +161,9 @@ public class Catalogs extends Fragment implements MenuProvider {
         public LinkedList<Cookie> cookies_converted;
         public Container(Script script,String domain,Boolean enable,String cookies){
             this.script=script;
-            this.domains=script.get(Constants.domains,String[].class,new String[]{script.getString(Constants.domain,null)});
+            this.domains=script.get(Constants.domains,List.class,List.of(script.getString(Constants.domain,null)));
             this.source=script.getString(Constants.source,null);
-            this.domain=set_domain(select(domain,domains));
+            this.domain=domain==null?domains.get(0):set_domain(domain);
             this.enable=enable;
             setCookies(cookies);
             this.icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+this.domain);
@@ -178,18 +178,13 @@ public class Catalogs extends Fragment implements MenuProvider {
         public int hashCode() {
             return script.getPath().hashCode()^icon_url.hashCode()^source.hashCode()^(domain.hashCode()>>2)^(enable.hashCode());
         }
-        private static String select(String domain, String[] domains){
-            for(int i=0;i<domains.length;i++){if(Objects.equals(domain,domains[i])){return domain;}} return domains[0];
-        }
-        public int get_selected_domain_index(){
-            for(int i=0;i<domains.length;i++){if(Objects.equals(domain,domains[i])){return i;}} return 0;
-        }
+        public int get_selected_index(){return Math.max(0,domains.indexOf(domain));}
         public void set_domain(int index){
-            domain=set_domain(domains[index>0 && index<domains.length ? index:0]);
+            domain=set_domain(domains.get(index>0 && index<domains.size() ? index:0));
             icon_url=script.getString("icon","https://t3.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=96&url=http://"+domain);
         }
-        private String set_domain(String new_domain){
-            try{if(new_domain!=null){script.invokeMethod(Constants.methodSetDomain,new_domain);}}catch (Throwable e){}
+        public String set_domain(String domain){
+            try{script.invokeMethod(Constants.methodSetDomain,domains.get(Math.max(0,domains.indexOf(domain))));}catch(Throwable ignored){}
             return script.getString(Constants.domain,null);
         }
 
@@ -332,7 +327,7 @@ public class Catalogs extends Fragment implements MenuProvider {
                 reorder=itemView.findViewById(R.id.reorder);
                 login=itemView.findViewById(R.id.login);
                 spinner=itemView.findViewById(R.id.domain);
-                spinner.setAdapter(new ListAdapter<>(spinner.getContext(),new String[0]));
+                spinner.setAdapter(new ListAdapter<>(spinner.getContext(),List.of()));
                 spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                     @Override public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                         container.set_domain(position); notifyItemChanged(getBindingAdapterPosition());
@@ -355,8 +350,8 @@ public class Catalogs extends Fragment implements MenuProvider {
                 description.setText(Book.getSourceDescription(catalog.source));
                 login.getDrawable().setTint(container.cookies!=null? Color.GREEN:Color.RED);
                 ((ListAdapter<String>) spinner.getAdapter()).update(catalog.domains);
-                spinner.setEnabled(catalog.domains.length>1);
-                spinner.setSelection(catalog.get_selected_domain_index());
+                spinner.setEnabled(catalog.domains.size()>1);
+                spinner.setSelection(catalog.get_selected_index());
             }
         }
     }
@@ -394,27 +389,27 @@ public class Catalogs extends Fragment implements MenuProvider {
     }
 
     private static class ListAdapter<T> extends BaseAdapter{
-        T[] data;
+        List<T> data;
         LayoutInflater inflater;
         int layout;
         int dropdown;
-        public ListAdapter(Context context, T[] data, int layout, int dropdown){
+        public ListAdapter(Context context, List<T> data, int layout, int dropdown){
             update(data);
             inflater=LayoutInflater.from(context);
             this.layout=layout;
             this.dropdown=dropdown;
         }
-        public ListAdapter(Context context,T[] data){
+        public ListAdapter(Context context,List<T> data){
             this(context, data, android.R.layout.simple_spinner_item,android.R.layout.simple_spinner_dropdown_item);
         }
 
-        public void update(T[] data){
+        public void update(List<T> data){
             if(data==null){throw new IllegalArgumentException("list cannot be null");}
             this.data=data;
             notifyDataSetChanged();
         }
-        @Override public int getCount(){return data.length;}
-        @Override public Object getItem(int position){return data[position];}
+        @Override public int getCount(){return data.size();}
+        @Override public Object getItem(int position){return data.get(position);}
         @Override public long getItemId(int position){return position;}
 
         @Override

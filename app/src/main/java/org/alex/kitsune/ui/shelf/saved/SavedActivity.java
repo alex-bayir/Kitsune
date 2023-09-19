@@ -97,7 +97,7 @@ public class SavedActivity extends Activity {
         },new IntentFilter(Constants.action_Update));
     }
     private Drawable createBackDrop(BookAdapter adapter){
-        return new PhotoCollageDrawable(AppCompatResources.getDrawable(this,R.drawable.ic_caution), 10, v->adapter.getItemCount(), i->adapter.get(i).loadThumbnail());
+        return new PhotoCollageDrawable(AppCompatResources.getDrawable(this,R.drawable.ic_caution), 10, v->adapter.getItemCount(), i->adapter.get(i).loadCover());
     }
     private boolean sharePhotoCollage(PhotoCollageDrawable drawable){
         return drawable!=null && Utils.Bitmap.shareBitmap(this,getString(R.string.Saved).toUpperCase(),drawable.getBitmap());

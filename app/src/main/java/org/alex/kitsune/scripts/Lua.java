@@ -230,7 +230,7 @@ public class Lua extends Script{
             return load(client,url,null,headers,file,cancel_flag,listener);
         }
         public static Throwable load(OkHttpClient client,String url, String domain, LuaTable headers, File file, Boolean cancel_flag, Callback2<Long,Long> listener){
-            return NetworkUtils.load(client,new Request.Builder().url(url).headers(extendHeaders(domain,url,Coercion.coerce(headers,Map.class))).build(),file,cancel_flag,listener,false);
+            return NetworkUtils.load(client,url,extendHeaders(domain,url,Coercion.coerce(headers,Map.class)),file,cancel_flag,listener,false);
         }
         public static OkHttpClient getClient(){return getClient(false);}
         public static OkHttpClient getClient(boolean descramble){return NetworkUtils.getClient(descramble);}

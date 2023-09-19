@@ -99,7 +99,7 @@ public class BookHolder extends RecyclerView.ViewHolder{
         }
     }
     public final void setCover(Book book){
-        book.loadThumbnail(this::setCover);
+        book.loadCover(this::setCover);
     }
     public final void setTitle(String title){
         this.titleShort.setText(title);

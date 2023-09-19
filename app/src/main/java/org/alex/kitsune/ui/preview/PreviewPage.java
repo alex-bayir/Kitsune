@@ -172,7 +172,7 @@ public class PreviewPage extends PreviewHolder {
     }
 
     public void bind(Book book, boolean full){
-        book.loadThumbnail(drawable -> {
+        book.loadCover(drawable -> {
             cover.setImageDrawable(drawable==null ? caution : drawable);
             cover.setScaleType(drawable==null ? ImageView.ScaleType.CENTER : ImageView.ScaleType.CENTER_CROP);
             backdrop.setImageDrawable(drawable==null ? caution : drawable);
