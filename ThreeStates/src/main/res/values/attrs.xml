@@ -1,14 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <attr name="state" format="enum">
-        <enum name="off" value="-1"/>
-        <enum name="def" value="0"/>
-        <enum name="on" value="1"/>
-    </attr>
     <declare-styleable name="CheckBox3">
-        <attr name="state"/>
         <attr name="state_off" format="boolean" />
         <attr name="state_def" format="boolean" />
         <attr name="state_on" format="boolean" />
     </declare-styleable>
+    <integer name="duration">500</integer>
 </resources>

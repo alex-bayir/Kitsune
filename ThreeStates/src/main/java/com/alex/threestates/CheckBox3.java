@@ -1,7 +1,9 @@
 package com.alex.threestates;
 
 import android.content.Context;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import androidx.annotation.Nullable;
 import org.alex.threestates.R;
@@ -27,19 +29,24 @@ public class CheckBox3 extends MaterialCheckBox {
         setUseMaterialThemeColors(false);
     }
 
+    public State getState(){return state;}
 
     public void setState(int state){
-        switch (state){
-            case -1: setState(State.Off); break;
-            case 1: setState(State.On); break;
-            default: setState(State.Default); break;
-        }
+        setState(State.valueOf(state));
     }
     public void setState(State state){
-        this.state=state;
-        refreshDrawableState();
+        if(this.state!=state){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+                if(getButtonDrawable() instanceof StateListDrawable state_list){
+                    state_list.selectDrawable(state_list.findStateDrawableIndex(State.getState(state)));
+                    if(state.getStateDrawable(state_list) instanceof Animatable animatable){
+                        animatable.start();
+                    }
+                }
+            }
+            this.state=state;
+        }
     }
-    public State getState(){return state;}
 
     @Override
     protected int[] onCreateDrawableState(int extraSpace) {

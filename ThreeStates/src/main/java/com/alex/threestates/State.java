@@ -7,7 +7,7 @@ import org.alex.threestates.R;
 public enum State{
     Default(0),
     On(1),
-    Off(-1);
+    Off(2);
     public final int code;
     State(int code){this.code=code;}
     public int getCode(){return code;}
@@ -18,6 +18,13 @@ public enum State{
             default: return On;
         }
     }
+    public static State valueOf(int state){
+        return switch (state){
+            case -1,2->State.Off;
+            case 1->State.On;
+            default->State.Default;
+        };
+    }
     public static int[] getState(State state){
         switch (state==null ? Default:state){
             case On: return new int[]{R.attr.state_on};
@@ -26,6 +33,6 @@ public enum State{
         }
     }
     public Drawable getStateDrawable(StateListDrawable d){
-        return d!=null ? d.getStateDrawable(ordinal()) : null;
+        return d!=null ? d.getStateDrawable(d.findStateDrawableIndex(getState(this))) : null;
     }
 }

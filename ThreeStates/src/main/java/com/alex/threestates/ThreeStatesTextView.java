@@ -1,8 +1,10 @@
 package com.alex.threestates;
 
 import android.content.Context;
+import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.os.Build;
 import android.util.AttributeSet;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -23,7 +25,7 @@ public class ThreeStatesTextView extends MaterialTextView {
     }
     public void init(Context context){
         StateListDrawable stateList=(StateListDrawable)context.getDrawable(R.drawable.states);
-        Drawable dr=android.os.Build.VERSION.SDK_INT>=29 ? stateList.getStateDrawable(0) : context.getDrawable(R.drawable.ic_checkbox_def);
+        Drawable dr=android.os.Build.VERSION.SDK_INT>=29 ? stateList.getStateDrawable(0) : context.getDrawable(R.drawable.def);
         stateList.setBounds(0,0,dr.getIntrinsicWidth(),dr.getIntrinsicHeight());
         setCompoundDrawables(null,null,stateList,null);
         setState(state);
@@ -31,16 +33,21 @@ public class ThreeStatesTextView extends MaterialTextView {
 
 
     public State getState(){return this.state;}
-    public void setState(int state){
-        switch (state){
-            case -1,2: setState(State.Off); break;
-            case 1: setState(State.On); break;
-            default: setState(State.Default); break;
-        }
-    }
+    public void setState(int state){setState(State.valueOf(state));}
     public void setState(State state){
-        this.state=state;
-        refreshDrawableState();
+        if(this.state!=state){
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q){
+                for(Drawable drawable:getCompoundDrawables()){
+                    if(drawable instanceof StateListDrawable state_list){
+                        state_list.selectDrawable(state_list.findStateDrawableIndex(State.getState(state)));
+                        if(state.getStateDrawable(state_list) instanceof Animatable animatable){
+                            animatable.start();
+                        }
+                    }
+                }
+            }
+            this.state=state;
+        }
     }
 
 
