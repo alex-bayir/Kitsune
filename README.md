@@ -6,7 +6,7 @@
         <img src="https://img.shields.io/badge/version-1.8.3-blueviolet">
         <img src="https://img.shields.io/badge/android-7.0+-yellow">
         <br/>
-        <img src="https://img.shields.io/badge/manga_sources-11-brightgreen"/> <img src="https://img.shields.io/badge/randobe_sources-1-brightgreen"/>
+        <img src="https://img.shields.io/badge/manga_sources-11-brightgreen"/> <img src="https://img.shields.io/badge/ranobe_sources-1-brightgreen"/>
 	</p>
     <h1>Kitsune</h1>
     <p>Universal scripted manga and ranobe reader with the ability to save chapters.</p>
