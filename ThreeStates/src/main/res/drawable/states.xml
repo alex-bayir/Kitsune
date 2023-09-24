@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<selector xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:app="http://schemas.android.com/apk/res-auto"
-          android:enterFadeDuration="0"
-          android:exitFadeDuration="0">
-    <item app:state_off="true" android:drawable="@drawable/off"/>
-    <item app:state_on="true"  android:drawable="@drawable/on"/>
-    <item app:state_def="true" android:drawable="@drawable/def"/>
-</selector>
