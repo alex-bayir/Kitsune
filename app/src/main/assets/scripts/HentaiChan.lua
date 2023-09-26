@@ -33,10 +33,10 @@ function update(url)
     for i=0,list:size()-1,1 do
         local el=list:get(i); local str=el:attr("value")
         if(str:match("-(%a[-%a]+%a)")==url:match("-(%a[-%a]+%a)")) then
-            chapters[n]=Chapter.new(0,num(str:match("%-(%d*%.?%d+)")),nil,0,utils:to_map({id=num(str:match("%d+"))})); n=n+1
+            chapters[n]={num=num(str:match("%-(%d*%.?%d+)")),id=num(str:match("%d+"))}; n=n+1
         end
     end
-    if(#chapters==0) then chapters[0]=Chapter.new(0,0,"Сингл",0,utils:to_map({id=num(url:match("%d+"))})) end
+    if(#chapters==0) then chapters[0]={name="Сингл",id=num(url:match("%d+"))} end
     local author={}; local authors=e:select("a[href~=/mangaka/\\d+]")
     for j=0,authors:size()-1,1 do
         local a=authors:get(j); author[a:attr("title")]=a:attr("abs:href")
@@ -62,7 +62,7 @@ function query(name,page,params)
     else
         if(params~=nil and #params>0 and type(params[1])=="userdata" and Options:equals(params[1]:getClass()))then
             if(params~=nil and #params>0) then
-                url=host.."/manga/new&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
+                url=host.."/manga&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
                 s=params[2]~=nil and params[2]:getSelected() or nil
                 d=params[2]~=nil and params[2]:getDeselected() or nil
                 if((s~=nil and #s>0) or (d~=nil and #d>0)) then
@@ -113,7 +113,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local array=JSONArray:create(network:load_as_Document(host.."/online/"..chapter["id"]..url:match("%d+(.*)%d*%.")..chapter["num"]..".html"):select("script"):toString():match("\"fullimg\":%s*(%[.-%])"):gsub("'","\""))
     local pages={}
     for i=0,array:size()-1,1 do
@@ -126,10 +126,10 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
-        Options.new("Жанры",utils:to_map(Genres),2)
+        {mode=0,title="Сортировка",desc="desc",asc="asc",values=Sorts},
+        {mode=2,title="Жанры",values=Genres}
     }
 end
 

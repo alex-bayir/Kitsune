@@ -38,19 +38,19 @@ function update(url)
     local jo=json:getObject("manga")
     local container=doc:selectFirst("div.media-container")
     local list=json:getObject("chapters"):getArray("list")
-    local chapters=utils:to_list({})
+    local chapters={}
     local branches=json:getObject("chapters"):getArray("branches")
     local translators={}
     for i=0,(branches~=nil and branches:size() or 0)-1,1 do
         local teams=branches:getObject(i):getArray("teams")
         for j=0,(teams~=nil and teams:size() or 0)-1,1 do
             local o=teams:get(j)
-            translators[o:getInt("branch_id")]={[o:get("name")]=host.."/team/"..o:get("slug")}
+            translators[o:getInt("branch_id")]={[utils:unescape_unicodes(o:get("name"))]=host.."/team/"..o:get("slug")}
         end
     end
     for i=list:size()-1,0,-1 do
         local o=list:getObject(i); local branch_id=o:get("branch_id",-1); if(branch_id==-1) then branch_id=nil end
-        chapters:add(Chapter.new(o:get("chapter_volume"),o:get("chapter_number"),o:get("chapter_name"),utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),utils:to_map({["translators"]=translators[branch_id], ["bid"]=branch_id, ["ui"]=ui})))
+        chapters[#chapters+1]={vol=o:get("chapter_volume"),num=o:get("chapter_number"),name=utils:unescape_unicodes(o:get("chapter_name")),date=utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),translators=translators[branch_id] or "",bid=branch_id,ui=ui}
     end
     local author=container:selectFirst("a[abs:href*=/people/]")
     return {
@@ -65,7 +65,7 @@ function update(url)
         ["rating"]=num(container:selectFirst("div.media-rating__value"):text())/2,
         ["description"]=utils:attr(container:selectFirst("div.media-section_info"):getElementsByAttributeValue("itemprop","description"):first(),"content"),
         ["thumbnail"]=container:selectFirst("div.media-sidebar__cover.paper"):selectFirst("img"):attr("src"),
-        ["chapters"]=utils:uniqueChapters(chapters,true),
+        ["chapters"]=unique(chapters,nil),
         ["similar"]=similar(container:select("div.media-slider__item"))
     }
 end
@@ -137,7 +137,7 @@ end
 
 servers=nil
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local scripts=network:load_as_Document(network:url_builder(url.."/v"..chapter["vol"].."/c"..chapter["num"]):add("page",1):add("bid",chapter["bid"]):add("ui",chapter["ui"]):build()):select("script")
     local json=JSONObject:create(scripts:toString():match("window.__info = (.-);"))
     local array=JSONArray:create(scripts:toString():match("window.__pg = (.-);"))
@@ -172,18 +172,18 @@ function alt_urls(url)
     } or {}
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
-        Options.new("Количество глав",4),
-        Options.new("Год выпуска",4),
-        Options.new("Оценка",4),
-        Options.new("Жанры",utils:to_map(Genres),2),
-        Options.new("Теги",utils:to_map(Tags),2),
-        Options.new("Серии",utils:to_map(Series),1),
-        Options.new("Типы",utils:to_map(Types),1),
-        Options.new("Статус тайтла",utils:to_map(Status),1),
-        Options.new("Формат",utils:to_map(Formats),2)
+        {mode=0,title="Сортировка",desc="desc",asc="asc",values=Sorts},
+        {mode=4,title="Количество глав"},
+        {mode=4,title="Год выпуска"},
+        {mode=4,title="Оценка"},
+        {mode=2,title="Жанры",values=Genres},
+        {mode=2,title="Теги",values=Tags},
+        {mode=1,title="Серии",values=Series},
+        {mode=1,title="Типы",values=Types},
+        {mode=1,title="Статус тайтла",values=Status},
+        {mode=2,title="Формат",values=Formats}
     }
 end
 
@@ -209,4 +209,42 @@ end
 
 function status(status)
     return ({["3"]="Announce",["1"]="Ongoing",["4"]="Paused",["5"]="Stopped",["2"]="Finished"})[status]
+end
+
+function unique(chapters,preferred)
+    local translators={}
+    local max=0;
+    local translator=preferred;
+    for _,chapter in ipairs(chapters) do
+        local key=chapter["translators"] -- key must not be nil
+        translators[key]=(translators[key] or 0)+1
+        if(translators[key]>max) then
+            max=translators[key]; translator=key
+        end
+    end
+    if(preferred and translators[preferred]>=translators[translator]) then
+        translator=preferred
+    end
+    local len=0; for _,_ in pairs(translators) do len=len+1 end
+    if(len>1) then
+        local map={}
+        for _,chapter in ipairs(chapters) do
+            local key=chapter["vol"].."--"..chapter["num"]
+            if(map[key]==nil) then
+                map[key]=chapter
+            elseif (chapter["translators"]==translator) then
+                map[key]=chapter
+            end
+        end
+        local new_chapters={}
+        for _,chapter in ipairs(chapters) do
+            if(map[chapter["vol"].."--"..chapter["num"]]) then
+                new_chapters[#new_chapters+1]=map[chapter["vol"].."--"..chapter["num"]]
+                map[chapter["vol"].."--"..chapter["num"]]=nil
+            end
+        end
+        return new_chapters
+    else
+        return chapters
+    end
 end

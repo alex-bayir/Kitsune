@@ -38,6 +38,8 @@ public class Lua extends Script{
         globals.load(new LuaJavaLib());
         globals.load("package.path=package.path..';"+(script.getParent()+File.separator).replace(File.separator,File.separator+File.separator)+"?.lua'").call();
         globals.load("function num(n) return n==nil and 0 or tonumber(n:match(\"[0-9]*%.?[0-9]+\")) end").call(); // init num(string) - safe tonumber function
+        globals.load("function table.tostring(tbl, depth, n) n = n or 0; depth = depth or 5; if(not(tbl)) then return nil end if (depth == 0) then return string.rep(' ', n)..\"...\"; end local output={}; local index=0; local size=0; for _ in pairs(tbl) do size=size+1; end for key, value in pairs(tbl) do index=index+1; key = string.format((type(key)==\"string\") and \"[\\\"%s\\\"]\" or \"[%s]\", key); if (type(value)==\"table\") then if (next(value)) then table.insert(output,string.rep(' ', n)..key..\" = {\"); table.insert(output,table.tostring(value, depth - 1, n + 4)); table.insert(output,string.rep(' ', n)..\"}\"..((index==size) and \"\" or \",\")); else table.insert(output,string.rep(' ', n)..key..\" = {}\"..((index==size) and \"\" or \",\")); end else value=type(value) == \"string\" and string.format(\"\\\"%s\\\"\", value) or tostring(value); table.insert(output,string.rep(' ', n)..key..\" = \"..value..((index==size) and \"\" or \",\")); end end return table.concat(output,\"\\n\") end\n").call();
+        globals.load("function table.print(tbl, depth, n) if(not(tbl)) then return nil end if(#tbl==0) then return \"{}\" else print(\"{\\n\"..table.tostring(tbl, depth, n and n+4 or 4)..\"\\n}\") end end").call();
         globals.set("network", Coercion.coerce(Network.class));
         globals.set("utils", Coercion.coerce(Utils.class));
         globals.set("JSONObject",Coercion.coerce(JSON.Object.class));
@@ -301,12 +303,6 @@ public class Lua extends Script{
         public static String unescape_unicodes(String escaped){
             return org.alex.kitsune.utils.Utils.unescape_unicodes(escaped);
         }
-        public static Map<?,?> to_map(LuaTable table){
-            return Coercion.coerce(table,Map.class);
-        }
-        public static List<?> to_list(LuaTable table){
-            return Coercion.coerce(table,List.class);
-        }
         public static long parseDate(String date,String format){
             try{
                 return java.util.Objects.requireNonNull(new SimpleDateFormat(format,java.util.Locale.US).parse(date)).getTime();
@@ -324,37 +320,6 @@ public class Lua extends Script{
         public static String text(Elements elements, String defText, String delimiter){return ((elements!=null && elements.size()>0) ? elements.stream().map(Element::text).filter(text->text.length()>0).collect(Collectors.joining(delimiter)) : defText);}
         public static String text(Elements elements, String defText){return ((elements!=null && elements.size()>0) ? elements.text() : defText);}
         public static String text(Elements elements){return text(elements,null);}
-        public static List<Chapter> uniqueChapters(List<Chapter> chapters,boolean translator_with_max_chapters,String translator){
-            HashMap<String,Integer> translators=new LinkedHashMap<>();
-            int max=0; Integer value;
-            String translator_max=translator;
-            for (Chapter chapter:chapters) {
-                String key=chapter.getTranslator();
-                translators.put(key,value=((value=translators.getOrDefault(key,0))!=null?value:0)+1);
-                if(value>max){max=value; translator_max=key;}
-                else if(value==max && Objects.equals(key,translator)){
-                    translator_max=translator;
-                }
-            }
-            if(translator_with_max_chapters){translator=translator_max;}
-            if(translators.size()>1){
-                final HashMap<String,Chapter> map=new LinkedHashMap<>();
-                for (Chapter chapter:chapters) {
-                    String key=chapter.getVol()+"--"+chapter.getNum();
-                    if(Objects.equals(translator,chapter.getTranslator())){
-                        map.put(key,chapter);
-                    }else{
-                        map.putIfAbsent(key,chapter);
-                    }
-                }
-                chapters.clear();
-                chapters.addAll(map.values());
-            }
-            return chapters;
-        }
-        public static List<Chapter> uniqueChapters(List<Chapter> chapters, boolean translator_with_max_chapters){
-            return uniqueChapters(chapters,translator_with_max_chapters,chapters.size()>0?chapters.get(0).getTranslator():null);
-        }
     }
 
     @Override

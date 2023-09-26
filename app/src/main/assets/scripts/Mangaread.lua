@@ -29,7 +29,7 @@ function update(url)
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
         local elem=list:get(i); local href=elem:select("a"):attr("href")
-        chapters[last-i]=Chapter.new(num(href:match("vol(%d+)")),num(href), nil,utils:parseDate(elem:select("span"):text(),"dd.MM.yyyy"),utils:to_map({id=href:match("chapter%-(.*)/")}))
+        chapters[last-i]={vol=num(href:match("vol(%d+)")),num=num(href),date=utils:parseDate(elem:select("span"):text(),"dd.MM.yyyy"),id=href:match("chapter%-(.*)/")}
     end
     local author={}; local authors=e:select("a[href~=/m-author/]")
     for j=0,authors:size()-1,1 do
@@ -95,7 +95,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local elements=network:load_as_Document(url.."chapter-"..chapter["id"]):select("img.wp-manga-chapter-img")
     local pages={}
     for i=0,elements:size()-1,1 do
@@ -108,14 +108,14 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Жанры",utils:to_map(Genres),1),
-        Options.new("Статусы",utils:to_map(Status),1),
-        Options.new("Взрослый контент",utils:to_map(Adult),0),
-        Options.new("Автор",3),
-        Options.new("Художник",3),
-        Options.new("Год выпуска",3)
+        {mode=1,title="Жанры",values=Genres},
+        {mode=1,title="Статусы",values=Status},
+        {mode=0,title="Взрослый контент",values=Adult},
+        {mode=5,title="Автор"},
+        {mode=5,title="Художник"},
+        {mode=5,title="Год выпуска"}
     }
 end
 

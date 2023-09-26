@@ -3,7 +3,6 @@ package org.alex.kitsune.book;
 import android.content.Context;
 import org.alex.kitsune.R;
 import com.alex.json.java.JSON;
-import org.alex.kitsune.utils.Utils;
 import org.jetbrains.annotations.NotNull;
 import java.util.List;
 import java.util.Map;
@@ -16,35 +15,8 @@ public class Chapter{
     private Chapter(JSON.Object info,List<Page> pages){
         this.info=info.put("pages",pages);
     }
-    public Chapter(int vol,float num,String name,long date,Map<String,Object> additional,List<Page> pages){
-        this(
-                new JSON.Object(additional)
-                        .put("vol",vol)
-                        .put("num",num)
-                        .put("name",Utils.unescape_unicodes(name))
-                        .put("date",date)
-                ,pages
-        );
-    }
-    public Chapter(int vol,String num,String name,long date,Map<String,Object> additional,List<Page> pages){
-        this(
-                new JSON.Object(additional)
-                        .put("vol",vol)
-                        .put("num",num)
-                        .put("name",Utils.unescape_unicodes(name))
-                        .put("date",date)
-                ,pages
-        );
-    }
-    public Chapter(String vol,String num,String name,long date,Map<String,Object> additional,List<Page> pages){
-        this(
-                new JSON.Object(additional)
-                        .put("vol",vol)
-                        .put("num",num)
-                        .put("name",Utils.unescape_unicodes(name))
-                        .put("date",date)
-                ,pages
-        );
+    public Chapter(Map<String,?> map){
+        this.info=map instanceof JSON.Object obj ? obj : new JSON.Object(map);
     }
     public Page getPage(int page){
         return getPage(page,getPages());
@@ -67,6 +39,9 @@ public class Chapter{
         return info.get("translators") instanceof Map<?,?> m ? (Map<String, String>) m: null;
     }
 
+    public static List<Chapter> convert(List<Map<String,?>> list){
+        return list==null? null: list.stream().filter(Objects::nonNull).map(Chapter::new).collect(Collectors.toList());
+    }
     public JSON.Object toJSON(){
         return new JSON.Object(info).put("pages",Page.toJSON(getPages()));
     }

@@ -32,17 +32,18 @@ function update(url)
     local container=doc:select("div.container")
     local genres=container:select("div.genres"):select("a[href*=/genre/]") local str="" for i=0,genres:size()-1,1 do str=str..", "..genres:get(i):text() end genres=str:sub(3)
     local ls=doc:select("ul.lang-chapters")
-    local langs={}
+    local langs={}; local any
     for i=0,ls:size()-1,1 do
-        local lang=ls:get(i)
-        langs[lang:id():match("..")]=lang:select("li.chapter-item")
+        local e=ls:get(i)
+        any=e:id():match("..")
+        langs[any]=e:select("a.item-link")
     end
-    local lang=langs["en"] and "en" or (langs["ja"] and "ja" or ls:get(0):id())
+    local lang=langs["ru"] and "ru" or (langs["en"] and "en" or (langs["ja"] and "ja" or any))
     local list=langs[lang]
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
         local e=list:get(i);
-        chapters[last-i]=Chapter.new(0,num(e:attr("data-number")), e:select("a[title]"):attr("title"):match("Chapter %d*%.?%d+: (.*)"),0,utils:to_map({["lang"]=lang}))
+        chapters[last-i]={num=num(e:attr("href"):match("chapter%-([0-9.]*)")), name=utils:attr(e,"title"):match("Chapter %d*%.?%d+: (.*)"), lang=lang}
     end
 
     local author={}; local authors=container:select("div.anisc-info"):select("a[href*=/author/]")
@@ -109,7 +110,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local info=network:load_as_Document(url:gsub(host,host.."/read").."/"..chapter["lang"].."/chapter-"..chapter["num"]):select("div#wrapper")
     local elements=network:parse(
             JSONObject:create(
@@ -127,15 +128,15 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(true),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Жанры",utils:to_map(Genres),1),
-        Options.new("Тип",utils:to_map(Types),0),
-        Options.new("Рейтинг",utils:to_map(Score),0),
-        Options.new("Язык",utils:to_map(Language),0),
-        Options.new("Сортировка",utils:to_map(Sorts),0),
-        Options.new("Статус",utils:to_map(Status),0),
-        Options.new("Возрастной Рейтинг",utils:to_map(RatingType),0)
+        {mode=1,title="Жанры",values=Genres},
+        {mode=0,title="Тип",values=Types},
+        {mode=0,title="Рейтинг",values=Score},
+        {mode=0,title="Язык",values=Language},
+        {mode=0,title="Сортировка",values=Sorts},
+        {mode=0,title="Статус",values=Status},
+        {mode=0,title="Возрастной Рейтинг",values=RatingType}
     }
 end
 

@@ -44,7 +44,7 @@ function update(url)
             local list=JSONObject:create(network:load(host.."/api/titles/chapters/?branch_id="..branch:getInt("id").."&count=100&page="..page)):getArray("content")
             for i=list:size()-1,0,-1 do
                 local o=list:getObject(i);
-                chapters[n]=Chapter.new(o:get("tome"), o:get("chapter"),o:get("name"),utils:parseDate(o:get("upload_date"),"yyyy-MM-dd'T'HH:mm:ss"),utils:to_map({id=o:get("id"),["translators"]=publishers,close=o:get("is_paid")}))
+                chapters[n]={vol=o:get("tome"),num=o:get("chapter"),name=o:get("name"),date=utils:parseDate(o:get("upload_date"),"yyyy-MM-dd'T'HH:mm:ss"),id=o:get("id"),translators=publishers,close=o:get("is_paid")}
                 n=n+1;
             end
         end
@@ -98,7 +98,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local array=JSONObject:create(network:load((string.gsub(url,"[^/]+$","chapters/"..chapter["id"])))):getObject("content"):getArray("pages")
     local pages={}; local n=0
     for i=0,array:size()-1,1 do
@@ -121,11 +121,11 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Сортировка",utils:to_map(Sorts),0),
-        Options.new("Жанры",utils:to_map(Genres),1),
-        Options.new("Категории",utils:to_map(Categories),1)
+        {mode=0,title="Сортировка",values=Sorts},
+        {mode=1,title="Жанры",values=Genres},
+        {mode=1,title="Категории",values=Categories}
     }
 end
 

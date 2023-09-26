@@ -2,6 +2,7 @@ package org.alex.kitsune.book;
 
 import android.text.Html;
 import com.alex.json.java.JSON;
+import org.alex.kitsune.book.search.Options;
 import org.alex.kitsune.commons.Callback2;
 import org.alex.kitsune.scripts.Script;
 import org.alex.kitsune.book.search.FilterSortAdapter;
@@ -70,7 +71,7 @@ public class Book_Scripted extends Book {
             if(map.get("url_web")==null){
                 map.put("url_web",map.get("url"));
             }
-            List<Chapter> chapters=map.remove("chapters") instanceof List<?> list ? JSON.filter(list,Chapter.class) : null;
+            List<Chapter> chapters=map.remove("chapters") instanceof List<?> list ? Chapter.convert((List<Map<String,?>>)list) : null;
             List<?> similar=map.remove("similar") instanceof List<?> list ? list : null;
             if(get("edited",false)){
                 map.remove("name");
@@ -120,7 +121,7 @@ public class Book_Scripted extends Book {
 
     public static FilterSortAdapter createAdvancedSearchAdapter(String source){return createAdvancedSearchAdapter(getScript(source));}
     public static FilterSortAdapter createAdvancedSearchAdapter(Script script){
-        try{return script!=null ? new FilterSortAdapter(script, script.invokeMethod(Constants.methodCreateAdvancedSearchOptions,List.class)) : null;}catch(Exception e){e.printStackTrace(); return null;}
+        try{return script!=null ? new FilterSortAdapter(script, Options.convert(script.invokeMethod(Constants.methodCreateAdvancedSearchOptions,List.class))) : null;}catch(Exception e){e.printStackTrace(); return null;}
     }
     public static Set<String> getAllGenres(){
         HashSet<String> set=new HashSet<>();

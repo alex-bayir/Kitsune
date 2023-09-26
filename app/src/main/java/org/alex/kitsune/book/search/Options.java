@@ -4,9 +4,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Options{
     final Header title;
@@ -22,6 +24,36 @@ public class Options{
     public Options(String title,String descending,String ascending, @NotNull Map<String,String> values, int mode){
         this.title=new HeaderSorted(title,title,descending,ascending);
         this.values=convert(values,mode%5+1);
+    }
+    public Options(Map<String,Object> map){
+        this((int)map.getOrDefault("mode",0),map);
+    }
+    public Options(int mode,Map<String,Object> map){
+        switch (mode){
+            case 0-> {
+                if(map.get("desc")!=null && map.get("asc")!=null){
+                    this.title=new HeaderSorted((String) map.get("title"),(String) map.get("title"),(String) map.get("desc"),(String)map.get("asc"));
+                }else{
+                    this.title=new Header((String) map.get("title"));
+                }
+                this.values=convert((Map<String, String>) map.getOrDefault("values",Map.of()),mode%5+1);
+            }
+            case 1,2,3->{
+                this.title=new Header((String) map.get("title"));
+                this.values=convert((Map<String, String>) map.getOrDefault("values",Map.of()),mode%5+1);
+            }
+            default->{
+                this.title=mode%5+1==5?
+                        new StringPairRange((String) map.get("title"),(String) map.getOrDefault("key",(String) map.get("title")))
+                        :
+                        new StringPairEditable((String) map.get("title"),(String) map.getOrDefault("key",(String) map.get("title")));
+                this.values=new Pair[0];
+            }
+        }
+    }
+
+    public static List<Options> convert(List<Map<String,Object>> list){
+        return list==null? null:list.stream().map(Options::new).collect(Collectors.toList());
     }
     public String getTitleSortSelected(){return title.getValue();}
     public String getInput(){return title.getValue();}

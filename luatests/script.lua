@@ -7,7 +7,7 @@ function table.tostring(tbl, depth, n)
         if (type(value)=="table") then
             if (next(value)) then
                 table.insert(output,string.rep(' ', n)..key.." = {");
-                table.insert(output, table.tostring(value, depth - 1, n + 4));
+                table.insert(output,table.tostring(value, depth - 1, n + 4));
                 table.insert(output,string.rep(' ', n).."}"..((index==size) and "" or ","));
             else
                 table.insert(output,string.rep(' ', n)..key.." = {}"..((index==size) and "" or ","));
@@ -19,7 +19,7 @@ function table.tostring(tbl, depth, n)
     end
     return table.concat(output,"\n")
 end
-function table.print(tbl, depth, n) print(table.tostring(tbl, depth, n)) end
+function table.print(tbl, depth, n) if(not(tbl)) then return nil end if(#tbl==0) then return "{}" else print("{\n"..table.tostring(tbl, depth, n and n+4 or 4).."\n}") end end
 
 function tmp()
     package.path=package.path..";C:\\Games\\Kitsune\\app\\src\\main\\assets\\scripts\\?.lua"

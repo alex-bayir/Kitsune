@@ -31,7 +31,7 @@ function update(url)
     local chapters={}; local last=list:size()-1;
     for i=last,0,-1 do
         local o=list:getObject(i)
-        chapters[last-i]=Chapter.new(o:get("vol"), o:get("ch"), o:get("title"), o:get("date")*1000,utils:to_map({id=o:get("id")}))
+        chapters[last-i]={vol=o:get("vol"),num=o:get("ch"),name=o:get("title"),date=o:get("date")*1000,id=o:get("id")}
     end
     return {
         ["url"]=url,
@@ -87,7 +87,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local array=JSONObject:create(network:load(url.."/chapter/"..chapter["id"])):getObject("response"):getObject("pages"):getArray("list")
     local pages={}
     for i=0,array:size()-1,1 do
@@ -101,10 +101,10 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Сортировка",utils:to_map(Sorts),0),
-        Options.new("Жанры",utils:to_map(Genres),1)
+        {mode=0,title="Сортировка",values=Sorts},
+        {mode=1,title="Жанры",values=Genres}
     }
 end
 

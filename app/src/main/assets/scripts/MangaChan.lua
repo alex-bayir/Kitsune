@@ -34,7 +34,7 @@ function update(url)
         local el=list:get(i)
         if(el:className():len()>0) then
             local href=utils:attr(el:selectFirst("a"),"href","")
-            chapters[n]=(Chapter.new(num(href:match("v%D?(%d+)")),num(href:match("ch%D?(%d+)")),utils:text(el:selectFirst("a"),""):match("%s%s%s+(.*)"),utils:parseDate(utils:text(el:selectFirst("div.date")),"yyyy-MM-dd"),utils:to_map({id=num(href:match("%d+"))})))
+            chapters[n]={vol=num(href:match("v%D?(%d+)")),num=num(href:match("ch%D?(%d+)")),name=utils:text(el:selectFirst("a"),""):match("%s%s%s+(.*)"),date=utils:parseDate(utils:text(el:selectFirst("div.date")),"yyyy-MM-dd"),id=num(href:match("%d+"))}
             n=n+1
         end
     end
@@ -114,7 +114,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local array=JSONArray:create(network:load_as_Document(host.."/online/"..chapter["id"]..url:match("%d+(.*)%d*%.")..chapter["num"]..".html"):select("script"):toString():match("\"fullimg\":%s*(%[.-%])"):gsub("'","\""))
     local pages={}
     for i=0,array:size()-1,1 do
@@ -127,10 +127,10 @@ function load(file,data,url,cancel,process)
     return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Сортировка","desc","asc",utils:to_map(Sorts),0),
-        Options.new("Жанры",utils:to_map(Genres),2)
+        {mode=0,title="Сортировка",desc="desc",asc="asc",values=Sorts},
+        {mode=2,title="Жанры",values=Genres}
     }
 end
 

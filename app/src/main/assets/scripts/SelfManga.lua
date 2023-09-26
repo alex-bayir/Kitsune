@@ -30,7 +30,7 @@ function update(url)
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
         local elem=list:get(i);
-        chapters[last-i]=Chapter.new(num(elem:attr("data-vol")),num(elem:attr("data-num"))/10, elem:select("td.item-title"):text():match("%d+%s%-%s%d+%s+(.+)"),utils:parseDate(elem:select("td.date"):attr("data-date"),"dd.MM.yy"))
+        chapters[last-i]={vol=num(elem:attr("data-vol")),num=num(elem:attr("data-num"))/10,name=elem:select("td.item-title"):text():match("%d+%s%-%s%d+%s+(.+)"),date=utils:parseDate(elem:select("td.date"):attr("data-date"),"dd.MM.yy")}
     end
     local author={}; local authors=e:select("span.elem_author"):select("a[href~=/list/person/]")
     for j=0,authors:size()-1,1 do
@@ -95,7 +95,7 @@ function query_url(url,page)
     return list
 end
 
-function getPages(url,chapter) -- table <Page>
+function getPages(url,chapter)
     local array=JSONArray:create(network:load_as_Document(url.."/vol"..chapter["vol"].."/"..chapter["num"].."?mtr=1"):select("script"):toString():match("rm_h.initReader.*(%[%[.*%]%])"):gsub("\'","\""))
     local pages={}
     for i=0,array:size()-1,1 do
@@ -113,11 +113,11 @@ function load(file,data,url,cancel,process)
     return error
 end
 
-function createAdvancedSearchOptions() -- table <Options>
+function createAdvancedSearchOptions()
     return {
-        Options.new("Жанры",utils:to_map(Genres),2),
-        Options.new("Теги",utils:to_map(Tags),1),
-        Options.new("Фильтры",utils:to_map(Filters),2)
+        {mode=2,title="Жанры",values=Genres},
+        {mode=1,title="Теги",values=Tags},
+        {mode=2,title="Фильтры",values=Filters}
     }
 end
 
