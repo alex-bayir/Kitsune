@@ -8,6 +8,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import org.alex.kitsune.Activity;
 import com.blacksquircle.ui.editorkit.model.UndoStack;
 import com.blacksquircle.ui.editorkit.plugin.autoindent.AutoIndentPlugin;
@@ -37,6 +38,7 @@ public class CompilerActivity extends Activity {
     TextView logcat;
     CircularProgressBar progressBar;
     BottomSheetBehavior<TextView> b;
+    Toolbar toolbar;
     int mode=R.id.base_functions;
     @Override public int getAnimationGravityIn(){return Gravity.END;}
     @Override public int getAnimationGravityOut(){return Gravity.START;}
@@ -44,7 +46,10 @@ public class CompilerActivity extends Activity {
     protected void onCreate(@Nullable @org.jetbrains.annotations.Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compiler);
+        toolbar=findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         file=new File(getIntent().getStringExtra(Constants.file));
+        toolbar.setTitle(file.getName());
         fab=findViewById(R.id.fab);
         editor=findViewById(R.id.editor);
         logcat=findViewById(R.id.logcat);
