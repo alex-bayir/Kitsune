@@ -36,6 +36,7 @@ function update(url)
     for j=0,authors:size()-1,1 do
         local a=authors:get(j); author[a:text()]=a:attr("abs:href")
     end
+    e:select("span.all-names-popover"):remove()
     return {
         ["url"]=url,
         ["url_web"]=url,
