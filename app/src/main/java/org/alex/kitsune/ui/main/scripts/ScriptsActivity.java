@@ -1,6 +1,7 @@
 package org.alex.kitsune.ui.main.scripts;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.FileUtils;
 import android.view.*;
 import android.widget.TextView;
@@ -117,7 +118,7 @@ public class ScriptsActivity extends Activity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch(item.getItemId()){
             case R.id.action_create_script -> startActivity(new Intent(this, CompilerActivity.class).putExtra(Constants.file, dir.getAbsolutePath() + "/newScript" + System.currentTimeMillis() + ".lua"),Gravity.START,Gravity.END);
-            case R.id.action_open_api -> startActivity(new Intent(this, ApiActivity.class),Gravity.START,Gravity.END);
+            case R.id.action_open_api -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/alex-bayir/Kitsune/blob/master/Scripts API.md")));
         }
         return super.onOptionsItemSelected(item);
     }

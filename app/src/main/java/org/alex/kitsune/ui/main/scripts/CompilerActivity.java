@@ -1,6 +1,7 @@
 package org.alex.kitsune.ui.main.scripts;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -130,7 +131,7 @@ public class CompilerActivity extends Activity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case (R.id.action_open_api) -> startActivity(new Intent(this, ApiActivity.class),Gravity.START,Gravity.END);
+            case (R.id.action_open_api) -> startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/alex-bayir/Kitsune/blob/master/Scripts API.md")));
             case (R.id.base_functions), (R.id.advanced_search_functions) -> {item.setChecked(true);mode = item.getItemId();}
         }
         return super.onOptionsItemSelected(item);
