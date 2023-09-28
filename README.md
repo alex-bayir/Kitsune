@@ -39,7 +39,8 @@ Features of Kitsune:
 
 The application is still under development, so there may be errors in the application and changes in the api.
 
-> [!WARNING] DISCLAIMER OF LIABILITY
+> [!WARNING]
+> DISCLAIMER OF LIABILITY
 > All copyrights and trademarks belong to their authors. All the content presented in the application is taken from open sources on the Internet.
 
 |      Screenshots       |      Screenshots       |      Screenshots       |
