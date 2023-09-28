@@ -176,3 +176,103 @@ function loadSimilar(book)
     return similar
 end
 ```
+
+> [!NOTE]
+> Модули которые вы можете использовать в Lua ():
+
+```lua
+network -- (для создания запросов)
+
+---@return Throwable -- ошибка призапросе
+function network:load(client,url,domain,file,cancel_flag,listener) end
+
+---@return Throwable -- ошибка призапросе
+function network:load(client,url,headers,file,cancel_flag,listener) end
+
+---@return Throwable -- ошибка призапросе
+function network:load(client,url,domain,headers,file,cancel_flag,listener) end
+
+---@return string
+function network:load(url,headers) end
+
+---@return string
+function network:load_as_String(url,headers,body,type) end
+
+---@return org.jsoup.nodes.Document
+function network:load_as_Document(url,headers,body) end
+
+---@return org.alex.kitsune.commons.URLBuilder
+function network:url_builder(host) end
+
+---@return org.jsoup.nodes.Document
+function network:parse(html) end
+
+---@return OkHtttpClient
+function network:getClient() end
+
+---watch source MangaTeaderTo
+---@param descrabmle boolean
+---@return OkHtttpClient
+function network:getClient(descramble) end
+
+---@return string
+function network:getCookie(domain,key) end
+
+---@param cookies List<Cookie>
+---@return string
+function network:getCookie(cookies,key) end
+
+---decode url special chars
+---@return string
+function network:decode(encoded) end
+
+---encode url special chars
+---@return string
+function network:encode(decoded) end
+
+utils -- различные вспомогательные функции
+
+---запись в файл
+---@param file java.io.File
+---@param text string
+---@param append boolean
+---@return Throwable
+function utils:write(file,text,append) end
+
+---@return string
+function utils:unescape_unicodes(escaped) end
+
+---date to timestamp
+---@return long
+function utils:parseDate(date,format) end
+
+---для исключение nullpointerexception
+---@param element org.jsoup.nodes.Element 
+---@param attr string
+---@param def string не обязателен
+---@return string
+function utils:attr(element,attr,def) end
+---для исключение nullpointerexception
+---@param element org.jsoup.nodes.Element
+---@param def string не обязателен
+---@return string
+function utils:text(element,def) end
+
+---для исключение nullpointerexception
+---@param elements org.jsoup.nodes.Elements
+---@param attr string
+---@param def string не обязателен
+---@param delimeter string не обязателен
+---@return string
+function utils:attr(elements,attr,def,delimeter) end
+
+---для исключение nullpointerexception
+---@param elements org.jsoup.nodes.Elements
+---@param def string не обязателен
+---@param delimeter string не обязателен
+---@return string
+function utils:text(elements,def,delimeter) end
+
+JSONObject (обычный json объект только унаследованный от TreeMap)
+JSONArray (обычный json массив только унаследованный от LinkedList)
+```
