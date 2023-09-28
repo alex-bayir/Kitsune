@@ -47,7 +47,7 @@ public class CompilerActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_compiler);
         toolbar=findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        initActionBar(toolbar);
         file=new File(getIntent().getStringExtra(Constants.file));
         toolbar.setTitle(file.getName());
         fab=findViewById(R.id.fab);
