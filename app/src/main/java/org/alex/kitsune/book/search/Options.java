@@ -59,9 +59,9 @@ public class Options{
     public String getInput(){return title.getValue();}
     public String getInputRangeStart(){return title instanceof StringPairRange range?range.getLower():null;}
     public String getInputRangeEnd(){return title instanceof StringPairRange range?range.getUpper():null;}
-    public String[] getSelected(){return get(1);}
     public String[] getUnselected(){return get(0);}
-    public String[] getDeselected(){return get(-1);}
+    public String[] getSelected(){return get(1);}
+    public String[] getDeselected(){return get(2);}
     private String[] get(int value){
         return Arrays.stream(values).filter(pair->pair instanceof StringPair spair && spair.getState()==value).map(Pair::getValue).toArray(String[]::new);
     }
