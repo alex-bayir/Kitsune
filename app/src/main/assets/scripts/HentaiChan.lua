@@ -74,12 +74,14 @@ function query(name,page,params)
                         url=url..(b and "+-" or "")..d[i]; b=true
                     end
                     url=url.."&sort=manga".."&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
+                else
+                    url=host.."/manga/newest&n="..params[1]:getSelected()[1]..params[1]:getTitleSortSelected()
                 end
             end
         elseif(params~=nil and #params>0)then
             url=sorts[params[1]]~=nil and host.."/manga/new&n="..sorts[params[1]] or host.."/manga/random"
         end
-        url=url~=nil and url..(page>0 and ("?offset="..((page+1)*10)) or "")
+        url=url~=nil and ((url..(page>0 and ("&offset="..((page+1)*10)) or "")):gsub("&","?",1))
     end
     if(name~=nil and name:match("[a-z]://[^ >,;]*")~=nil) then url=name; end
     return query_url(url)

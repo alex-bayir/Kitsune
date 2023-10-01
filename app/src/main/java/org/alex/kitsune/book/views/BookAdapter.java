@@ -1,7 +1,5 @@
 package org.alex.kitsune.book.views;
 
-import android.content.Context;
-import android.util.AttributeSet;
 import android.view.ViewGroup;
 import org.alex.kitsune.commons.DiffCallback;
 import androidx.recyclerview.widget.GridLayoutManager;
@@ -197,7 +195,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         initRV(rv,spanCount,RecyclerView.VERTICAL,false);
     }
     public void initRV(RecyclerView rv, int spanCount, int orientation, boolean reverseLayout){
-        initRV(rv,new NpaGridLayoutManager(rv.getContext(),spanCount,orientation,reverseLayout));
+        initRV(rv,new GridLayoutManager(rv.getContext(),spanCount,orientation,reverseLayout));
     }
     public void initRV(RecyclerView rv, GridLayoutManager layoutManager){
         setLayoutManager(layoutManager);
@@ -210,30 +208,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
 
     public static GridLayoutManager create(android.content.Context context, int spanCount){return create(context,spanCount, null);}
     public static GridLayoutManager create(android.content.Context context, int spanCount, java.util.function.Function<Integer,Integer> lookup){
-        GridLayoutManager grid=new NpaGridLayoutManager(context,spanCount);
+        GridLayoutManager grid=new GridLayoutManager(context,spanCount);
         if(lookup!=null){
-            grid.setSpanSizeLookup(new NpaGridLayoutManager.SpanSizeLookup(){@Override public int getSpanSize(int position){return lookup.apply(position);}});
+            grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup(){@Override public int getSpanSize(int position){return lookup.apply(position);}});
         }
         return grid;
-    }
-    private static class NpaGridLayoutManager extends GridLayoutManager {
-        /**
-         * Disable predictive animations. There is a bug in RecyclerView which causes views that
-         * are being reloaded to pull invalid ViewHolders from the internal recycler stack if the
-         * adapter size has decreased since the ViewHolder was recycled.
-         */
-        @Override public boolean supportsPredictiveItemAnimations(){return false;}
-
-        public NpaGridLayoutManager(Context context, AttributeSet attrs, int defStyleAttr, int defStyleRes) {
-            super(context, attrs, defStyleAttr, defStyleRes);
-        }
-
-        public NpaGridLayoutManager(Context context, int spanCount) {
-            super(context, spanCount);
-        }
-
-        public NpaGridLayoutManager(Context context, int spanCount, int orientation, boolean reverseLayout) {
-            super(context, spanCount, orientation, reverseLayout);
-        }
     }
 }

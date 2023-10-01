@@ -106,11 +106,12 @@ public abstract class Book {
     public final String getName(){return getString("name");}
     public final String getNameAlt(){return getString("name_alt");}
     public final String getAnyName(){return getAnyName(true);}
-    public final String getAnyName(boolean alt){return alt ? getNameAlt()!=null ? getNameAlt() : getName() : getName()!=null ? getName() : getNameAlt();}
+    public final String getAnyName(boolean alt){return getAnyName(alt,null);}
+    public final String getAnyName(boolean alt,String def){return alt ? (getNameAlt()!=null ? getNameAlt() : (getName()!=null? getName() : def)) : (getName()!=null ? getName() : (getNameAlt()!=null ? getNameAlt() : def));}
     public final Object getAuthor(){return get("author");}
     public final String getGenres(){return getString("genres");}
     public final String getTags(){return getString("tags");}
-    public final String getThumbnail(){return getString("thumbnail");}
+    public final String getCover(){return get("cover",getString("thumbnail"));}
     public final double getRating(){return get("rating",0.0);}
     public final String getDescription(){return getString("description");}
     public final CharSequence getDescription(int flags){return getDescription(flags,null);}
@@ -160,8 +161,7 @@ public abstract class Book {
             NetworkUtils.getMainHandler().post(()->callback.call(drawable));
         }).start();
     }
-    public final void loadCover(Callback<Drawable> callback){
-        loadCover(getCoverPath(),getThumbnail(),get("domain",null),callback);}
+    public final void loadCover(Callback<Drawable> callback){loadCover(getCoverPath(),getCover(),get("domain",null),callback);}
 
     private List<Chapter> filter(boolean full, List<Chapter> chapters){
         return full ? chapters : chapters.stream().filter(this::checkChapter).collect(Collectors.toList());
@@ -411,8 +411,8 @@ public abstract class Book {
     public static final Comparator<Book> HistoryComparator=Comparator.comparingLong(Book::getHistoryDate).reversed();
     public static final Comparator<Book> SavingTimeComparator=Comparator.comparingLong(Book::getLastTimeSave).reversed();
     public static final Comparator<Book> CategoryTimeComparator=Comparator.comparingLong(Book::getCategoryTime).reversed();
-    public static final Comparator<Book> AlphabeticalComparatorAlt=Comparator.comparing(book -> book.getAnyName(true),String.CASE_INSENSITIVE_ORDER);
-    public static final Comparator<Book> AlphabeticalComparator=Comparator.comparing(book -> book.getAnyName(false),String.CASE_INSENSITIVE_ORDER);
+    public static final Comparator<Book> AlphabeticalComparatorAlt=Comparator.comparing(book -> book.getAnyName(true,""),String.CASE_INSENSITIVE_ORDER);
+    public static final Comparator<Book> AlphabeticalComparator=Comparator.comparing(book -> book.getAnyName(false,""),String.CASE_INSENSITIVE_ORDER);
     public static final Comparator<Book> ImagesSizesComparator=Comparator.comparingLong(Book::getImagesSize).reversed();
     public static final Comparator<Book> RatingComparator=Comparator.comparingDouble(Book::getRating).reversed();
 
