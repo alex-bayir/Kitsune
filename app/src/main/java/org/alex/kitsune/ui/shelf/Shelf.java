@@ -139,12 +139,7 @@ public class Shelf extends Fragment implements MenuProvider {
         GridLayoutManager grid;
         private boolean enable_update=true;
         private List<Object> old;
-        private DiffCallback<Object> notify=new DiffCallback<>(){
-            @Override
-            public boolean areContentsTheSame(int old_pos, int new_pos) {
-                return isCheckContentsTheSame() && o.get(old_pos) instanceof BookData oldD && n.get(new_pos) instanceof BookData newD && BookData.areSame(oldD,newD);
-            }
-        };
+        private final DiffCallback<Object> notify=new DiffCallback<>();
         public Adapter(Context context,List<Wrapper> wrappers){
             grid=new GridLayoutManager(context,12);
             grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -189,7 +184,7 @@ public class Shelf extends Fragment implements MenuProvider {
             objects=wrappers!=null?convert(wrappers):new ArrayList<>();
             calculateSpans();
             if(old!=null){
-                notify.init(old,objects, BookData.areSameBooks(old,objects)).notifyUpdate(this);
+                notify.init(old,objects, true).notifyUpdate(this);
             }
         }
 
@@ -217,8 +212,9 @@ public class Shelf extends Fragment implements MenuProvider {
                 BookData data=new BookData(book);
                 for(int i=0;i<objects.size();i++){
                     if(data.equals(objects.get(i))){
-                        objects.set(i,data);
-                        notifyItemChanged(i);
+                        if(data.hashCode()!=objects.set(i,data).hashCode()){
+                            notifyItemChanged(i);
+                        }
                     }
                 }
             }

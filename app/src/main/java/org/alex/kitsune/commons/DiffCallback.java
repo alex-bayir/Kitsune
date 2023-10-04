@@ -45,7 +45,7 @@ public class DiffCallback<E> extends DiffUtil.Callback{
         }
         return this;
     }
-    private static int hashcode(Object obj){
+    public static int hashcode(Object obj){
         return obj==null?0:obj.hashCode();
     }
 }

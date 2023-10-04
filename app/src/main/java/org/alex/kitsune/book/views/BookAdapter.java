@@ -28,11 +28,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     private boolean showCheckedNew=true;
     private long full_size;
     private boolean enable_update=true;
-    private final DiffCallback<BookData> notify=new DiffCallback<>(){
-        @Override public boolean areContentsTheSame(int old_pos, int new_pos) {
-            return isCheckContentsTheSame() && BookData.areSame(o.get(old_pos),n.get(new_pos));
-        }
-    };
+    private final DiffCallback<BookData> notify=new DiffCallback<>();
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> clickListener){this(books,mode,clickListener,null);}
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> holder, Callback<Book> button){
         if(books!=null){this.data.addAll(books.stream().map(BookData::new).collect(Collectors.toList()));}
@@ -119,7 +115,12 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     }
     public void add(int pos, Book book, boolean moveIfExist){
         if(book!=null){
-            notify(data->{data.add(pos,new BookData(book),moveIfExist); return data;});
+            add(pos,new BookData(book),moveIfExist);
+        }
+    }
+    private void add(int pos, BookData book, boolean moveIfExist){
+        if(book!=null){
+            notify(data->{data.add(pos,book,moveIfExist); return data;});
         }
     }
     public void addAll(Collection<Book> collection){
@@ -132,8 +133,8 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         if(book==null){return -1;}
         BookData data=new BookData(book);
         int index=this.data.indexOf(data);
-        if(index!=-1 && !BookData.areSame(data,this.data.get(index))){
-            add(index,book,true);
+        if(index!=-1){
+            add(index,data,true);
         }
         return index;
     }
@@ -170,7 +171,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         if(o!=null){
             if(n!=data){data.clear(); data.addAll(n);}
             if(enable_update){
-                notify.init(o,n, BookData.areSameBooks(o,n)).notifyUpdate(this);
+                notify.init(o,n, true).notifyUpdate(this);
             }
         }
     }

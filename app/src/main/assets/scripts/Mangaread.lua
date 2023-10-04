@@ -137,6 +137,5 @@ function similar(elements)
 end
 
 function status(status)
-    print(status)
     return ({["Upcoming"]="Announce",["OnGoing"]="Ongoing",["On Hold"]="Paused",["Canceled"]="Stopped",["Completed"]="Finished"})[status]
 end
