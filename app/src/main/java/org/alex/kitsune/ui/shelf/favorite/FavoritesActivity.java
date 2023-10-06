@@ -89,7 +89,7 @@ public class FavoritesActivity extends Activity {
             setCategories(categories);
         }
         public void setCategories(List<String> categories){
-            notify.init(new ArrayList<>(this.categories),this.categories=categories,false).notifyUpdate(this);
+            notify.init(new ArrayList<>(this.categories),this.categories=categories).notifyUpdate(this);
         }
         public void setShowSource(boolean showSource){
             this.showSource=showSource;

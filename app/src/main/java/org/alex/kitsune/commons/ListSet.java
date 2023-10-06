@@ -8,15 +8,35 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 public class ListSet<E> implements List<E>,Set<E> {
+    public interface Unique<E>{int getKey(E e);}
     final List<Map.Entry<Integer,E>> map;
+    final Unique<E> unique;
 
-    public ListSet(List<Map.Entry<Integer,E>> map){this.map=map; map.clear();}
-    public ListSet(List<Map.Entry<Integer,E>> map, Collection<E> c){this(map); addAll(c);}
-    public ListSet(Class<? extends List> listClass) throws IllegalAccessException,InstantiationException{
-        this.map=listClass.newInstance();
+    private Map.Entry<Integer,E> entry(E value){
+        return new AbstractMap.SimpleEntry<>(unique.getKey(value),value){
+            @Override public boolean equals(@Nullable Object o) {
+                return o instanceof Map.Entry<?, ?> e && Objects.equals(getKey(), e.getKey());
+            }
+        };
     }
-    public ListSet(Class<? extends List<E>> listClass,Collection<E> c) throws IllegalAccessException,InstantiationException{
-        this(listClass);
+    public ListSet(Collection<E> c){
+        this(Object::hashCode,c);
+    }
+    public ListSet(@NonNull Unique<E> unique){
+        this(unique,List.of());
+    }
+    public ListSet(@NonNull Unique<E> unique, @NonNull Collection<E> c){
+        this(new ArrayList<>(c.size()),unique,c);
+    }
+    public ListSet(@NonNull Class<? extends List> list, @NonNull Collection<E> c) throws IllegalAccessException, InstantiationException {
+        this(list.newInstance(),Object::hashCode,c);
+    }
+    public ListSet(@NonNull Class<? extends List> list,@NonNull Unique<E> unique, @NonNull Collection<E> c) throws IllegalAccessException, InstantiationException {
+        this(list.newInstance(),unique,c);
+    }
+    public ListSet(@NonNull List<Map.Entry<Integer,E>> list,@NonNull Unique<E> unique, @NonNull Collection<E> c){
+        this.unique=unique;
+        this.map=list;
         addAll(c);
     }
 
@@ -26,14 +46,16 @@ public class ListSet<E> implements List<E>,Set<E> {
     @Override
     public boolean isEmpty(){return map.size()==0;}
     @Override
-    public boolean contains(@Nullable @org.jetbrains.annotations.Nullable Object o){return get(o)!=null;}
+    public boolean contains(@Nullable @org.jetbrains.annotations.Nullable Object o){
+        for(E e:this){if(Objects.equals(o, e)){return true;}}return false;
+    }
 
-    private boolean equals(Object o1,Object o2){return o1==null ? o2==null : (o1==o2 || o1.equals(o2));}
-    private boolean equals(Object o,Map.Entry<Integer,E> entry){return o==null ? entry.getValue()==null : entry.getKey().equals(o.hashCode());}
-
-    public Map.Entry<Integer,E> get(Object o){
+    public Map.Entry<Integer,E> get(E o){
+        return get(entry(o));
+    }
+    private Map.Entry<Integer,E> get(Map.Entry<Integer,?> o){
         for(Map.Entry<Integer,E> entry:map){
-            if(equals(o,entry)){return entry;}
+            if(Objects.equals(o,entry)){return entry;}
         }
         return null;
     }
@@ -69,7 +91,7 @@ public class ListSet<E> implements List<E>,Set<E> {
                 entry.setValue(e);
                 if(moveIfExist && index!=old){map.remove(entry); map.add(index>old?index-1:index,entry);}
             }else{
-                map.add(index,new AbstractMap.SimpleEntry<>(e.hashCode(), e));
+                map.add(index,entry(e));
             }
             return old;
         }else{
@@ -93,7 +115,7 @@ public class ListSet<E> implements List<E>,Set<E> {
                     map.set(index,entry);
                 }
             }else{
-                map.set(index,new AbstractMap.SimpleEntry<>(e.hashCode(),e));
+                map.set(index,entry(e));
             }
             return old;
         }
@@ -101,7 +123,11 @@ public class ListSet<E> implements List<E>,Set<E> {
     }
 
     @Override public boolean remove(@Nullable @org.jetbrains.annotations.Nullable Object o) {
-        return map.remove(get(o));
+        ListIterator<E> it=listIterator();
+        while (it.hasNext()){
+            if(Objects.equals(o,it.next())){it.remove(); return true;}
+        }
+        return false;
     }
 
     @Override
@@ -118,7 +144,7 @@ public class ListSet<E> implements List<E>,Set<E> {
     public int indexOf(@Nullable @org.jetbrains.annotations.Nullable Object o) {
         ListIterator<E> it=listIterator(0);
         while (it.hasNext()){
-            if(equals(o,it.next())){return it.nextIndex()-1;}
+            if(Objects.equals(o,it.next())){return it.nextIndex()-1;}
         }
         return -1;
     }
@@ -127,7 +153,7 @@ public class ListSet<E> implements List<E>,Set<E> {
     public int lastIndexOf(@Nullable @org.jetbrains.annotations.Nullable Object o) {
         ListIterator<E> it=listIterator(size());
         while (it.hasPrevious()){
-            if(equals(o,it.previous())){return it.previousIndex()+1;}
+            if(Objects.equals(o,it.previous())){return it.previousIndex()+1;}
         }
         return -1;
     }
@@ -287,7 +313,7 @@ public class ListSet<E> implements List<E>,Set<E> {
             if(this==list){return true;}
             Iterator<E> it1=iterator(),it2=(list).iterator();
             while (it1.hasNext() && it2.hasNext()){
-                if(!equals(it1.next(),it2.next())){return false;}
+                if(!Objects.equals(it1.next(),it2.next())){return false;}
             }
             return !(it1.hasNext() || it2.hasNext());
         }

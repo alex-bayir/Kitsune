@@ -139,7 +139,7 @@ public class Shelf extends Fragment implements MenuProvider {
         GridLayoutManager grid;
         private boolean enable_update=true;
         private List<Object> old;
-        private final DiffCallback<Object> notify=new DiffCallback<>();
+        private final DiffCallback<Object> notify=new DiffCallback<>(true);
         public Adapter(Context context,List<Wrapper> wrappers){
             grid=new GridLayoutManager(context,12);
             grid.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
@@ -165,6 +165,7 @@ public class Shelf extends Fragment implements MenuProvider {
         public Adapter initRV(RecyclerView rv){
             rv.setAdapter(this);
             rv.setHasFixedSize(true);
+            rv.setItemViewCacheSize(32);
             rv.setLayoutManager(getLayoutManager());
             return this;
         }
@@ -184,7 +185,7 @@ public class Shelf extends Fragment implements MenuProvider {
             objects=wrappers!=null?convert(wrappers):new ArrayList<>();
             calculateSpans();
             if(old!=null){
-                notify.init(old,objects, true).notifyUpdate(this);
+                notify.init(old,objects).notifyUpdate(this);
             }
         }
 

@@ -1,9 +1,9 @@
 package org.alex.kitsune.book.views;
 
 import org.alex.kitsune.book.Book;
-
 import java.util.Comparator;
-import static org.alex.kitsune.commons.DiffCallback.hashcode;
+
+import static java.util.Objects.hash;
 
 public class BookData {
     public final Book book;
@@ -34,8 +34,10 @@ public class BookData {
         saved=book.countSaved();
         checked_new=book.getCheckedNew();
         not_checked_new=book.getNotCheckedNew();
-        long tmp=(long)hashcode(title)<<2^hashcode(subtitle)>>2^hashcode(genres)^(long)rating<<4^hashcode(status)^hashcode(source)^hashcode(description)^size^(long)saved<<2^(long)checked_new<<4^(long)not_checked_new<<6;
-        hashcode=(int)(tmp>>32)^(int)tmp;
+        hashcode=hash(title,subtitle,genres,rating,status,source,description,size,saved,checked_new,not_checked_new);
+    }
+    public int bookHashCode(){
+        return book.hashCode();
     }
     public static Comparator<BookData> convert(Comparator<Book> comparator){
         return (d1, d2)->comparator.compare(d1.book,d2.book);

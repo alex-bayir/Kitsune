@@ -61,7 +61,7 @@ public final class FilterSortAdapter extends RecyclerView.Adapter<FilterSortAdap
                     if(p.size()>0 || option.title.contains(pattern)){pairs.add(option.title); pairs.addAll(p);}
                 }
             }
-            notify.init(old,pairs,false).notifyUpdate(this);
+            notify.init(old,pairs).notifyUpdate(this);
         }catch (PatternSyntaxException ignore){}
     }
     public Options[] getOptions(){return options;}

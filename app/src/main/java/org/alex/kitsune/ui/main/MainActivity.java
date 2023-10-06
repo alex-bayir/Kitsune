@@ -11,6 +11,7 @@ import android.graphics.drawable.Animatable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.*;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.ImageView;
@@ -289,12 +290,16 @@ public class MainActivity extends Activity implements NavigationView.OnNavigatio
         if(NetworkUtils.isNetworkAvailable(this)){
             swipe_refresh.setRefreshing(true);
             //progress.progressiveStart();
-            new Handler().post(()->BookService.check_for_updates(this, n->{
-                setNew(n);
-                swipe_refresh.setRefreshing(false);
-                //progress.progressiveStop();
-                swipe_refresh.setEnabled(!BookService.isAllUpdated());
-            }));
+            new Thread(()->{
+                BookService.check_for_updates(this, n->{
+                    new Handler(Looper.getMainLooper()).post(()->{
+                        setNew(n);
+                        swipe_refresh.setRefreshing(false);
+                        //progress.progressiveStop();
+                        swipe_refresh.setEnabled(!BookService.isAllUpdated());
+                    });
+                });
+            }).start();
         }else{
             swipe_refresh.setRefreshing(false);
             Toast.makeText(this, R.string.no_internet,Toast.LENGTH_LONG).show();

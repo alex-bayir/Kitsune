@@ -20,7 +20,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         MIXED;
         Mode(){}
     }
-    protected final ListSet<BookData> data=new ListSet<>(new ArrayList<>());
+    protected final ListSet<BookData> data=new ListSet<>(BookData::bookHashCode,new ArrayList<>());
     private List<BookData> old=new ArrayList<>();
     private final HolderClickListener holder, button;
     private Mode mode;
@@ -28,7 +28,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
     private boolean showCheckedNew=true;
     private long full_size;
     private boolean enable_update=true;
-    private final DiffCallback<BookData> notify=new DiffCallback<>();
+    private final DiffCallback<BookData> notify=new DiffCallback<>(true);
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> clickListener){this(books,mode,clickListener,null);}
     public BookAdapter(Collection<Book> books, Mode mode, Callback<Book> holder, Callback<Book> button){
         if(books!=null){this.data.addAll(books.stream().map(BookData::new).collect(Collectors.toList()));}
@@ -171,7 +171,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookHolder> {
         if(o!=null){
             if(n!=data){data.clear(); data.addAll(n);}
             if(enable_update){
-                notify.init(o,n, true).notifyUpdate(this);
+                notify.init(o,n).notifyUpdate(this);
             }
         }
     }

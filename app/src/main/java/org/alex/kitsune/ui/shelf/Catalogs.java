@@ -279,10 +279,10 @@ public class Catalogs extends Fragment implements MenuProvider {
     public class CatalogsAdapter extends RecyclerView.Adapter<CatalogsAdapter.CatalogHolder>{
         List<Container> list;
         final HolderClickListener listener;
-        private DiffCallback<Container> notify=new DiffCallback<>();
+        private final DiffCallback<Container> notify=new DiffCallback<>(true);
         public CatalogsAdapter(List<Container> list, HolderClickListener listener){this.list=list; this.listener=listener;}
         public void update(List<Container> list){
-            notify.init(new ArrayList<>(this.list),this.list=list,true).notifyUpdate(this,true);
+            notify.init(new ArrayList<>(this.list),this.list=list).notifyUpdate(this,true);
         }
         public List<Container> getItems(){
             return list;
