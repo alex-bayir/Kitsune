@@ -36,7 +36,7 @@ public class DiffCallback<E> extends DiffUtil.Callback{
 
     @Override
     public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-        return check_contents_the_same && areItemsTheSame(o.get(oldItemPosition),n.get(newItemPosition));
+        return areItemsTheSame(o.get(oldItemPosition),n.get(newItemPosition));
     }
     public boolean areItemsTheSame(E o,E n){
         return Objects.equals(o,n);
@@ -44,7 +44,7 @@ public class DiffCallback<E> extends DiffUtil.Callback{
 
     @Override
     public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-        return areContentsTheSame(o.get(oldItemPosition),n.get(newItemPosition));
+        return check_contents_the_same && areContentsTheSame(o.get(oldItemPosition),n.get(newItemPosition));
     }
     public boolean areContentsTheSame(E o,E n){
         return Objects.hashCode(o)==Objects.hashCode(n);
