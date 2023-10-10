@@ -101,7 +101,7 @@ function getPages(url,chapter)
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]={["page"]=i+1,["data"]=ja:getString(0)..ja:getString(2)}
+        pages[i]={["page"]=i+1,["data"]=(ja:getString(0)..ja:getString(2))}
     end
     return pages
 end

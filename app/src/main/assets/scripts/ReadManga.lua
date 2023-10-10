@@ -101,17 +101,13 @@ function getPages(url,chapter)
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]={["page"]=i+1,["data"]=(ja:getString(0)..ja:getString(2))}
+        pages[i]={["page"]=i+1,["data"]=(ja:getString(0)..ja:getString(2)):match("([^?]+)")}
     end
     return pages
 end
 
 function load(file,data,url,cancel,process)
-    local error=network:load(network:getClient(),data,domain,file,cancel,process)
-    if(error~=nil and network:load(network:getClient(),data:match("([^?]+)"),domain,file,cancel,process)==nil) then
-        return nil
-    end
-    return error
+    return network:load(network:getClient(),data,domain,file,cancel,process)
 end
 
 function createAdvancedSearchOptions()
