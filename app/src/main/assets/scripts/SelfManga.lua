@@ -32,17 +32,21 @@ function update(url)
         local elem=list:get(i);
         chapters[last-i]={vol=num(elem:attr("data-vol")),num=num(elem:attr("data-num"))/10,name=elem:select("td.item-title"):text():match("%d+%s%-%s%d+%s+(.+)"),date=utils:parseDate(elem:select("td.date"):attr("data-date"),"dd.MM.yy")}
     end
-    local author={}; local authors=e:select("span.elem_author"):select("a[href~=/list/person/]")
-    for j=0,authors:size()-1,1 do
-        local a=authors:get(j); author[a:text()]=a:attr("abs:href")
-    end
+    local authors_tags=e:select("p.elementList:contains(Сценаристы)"):select("a[abs:href*=/list/person/]")
+    local artists_tags=e:select("p.elementList:contains(Художник)"):select("a[abs:href*=/list/person/]")
+    local publishers_tags=e:select("p.elementList:contains(Издательство)"):select("span.null")
+    local authors={} for i = 0, authors_tags:size()-1 do authors[utils:text(authors_tags:get(i))]=utils:attr(authors_tags:get(i),"abs:href") end
+    local artists={} for i = 0, artists_tags:size()-1 do artists[utils:text(artists_tags:get(i))]=utils:attr(artists_tags:get(i),"abs:href") end
+    local publishers={} for i = 0, publishers_tags:size()-1 do publishers[utils:text(publishers_tags:get(i))]=utils:attr(publishers_tags:get(i),"abs:href") end
     e:select("span.all-names-popover"):remove()
     return {
         ["url"]=url,
         ["url_web"]=url,
         ["name"]=utils:text(e:selectFirst("span.eng-name"),e:selectFirst("span.name"):text()),
         ["name_alt"]=utils:text(e:selectFirst("span.name")),
-        ["author"]=author,
+        ["authors"]=authors,
+        ["artists"]=artists,
+        ["publishers"]=publishers,
         ["genres"]=utils:text(e:select("div.subject-meta"):select("a[href*=/genre/]"),"",", "),
         ["tags"]=utils:text(e:select("div.subject-meta"):select("a[href*=/tag/]"),"",", "),
         ["rating"]=num(e:selectFirst("span.rating-block"):attr("data-score")),
@@ -86,7 +90,7 @@ function query_url(url,page)
             ["url_web"]=e:selectFirst("a.non-hover"):attr("abs:href"),
             ["name"]=utils:text(e:selectFirst("h4"),utils:text(e:selectFirst("h3"))),
             ["name_alt"]=utils:text(e:selectFirst("h3")),
-            ["author"]=author,
+            ["authors"]=author,
             ["genres"]=utils:text(e:select("a.element-link"),""):gsub(" ",", "),
             ["rating"]=num(utils:attr(e:selectFirst("div.rating"),"title",""):match("(.-)%s"))/2,
             ["description"]=utils:text(e:selectFirst("div.manga-description")),

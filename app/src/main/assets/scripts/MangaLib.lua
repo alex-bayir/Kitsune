@@ -52,13 +52,20 @@ function update(url)
         local o=list:getObject(i); local branch_id=o:get("branch_id",-1); if(branch_id==-1) then branch_id=nil end
         chapters[#chapters+1]={vol=o:get("chapter_volume"),num=o:get("chapter_number"),name=utils:unescape_unicodes(o:get("chapter_name")),date=utils:parseDate(o:get("chapter_created_at"),"yyyy-MM-dd' 'HH:mm:ss"),translators=translators[branch_id] or "",bid=branch_id,ui=ui}
     end
-    local author=container:selectFirst("a[abs:href*=/people/]")
+    local authors_tags=container:select("div.media-info-list__item:contains(Автор)"):select("a[abs:href*=/people/]")
+    local artists_tags=container:select("div.media-info-list__item:contains(Художник)"):select("a[abs:href*=/people/]")
+    local publishers_tags=container:select("div.media-info-list__item:contains(Издательство)"):select("a[abs:href*=/publisher/]")
+    local authors={} for i = 0, authors_tags:size()-1 do authors[utils:text(authors_tags:get(i))]=utils:attr(authors_tags:get(i),"abs:href") end
+    local artists={} for i = 0, artists_tags:size()-1 do artists[utils:text(artists_tags:get(i))]=utils:attr(artists_tags:get(i),"abs:href") end
+    local publishers={} for i = 0, publishers_tags:size()-1 do publishers[utils:text(publishers_tags:get(i))]=utils:attr(publishers_tags:get(i),"abs:href") end
     return {
         ["url"]=url,
         ["url_web"]=url,
         ["name"]=jo:getString("name"),
         ["name_alt"]=jo:getString("rus_name"),
-        ["author"]=author and {[utils:text(author)]=utils:attr(author,"abs:href")},
+        ["authors"]=authors,
+        ["artists"]=artists,
+        ["publishers"]=publishers,
         ["genres"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?genres]"),"",", "),
         ["tags"]=utils:text(container:select("a.media-tag-item"):select("a[href*=?tags]"),"",", "),
         ["status"]=status(container:select("a[href*=manga_status]"):attr("href"):match("manga_status.*=(%d)")),

@@ -40,7 +40,7 @@ function update(url)
         ["url_web"]=url,
         ["name"]=e:selectFirst("h1"):text(),
         ["name_alt"]=e:select("div.summary-content"):get(2):text(),
-        ["author"]=author,
+        ["authors"]=author,
         ["genres"]=e:select("div.genres-content"):text(),
         ["rating"]=num(e:selectFirst("span.score"):text()),
         ["status"]=status(e:select("div.post-status"):select("div.summary-content"):text():match("[%d%s]*([%w%s]+)")),
@@ -58,7 +58,7 @@ function query(name,page,params)
             url:add("genre[]",params[1]:getSelected()):add("op",1)
             url:add("status[]",params[2]:getSelected())
             url:add("adult",params[3]:getSelected()[1])
-            url:add("author",params[4]:getInput())
+            url:add("authors",params[4]:getInput())
             url:add("artist",params[5]:getInput())
             url:add("release",params[6]:getInput())
         else
@@ -85,7 +85,7 @@ function query_url(url,page)
             ["url_web"]=e:selectFirst("a"):attr("abs:href"),
             ["name"]=utils:text(e:selectFirst("h3.h4")),
             ["name_alt"]=utils:text(e:select("div.mg_alternative"):select("div.summary-content")),
-            ["author"]=author,
+            ["authors"]=author,
             ["genres"]=utils:text(e:select("div.mg_genres"):select("div.summary-content"),""):gsub(" ",", "),
             ["rating"]=num(utils:text(e:selectFirst("span.score"))),
             ["status"]=utils:text(e:select("div.mg_status"):select("div.summary-content")),

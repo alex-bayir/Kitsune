@@ -42,20 +42,17 @@ function update(url)
     local list=langs[lang]
     local chapters={}; local last=list:size()-1
     for i=last,0,-1 do
-        local e=list:get(i);
-        chapters[last-i]={num=num(e:attr("href"):match("chapter%-([0-9.]*)")), name=utils:attr(e,"title"):match("Chapter %d*%.?%d+: (.*)"), lang=lang}
+        local e=list:get(i); chapters[last-i]={num=num(e:attr("href"):match("chapter%-([0-9.]*)")), name=utils:attr(e,"title"):match("Chapter %d*%.?%d+: (.*)"), lang=lang}
     end
 
-    local author={}; local authors=container:select("div.anisc-info"):select("a[href*=/author/]")
-    for j=0,authors:size()-1,1 do
-        local a=authors:get(j); author[a:text()]=a:attr("abs:href")
-    end
+    local authors={}; local authors_tags=container:select("div.anisc-info"):select("a[href*=/author/]")
+    for j=0,authors_tags:size()-1,1 do authors[authors_tags:get(j):text()]=authors_tags:get(j):attr("abs:href") end
     return {
         ["url"]=url,
         ["url_web"]=url,
         ["name"]=container:select("h2.manga-name"):text(),
         ["name_alt"]=container:select("div.manga-name-or"):text(),
-        ["author"]=author,
+        ["authors"]=authors,
         ["genres"]=genres,
         ["status"]=status(container:select("div.item"):text():match("Status: (%S+)")),
         ["rating"]=num(container:select("div.item"):text():match("Score: (%d*%.?%d+)"))/2,

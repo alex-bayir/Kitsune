@@ -239,19 +239,9 @@ public class PreviewPage extends PreviewHolder {
         SpannableStringBuilder builder=new SpannableStringBuilder();
         builder.append(context.getString(R.string.Chapters), new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         builder.append(count_known ? String.valueOf(book.getChapters().size()) : "?");
-        if(book.getAuthor() instanceof Map<?,?> map){
-            builder.append("\n");
-            AtomicInteger count=new AtomicInteger();
-            map.entrySet().stream().filter(entry-> entry.getKey() instanceof String && entry.getValue() instanceof String).forEach(entry->{
-                if(count.getAndIncrement()>0){
-                    builder.append(", ");
-                }
-                builder.append((String)entry.getKey(), new ClickSpan((String)entry.getValue(), (view, text)->view.getContext().startActivity(new Intent(view.getContext(),AdvancedSearchActivity.class).putExtra(Constants.catalog, book.getSource()).putExtra(Constants.title,(String)entry.getKey()).putExtra(Constants.url,text!=null ? text.toString() : null),animation((Activity)view.getContext(),Gravity.START,Gravity.END))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
-            });
-        }else if(book.getAuthor() instanceof String str){
-            builder.append("\n");
-            builder.append(str);
-        }
+        link(book.getSource(),builder,book.getAuthors(),context.getString(R.string.Authors));
+        link(book.getSource(),builder,book.getArtists(),context.getString(R.string.Artists));
+        link(book.getSource(),builder,book.getPublishers(),context.getString(R.string.Publishers));
         builder.append("\n");
         builder.append(context.getString(R.string.Source_),new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
         builder.append(book.getSource());
@@ -266,5 +256,23 @@ public class PreviewPage extends PreviewHolder {
 
     public void notifyError(Throwable th){
         description.setSubtitle("Type: "+th.getClass().getName()+"\nCause: "+th.getMessage()+"\nStackTrace see in menu");
+    }
+    
+    private static void link(String source, SpannableStringBuilder builder, Object obj, String key_word){
+        if(obj instanceof Map<?,?> map && map.size()>0){
+            builder.append("\n").append(key_word,new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            AtomicInteger count=new AtomicInteger();
+            map.forEach((key, value) -> {
+                if(count.getAndIncrement()>0){builder.append(", ");}
+                if(value instanceof String str && Utils.isUrl(str)){
+                    builder.append((String) key, new ClickSpan((String) value, (view, text) -> view.getContext().startActivity(new Intent(view.getContext(), AdvancedSearchActivity.class).putExtra(Constants.catalog, source).putExtra(Constants.title, (String) key).putExtra(Constants.url, text != null ? text.toString() : null), animation((Activity) view.getContext(), Gravity.START, Gravity.END))), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+                }else{
+                    builder.append((String) key);
+                }
+            });
+        }else if(obj instanceof String str){
+            builder.append("\n").append(key_word,new StyleSpan(Typeface.BOLD), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            builder.append(str);
+        }
     }
 }

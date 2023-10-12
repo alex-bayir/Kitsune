@@ -72,6 +72,9 @@
     <string name="Source_">"Домен: "</string>
     <string name="Type_">"Тип: "</string>
     <string name="Status_">"Статус: "</string>
+    <string name="Authors">"Авторы: "</string>
+    <string name="Artists">"Художники: "</string>
+    <string name="Publishers">"Издатели: "</string>
     <string name="share">Поделиться</string>
     <string name="general">Основные</string>
     <string name="Chapter">Глава</string>

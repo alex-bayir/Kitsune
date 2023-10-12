@@ -20,10 +20,13 @@
     <string name="DESCRIPTION" translatable="false">Description</string>
     <string name="CHAPTERS" translatable="false">Chapters</string>
     <string name="BOOKMARKS" translatable="false">Bookmarks</string>
-    <string name="Chapters">Chapters:</string>
-    <string name="Source_">Source:</string>
-    <string name="Type_">Type:</string>
-    <string name="Status_">Status:</string>
+    <string name="Chapters">"Chapters: "</string>
+    <string name="Source_">"Source: "</string>
+    <string name="Type_">"Type: "</string>
+    <string name="Status_">"Status: "</string>
+    <string name="Authors">"Authors: "</string>
+    <string name="Artists">"Artists: "</string>
+    <string name="Publishers">"Publishers: "</string>
 
     <!-- menus -->
     <string name="check_for_updates">Check for updates</string>

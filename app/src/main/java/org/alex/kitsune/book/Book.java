@@ -108,7 +108,9 @@ public abstract class Book {
     public final String getAnyName(){return getAnyName(true);}
     public final String getAnyName(boolean alt){return getAnyName(alt,null);}
     public final String getAnyName(boolean alt,String def){return alt ? (getNameAlt()!=null ? getNameAlt() : (getName()!=null? getName() : def)) : (getName()!=null ? getName() : (getNameAlt()!=null ? getNameAlt() : def));}
-    public final Object getAuthor(){return get("author");}
+    public final Object getAuthors(){return get("authors");}
+    public final Object getArtists(){return get("artists");}
+    public final Object getPublishers(){return get("publishers");}
     public final String getGenres(){return getString("genres");}
     public final String getTags(){return getString("tags");}
     public final String getCover(){return get("cover",getString("thumbnail"));}

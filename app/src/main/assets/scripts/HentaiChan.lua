@@ -46,7 +46,7 @@ function update(url)
         ["url_web"]=url,
         ["name"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([a-zA-Z][^а-яА-Я]*[a-zA-Z])"),
         ["name_alt"]=utils:text(e:selectFirst("a.title_top_a"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
-        ["author"]=author,
+        ["authors"]=author,
         ["genres"]=utils:attr(e:select("li.sidetag"):select("a[href*=/tags/-]"),"href","",", "):gsub("/tags/%-",""):gsub("_"," "),
         ["status"]=(#chapters>1 and "Finished" or "Announce"),
         ["description"]=utils:text(e:selectFirst("div#description")),
@@ -104,7 +104,7 @@ function query_url(url,page)
                 ["url_web"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
                 ["name"]=utils:text(e:selectFirst("h2"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([a-zA-Z][^а-яА-Я]*[a-zA-Z])"),
                 ["name_alt"]=utils:text(e:selectFirst("h2"),""):gsub(" - часть %d+",""):gsub(" - глава %d+",""):match("([а-яА-Я].*[а-яА-Я])"),
-                ["author"]=author,
+                ["authors"]=author,
                 ["genres"]=utils:text(e:select("div.genre"),""):gsub("_"," "),
                 ["description"]=utils:text(e:select("div.tags")),
                 ["thumbnail"]=select(1, utils:attr(e:selectFirst("img"),"src"):gsub("_blur",""))
@@ -145,7 +145,7 @@ function loadSimilar(manga)
             ["url_web"]=utils:attr(e:selectFirst("h2"):selectFirst("a"),"abs:href"),
             ["name"]=utils:text(e:selectFirst("h2"),""):match("[a-zA-Z].*[a-zA-Z]"),
             ["name_alt"]=utils:text(e:selectFirst("h2"),""):match("[а-яА-Я].*[а-яА-Я]"),
-            ["author"]=JSONObject.new():put(utils:text(e:select("div.related_row"):get(1):selectFirst("a")),utils:attr(e:select("div.related_row"):get(1):selectFirst("a"),"abs:href")),
+            ["authors"]=JSONObject.new():put(utils:text(e:select("div.related_row"):get(1):selectFirst("a")),utils:attr(e:select("div.related_row"):get(1):selectFirst("a"),"abs:href")),
             ["genres"]=utils:text(e:select("div.genre")),
             ["description"]=utils:text(e:select("div.tags")),
             ["thumbnail"]=host..select(1,utils:attr(e:selectFirst("img"),"src"):match("/manga.*"):gsub("_blur",""))
