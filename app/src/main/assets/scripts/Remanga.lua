@@ -104,13 +104,13 @@ function getPages(url,chapter)
     for i=0,array:size()-1,1 do
         local jo=array:getObject(i)
         if(jo~=nil) then
-            pages[n]={["page"]=jo:getInt("page"),["data"]=jo:getString("link")}; n=n+1
+            pages[n]={["page"]=jo:get("page",i),["data"]=jo:getString("link")}; n=n+1
         else
             jo=array:getArray(i)
             local d=jo:size()<10 and 10 or (jo:size()<100 and 100 or 100);
             for j=0,jo:size()-1,1 do
                 local tmp=jo:getObject(j)
-                pages[n]={["page"]=tmp:getInt("page")+j/d,["data"]=tmp:getString("link")}; n=n+1
+                pages[n]={["page"]=tmp:get("page",i)+j/d,["data"]=tmp:getString("link")}; n=n+1
             end
         end
     end
