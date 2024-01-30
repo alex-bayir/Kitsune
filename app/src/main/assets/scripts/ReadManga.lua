@@ -105,13 +105,25 @@ function getPages(url,chapter)
     local pages={}
     for i=0,array:size()-1,1 do
         local ja=array:getArray(i)
-        pages[i]={["page"]=i+1,["data"]=(ja:getString(0)..ja:getString(2)):match("([^?]+)")}
+        pages[i]={["page"]=i+1,["data"]=ja:getString(0)..ja:getString(2)}
     end
     return pages
 end
 
 function load(file,data,url,cancel,process)
-    return network:load(network:getClient(),data,domain,file,cancel,process)
+    local error=network:load(network:getClient(),data,domain,file,cancel,process)
+    if(error and error:getMessage()=="403 - Forbidden") then
+        for key,value in pairs(alt_urls(data)) do
+            if(network:load(network:getClient(),value,domain,file,cancel,process)==nil) then
+                return nil
+            end
+        end
+    end
+    return error
+end
+
+function alt_urls(url)
+    return { [1]=url:match("([^?]+)") }
 end
 
 function createAdvancedSearchOptions()
